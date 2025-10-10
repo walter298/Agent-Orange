@@ -1,0 +1,22 @@
+[Event "Computer chess game"]
+[Site "WALTER_S_S_S"]
+[Date "2025.10.08"]
+[Round "?"]
+[White "walte"]
+[Black "Agent Orange Debug"]
+[Result "1-0"]
+[BlackElo "2000"]
+[ECO "A40"]
+[Opening "Queen's Pawn Game"]
+[Time "18:59:15"]
+[WhiteElo "2400"]
+[TimeControl "300"]
+[Termination "rules infraction"]
+[PlyCount "21"]
+[WhiteType "human"]
+[BlackType "program"]
+
+1. d4 g5 2. d5 Na6 3. d6 h5 4. e4 e6 5. Ne2 Rb8 6. Nec3 f6 7. Qxh5+ Rxh5 8.
+Nd5 Rh7 9. Be2 Nh6 10. Bh5+ Rf7 11. Nxf6 {Arena Adjudication. Illegal
+move!} 1-0
+

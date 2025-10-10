@@ -1,0 +1,32 @@
+module;
+
+#include <magic_enum/magic_enum.hpp>
+
+module Chess.Move;
+
+import Chess.Square;
+
+namespace chess {
+	std::string Move::getUCIString() const { //todo: handle pawn promotions 
+		auto fromName = magic_enum::enum_name(from);
+		auto toName   = magic_enum::enum_name(to);
+
+		std::string ret;
+		ret.append(std::string{ fromName.data(), fromName.size() });
+		ret.append(std::string{ toName.data(), toName.size() });
+		
+		ret[0] = std::tolower(ret[0]);
+		ret[2] = std::tolower(ret[2]);
+
+		if (promotedPiece != Piece::None) {
+			if (promotedPiece == Knight) { //Knight doesn't start with n, so we need a special branch
+				ret.push_back('n');
+			} else { 
+				auto promotedPieceName = magic_enum::enum_name(promotedPiece);
+				ret.push_back(std::tolower(promotedPieceName[0]));
+			}
+		}
+
+		return "bestmove " + ret;
+	}
+}

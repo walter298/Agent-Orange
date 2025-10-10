@@ -1,0 +1,20 @@
+[Event "Computer chess game"]
+[Site "WALTER_S_S_S"]
+[Date "2025.10.04"]
+[Round "?"]
+[White "walte"]
+[Black "Agent Orange Debug"]
+[Result "*"]
+[BlackElo "2000"]
+[Time "13:53:57"]
+[WhiteElo "2000"]
+[TimeControl "300"]
+[SetUp "1"]
+[FEN "4k3/1q2Q3/4K3/8/8/8/8/8 b - - 1 1"]
+[Termination "unterminated"]
+[PlyCount "0"]
+[WhiteType "program"]
+[BlackType "human"]
+
+1. ...+ *
+
