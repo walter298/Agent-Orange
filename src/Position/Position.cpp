@@ -106,10 +106,8 @@ namespace chess {
         return piece;
     }
 
-    void parseRow(std::string_view row, int& squareCount,
-        chess::PieceState& whitePieces, chess::PieceState& blackPieces)
-    {
-        auto setPiecePosition = [](chess::PieceState& pieces, char pieceChr, int squareCount) {
+    void parseRow(std::string_view row, int& squareCount, PieceState& whitePieces, PieceState& blackPieces) {
+        auto setPiecePosition = [](PieceState& pieces, char pieceChr, int squareCount) {
             addSquare(pieces[parsePiece(pieceChr)], static_cast<Square>(squareCount));
         };
 
@@ -170,25 +168,64 @@ namespace chess {
         return ret;
     }
 
-	void Position::move(const Move& move) {
-		auto [allies, enemies] = getSidesMutable();
-        m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
+    bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
+        if (!(turnData.allies.canCastleKingside() && turnData.allies.canCastleQueenside() && move.movedPiece == King)) {
+            return false;
+        }
+        assert(turnData.allies.canCastleKingside() && turnData.allies.canCastleQueenside() && move.movedPiece == King);
+        turnData.allies.disallowQueensideCastling();
+        turnData.allies.disallowKingsideCastling();
 
-		//move the piece (destination square handled with pawn promotions)
-        auto& movedPiecePos = allies[move.movedPiece];
-        removeSquare(allies[move.movedPiece], move.from);
-       
+        if (turnData.allyKingside.kingTo == move.to) {
+            moveSquare(turnData.allies[King], move.from, turnData.allyKingside.kingTo);
+            moveSquare(turnData.allies[Rook], turnData.allyKingside.rookFrom, turnData.allyKingside.rookTo);
+            return true;
+        } else if (turnData.allyQueenside.kingTo == move.to) {
+            moveSquare(turnData.allies[King], move.from, turnData.allyQueenside.kingTo);
+            moveSquare(turnData.allies[Rook], turnData.allyQueenside.rookFrom, turnData.allyQueenside.rookTo);
+            return true;
+        }
+        return false;
+    }
+
+    void normalMove(const Position::MutableTurnData& turnData, const Move& move) {
+        //move the piece (destination square handled with pawn promotions)
+        auto& movedPiecePos = turnData.allies[move.movedPiece];
+        removeSquare(turnData.allies[move.movedPiece], move.from);
+
         //capture the piece!
         if (move.capturedPiece != Piece::None) {
-            removeSquare(enemies[move.capturedPiece], move.to);
+            if (move.capturedPiece == Rook) {
+                if (move.to == turnData.enemyKingside.rookFrom) {
+                    turnData.enemies.disallowKingsideCastling();
+                } else if (move.to == turnData.enemyQueenside.rookFrom) {
+                    turnData.enemies.disallowQueensideCastling();
+                }
+            }
+            removeSquare(turnData.enemies[move.capturedPiece], move.to);
         }
 
         //check for pawn promotions
         if (move.promotedPiece != Piece::None) {
-            addSquare(allies[move.promotedPiece], move.to);
+            addSquare(turnData.allies[move.promotedPiece], move.to);
         } else {
             addSquare(movedPiecePos, move.to);
         }
+    }
+
+	void Position::move(const Move& move) {
+        auto turnData = getTurnData();
+        if (move.movedPiece == Rook) {
+	        if (move.from == turnData.allyKingside.rookFrom) {
+                turnData.allies.disallowKingsideCastling();
+	        } else if (move.from == turnData.allyQueenside.rookFrom) {
+                turnData.allies.disallowQueensideCastling();
+	        }
+        }
+		if (!tryCastle(turnData, move)) {
+            normalMove(turnData, move);
+		}
+        m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
 	}
 
     Square parseSquare(std::string_view squareStr) {
@@ -198,16 +235,16 @@ namespace chess {
         return static_cast<Square>(index);
     }
 
-    void Position::move(std::string_view moveStr) { //todo: handle pawn promotions (don't yet know string format for them)
+    void Position::move(std::string_view moveStr) { 
         assert(moveStr.size() == 4 || moveStr.size() == 5);
 
     	auto from = parseSquare(moveStr.substr(0, 2));
         auto to   = parseSquare(moveStr.substr(2, 2));
 
-        auto [allies, enemies, isWhite] = getTurnSides();
-        
-        auto movedPiece    = allies.findPiece(from);
-        auto capturedPiece = enemies.findPiece(to);
+        auto turnData = getTurnData();
+
+        auto movedPiece    = turnData.allies.findPiece(from);
+        auto capturedPiece = turnData.enemies.findPiece(to);
         auto promotedPiece = Piece::None;
         if (moveStr.size() == 5) { //if there is a pawn promotion
             promotedPiece = parsePiece(moveStr[4]);

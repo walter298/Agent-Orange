@@ -26,8 +26,11 @@ export namespace chess {
         return static_cast<Square>(std::countr_zero(board));
     }
 
-    constexpr Bitboard makeBitboard(Square square) {
-	    return Bitboard{ 1 } << square;
+    template<std::same_as<Square>... Squares>
+    constexpr Bitboard makeBitboard(Squares... squares) requires(sizeof...(Squares) > 0) {
+        Bitboard ret = 0;
+        ((ret |= Bitboard{ 1 } << squares), ...);
+        return ret;
     }
 
     //for iterating over each square
@@ -54,5 +57,10 @@ export namespace chess {
 
     constexpr void addSquare(Bitboard& bitboard, Square square) {
         bitboard |= makeBitboard(square);
+    }
+
+    constexpr void moveSquare(Bitboard& bitboard, Square from, Square to) {
+        removeSquare(bitboard, from);
+        addSquare(bitboard, to);
     }
 }

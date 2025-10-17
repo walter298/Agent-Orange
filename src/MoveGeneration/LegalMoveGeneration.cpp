@@ -182,9 +182,31 @@ namespace chess {
 			}
 		}
 
-		static std::vector<Move> calcAllLegalMoves(const PieceState& allies, const PieceState& enemies)
+		static void addKingMoves(std::vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
+			const PieceLocationData& pieceLocations, Bitboard enemyMoves)
+		{
+			auto isCastlingClear = [enemyMoves](const auto& castleMove) {
+				return (castleMove.squaresBetweenRookAndKing == 0 && (castleMove.squaresBetweenRookAndKing & enemyMoves));
+			};
+			auto kingMoves = calcLegalKingMovesNoCheck(pieceLocations, enemyMoves);;
+			if (enemyMoves & pieceLocations.allyKing) {
+				kingMoves &= ~calcIndirectlyCheckedSquares(turnData.enemies, pieceLocations);
+			} else { //if the king is not in check, then we might be able to castle
+				if (turnData.allies.canCastleKingside() && isCastlingClear(turnData.allyKingside)) {
+					kingMoves.emptyDestSquares |= turnData.allyKingside.kingTo;
+				}
+				if (turnData.allies.canCastleQueenside() && isCastlingClear(turnData.allyQueenside)) {
+					kingMoves.emptyDestSquares |= turnData.allyQueenside.kingTo;
+				}
+			}
+			addMoves(moves, nextSquare(pieceLocations.allyKing), kingMoves, King, pieceLocations, turnData.enemies, DEFAULT_MOVE_ADDER);
+		}
+
+		static std::vector<Move> calcAllLegalMoves(const Position::ImmutableTurnData& turnData)
 		{
 			std::vector<Move> moves;
+			auto& allies = turnData.allies;
+			auto& enemies = turnData.enemies;
 
 			PieceLocationData pieceLocations{ allies[King], allies.calcAllLocations(), enemies.calcAllLocations() };
 
@@ -192,12 +214,7 @@ namespace chess {
 
 			/*Enemy destination squares are blocked by the king, so if the king in check, ensure that we are not moving
 			onto a square that was blocked but is still indirectly checked*/
-			auto kingMoves = calcLegalKingMovesNoCheck(pieceLocations, enemyMoveData.squares);;
-			if (enemyMoveData.squares & pieceLocations.allyKing) {
-				kingMoves &= ~calcIndirectlyCheckedSquares(enemies, pieceLocations);
-			}
-			addMoves(moves, nextSquare(pieceLocations.allyKing), kingMoves, King, pieceLocations, enemies, DEFAULT_MOVE_ADDER);
-
+			addKingMoves(moves, turnData, pieceLocations, enemyMoveData.squares);
 			if (enemyMoveData.checklines.multipleChecks) { //if there are multiple checks, we have to move the king
 				return moves;
 			}
@@ -221,16 +238,16 @@ namespace chess {
 	};
 
 	std::vector<Move> calcAllLegalMoves(const Position& pos) {
-		auto [allies, enemies, isWhite] = pos.getTurnSides();
+		auto turnData = pos.getTurnData();
 		
-		if (isWhite) {
+		if (turnData.isWhite) {
 			using MoveGenerator = MoveGeneratorImpl<WhitePawnMoveGenerator, WhitePawnAttackGenerator,
 													BlackPawnMoveGenerator, BlackPawnAttackGenerator, calcRank<8>()>;
-			return MoveGenerator::calcAllLegalMoves(allies, enemies);
+			return MoveGenerator::calcAllLegalMoves(turnData);
 		} else {
 			using MoveGenerator = MoveGeneratorImpl<BlackPawnMoveGenerator, BlackPawnAttackGenerator,
-													WhitePawnMoveGenerator, WhitePawnAttackGenerator, calcRank<1>()>;
-			return MoveGenerator::calcAllLegalMoves(allies, enemies);
+				WhitePawnMoveGenerator, WhitePawnAttackGenerator, calcRank<1>()>;
+			return MoveGenerator::calcAllLegalMoves(turnData);
 		}
 	}
 }
