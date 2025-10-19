@@ -57,11 +57,6 @@ namespace chess {
 			const CastleMove& enemyKingside;
 			const CastleMove& enemyQueenside;
 			bool isWhite = true;
-
-			/*constexpr TurnData(auto& allies, auto& enemies, CastleMove kingside, CastleMove queenside, bool isWhite)
-				: allies{ allies }, enemies{ enemies }, kingside{ kingside }, queenside{ queenside }, isWhite{ isWhite }
-			{
-			}*/
 		};
 	public:
 		using MutableTurnData   = TurnData<PieceState>;
@@ -91,9 +86,16 @@ namespace chess {
 			}
 		}
 
-		Position() = default;
 		static Position startPos();
 	public:
+		static constexpr std::string_view STARTING_FEN_STRING = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+		Position() = default;
+
+
+		void setStartPos();
+		void setFen(std::string_view fen);
+
 		static Position fromStartPos(std::string_view fen);
 		static Position fromFENString(std::string_view fen);
 

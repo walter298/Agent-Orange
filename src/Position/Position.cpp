@@ -18,66 +18,6 @@ namespace chess {
         return Piece::None;
     }
 
-    template<Bitboard PieceRow, Bitboard PawnRow>
-    consteval PieceState makeSides() {
-        PieceState ret;
-        ret[Pawn] = PawnRow;
-        ret[Rook] = makeBitboard(getSquare(PieceRow, 1)) | makeBitboard(getSquare(PieceRow, 8));
-        ret[Knight] = makeBitboard(getSquare(PieceRow, 2)) | makeBitboard(getSquare(PieceRow, 7));
-        ret[Bishop] = makeBitboard(getSquare(PieceRow, 3)) | makeBitboard(getSquare(PieceRow, 6));
-        ret[Queen] = makeBitboard(getSquare(PieceRow, 4));
-        ret[King] = makeBitboard(getSquare(PieceRow, 5));
-        return ret;
-    }
-
-    Position Position::startPos() {
-        Position ret;
-        ret.m_whitePieces = makeSides<calcRank<1>(), calcRank<2>()>();
-        ret.m_blackPieces = makeSides<calcRank<8>(), calcRank<7>()>();
-        ret.m_isWhiteMoving = true;
-        return ret;
-    }
-
-	Position Position::fromStartPos(std::string_view str) {
-        auto ret = startPos();
-
-        std::vector<std::string> moves;
-
-        namespace bp = boost::parser;
-        auto field = +(bp::char_ - (bp::char_(' ') | bp::char_('"') | bp::eoi));
-        auto movesParser = bp::lit("moves ") >> +(field >> (bp::lit(' ') | bp::eoi));
-        auto movesRes = bp::parse(str, bp::omit[*(bp::char_ - bp::char_('m'))] >> -movesParser, moves);
-
-        if (movesRes) {
-	        for (const auto& move : moves) {
-                ret.move(move);
-	        }
-        }
-        return ret;
-    }
-
-	std::string getFENString(std::string_view pgnPath) {
-		std::ifstream file{ pgnPath.data() }; //hopefully pgnPath is null-terminated!
-		if (!file.is_open()) {
-			std::println("Error: could not open {}", pgnPath);
-			std::exit(EXIT_FAILURE);
-		}
-
-		std::string line;
-		bool foundFENStr = false;
-		while (std::getline(file, line)) {
-			if (line.starts_with("[F")) { //we only care about the [FEN "..."] line
-				foundFENStr = true;
-				break;
-			}
-		}
-		if (!foundFENStr) {
-			std::println("Error: could not find FEN string in PGN file");
-			std::exit(EXIT_FAILURE);
-		}
-		return line;
-	}
-
     Piece parsePiece(char chr) {
         Piece piece = Piece::None;
         switch (chr) {
@@ -125,25 +65,26 @@ namespace chess {
         }
     }
 
-    Position Position::fromFENString(std::string_view fen) {
+    void Position::setFen(std::string_view fen) {
+        if (fen == STARTING_FEN_STRING) {
+            setStartPos();
+            return;
+        }
+
         namespace bp = boost::parser;
 
         auto field = +(bp::char_ - (bp::char_(' ') | bp::char_('"')));
-        auto movesParser = bp::lit("moves ") >> +(field >> (bp::lit(' ') | bp::eoi));
         
         auto fieldsRes = bp::parse(fen,
-            -bp::lit("[FEN \"") >> field >> bp::lit(' ') >> field >> bp::lit(' ') >>
-            field >> bp::lit(' ') >> field >> bp::omit[*(bp::char_ - bp::char_('m'))] >>
-            -movesParser
+            field >> bp::lit(' ') >> field >> bp::lit(' ') >>
+            field >> bp::lit(' ') >> field
         );
         if (!fieldsRes) {
             std::println("Error parsing FEN string");
             std::exit(EXIT_FAILURE);
         }
 
-        Position ret;
-
-        const auto& [board, color, castlingPrivileges, enPessantData, moves] = *fieldsRes;
+        const auto& [board, color, castlingPrivileges, enPessantData] = *fieldsRes;
 
         auto rowParser = +(bp::char_ - bp::char_('/'));
         auto rowsRes = bp::parse(board, +(rowParser >> -bp::lit('/')));
@@ -154,18 +95,29 @@ namespace chess {
 
         int squareCount = 56;
         for (const auto& row : *rowsRes) {
-            parseRow(row, squareCount, ret.m_whitePieces, ret.m_blackPieces);
+            parseRow(row, squareCount, m_whitePieces, m_blackPieces);
             squareCount -= 16;
         }
 
-        ret.m_isWhiteMoving = (color[0] == 'w');
-        if (moves) {
-            for (const auto& moveStr : *moves) {
-                ret.move(moveStr);
-            }
-        }
+        m_isWhiteMoving = (color[0] == 'w');
+    }
 
+    template<Bitboard PieceRow, Bitboard PawnRow>
+    consteval PieceState makeStartingSides() {
+        PieceState ret;
+        ret[Pawn] = PawnRow;
+        ret[Rook] = makeBitboard(getSquare(PieceRow, 1)) | makeBitboard(getSquare(PieceRow, 8));
+        ret[Knight] = makeBitboard(getSquare(PieceRow, 2)) | makeBitboard(getSquare(PieceRow, 7));
+        ret[Bishop] = makeBitboard(getSquare(PieceRow, 3)) | makeBitboard(getSquare(PieceRow, 6));
+        ret[Queen] = makeBitboard(getSquare(PieceRow, 4));
+        ret[King] = makeBitboard(getSquare(PieceRow, 5));
         return ret;
+    }
+
+    void Position::setStartPos() {
+        m_whitePieces = makeStartingSides<calcRank<1>(), calcRank<2>()>();
+        m_blackPieces = makeStartingSides<calcRank<8>(), calcRank<7>()>();
+        m_isWhiteMoving = true;
     }
 
     bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
@@ -226,6 +178,7 @@ namespace chess {
             normalMove(turnData, move);
 		}
         m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
+        int x = 0;
 	}
 
     Square parseSquare(std::string_view squareStr) {
@@ -244,6 +197,8 @@ namespace chess {
         auto turnData = getTurnData();
 
         auto movedPiece    = turnData.allies.findPiece(from);
+        assert(movedPiece != Piece::None);
+
         auto capturedPiece = turnData.enemies.findPiece(to);
         auto promotedPiece = Piece::None;
         if (moveStr.size() == 5) { //if there is a pawn promotion
