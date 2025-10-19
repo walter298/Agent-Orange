@@ -3,22 +3,34 @@ import :Direction;
 import Chess.RankCalculator;
 
 namespace chess {
-	template<dir::Direction ReverseLeftDirection, dir::Direction ReverseRightDirection, dir::Direction BehindEnPessantSquare>
-	EnPessantData calcEnPessantDataImpl(Bitboard pawns, Square enPessantSquare) {
-		auto enPessantBoard = makeBitboard(enPessantSquare);
-		auto capturedPawn = nextSquare(BehindEnPessantSquare::move(enPessantBoard));
-		auto leftPawn = ReverseLeftDirection::move(enPessantBoard);
-		auto rightPawn = ReverseRightDirection::move(enPessantBoard);
-		return { leftPawn | rightPawn, capturedPawn };
+	template<dir::Direction BehindEnPessantSquare>
+	EnPessantData calcEnPessantDataImpl(Bitboard pawns, Square jumpedEnemyPawn) {
+		EnPessantData ret;
+
+		auto addAdjacentSquare = [&](Square square) {
+			if (square != Square::None) {
+				auto board = makeBitboard(square);
+				if (board & pawns) {
+					ret.pawns |= board;
+				}
+			}
+		};
+		addAdjacentSquare(westSquare(jumpedEnemyPawn));
+		addAdjacentSquare(eastSquare(jumpedEnemyPawn));
+
+		if (ret.pawns) {
+			ret.destSquare = nextSquare(BehindEnPessantSquare::move(makeBitboard(jumpedEnemyPawn)));
+		}
+		return ret;
 	}
 
-	EnPessantData calcEnPessantData(Bitboard pawns, Square enPessantSquare, bool isWhite) {
+	EnPessantData WhitePawnAttackGenerator::operator()(Bitboard pawns, Square jumpedEnemyPawn) const {
 		using namespace dir::sliding;
-		if (isWhite) {
-			return calcEnPessantDataImpl<SouthWest, SouthEast, South>(pawns, enPessantSquare);
-		} else {
-			return calcEnPessantDataImpl<NorthWest, NorthEast, North>(pawns, enPessantSquare);
-		}
+		return calcEnPessantDataImpl<North>(pawns, jumpedEnemyPawn);
+	}
+	EnPessantData BlackPawnAttackGenerator::operator()(Bitboard pawns, Square jumpedEnemyPawn) const {
+		using namespace dir::sliding;
+		return calcEnPessantDataImpl<South>(pawns, jumpedEnemyPawn);
 	}
 
 	template<dir::Direction LeftDirection, dir::Direction RightDirection>

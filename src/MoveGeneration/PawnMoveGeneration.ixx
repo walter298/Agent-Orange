@@ -4,25 +4,25 @@ export import Chess.Square;
 export import :MoveGen;
 
 namespace chess {
-	struct EnPessantData {
+	export struct EnPessantData {
 		Bitboard pawns = 0;
-		Square capturedPawn = None;
+		Square destSquare = None;
 	};
 
 	export EnPessantData calcEnPessantData(Bitboard pawns, Square enPessantSquare, bool isWhite);
 
 	struct WhitePawnAttackGenerator {
+		EnPessantData operator()(Bitboard pawns, Square jumpedEnemyPawn) const;
 		MoveGen operator()(Bitboard pawns, Bitboard enemies) const;
 	};
 	struct WhitePawnMoveGenerator {
-		Bitboard calcEnPessantData(Bitboard pawns, Square enPessantSquare) { return 0; };
 		MoveGen operator()(Bitboard pawns, Bitboard emptySquares, Bitboard enemies) const;
 	};
 	struct BlackPawnAttackGenerator {
+		EnPessantData operator()(Bitboard pawns, Square jumpedEnemyPawn) const;
 		MoveGen operator()(Bitboard pawns, Bitboard enemies) const;
 	};
 	struct BlackPawnMoveGenerator {
-		Bitboard calcEnPessantData(Bitboard pawns, Square enPessantSquare) { return 0; };
 		MoveGen operator()(Bitboard pawns, Bitboard emptySquares, Bitboard enemies) const;
 	};
 	export WhitePawnMoveGenerator whitePawnMoveGenerator;

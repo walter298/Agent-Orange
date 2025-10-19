@@ -51,8 +51,6 @@ namespace chess {
 			iss.str(line);
 			iss >> token;
 
-			int x = 0;
-
 			if (token == "quit") {
 				std::exit(EXIT_SUCCESS);
 			} else if (token == "position") {

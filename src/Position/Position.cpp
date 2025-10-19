@@ -19,7 +19,7 @@ namespace chess {
     }
 
     Piece parsePiece(char chr) {
-        Piece piece = Piece::None;
+        auto piece = Piece::None;
         switch (chr) {
         case 'k':
             piece = King;
@@ -65,26 +65,8 @@ namespace chess {
         }
     }
 
-    void Position::setFen(std::string_view fen) {
-        if (fen == STARTING_FEN_STRING) {
-            setStartPos();
-            return;
-        }
-
+    void Position::parseBoard(std::string_view board) {
         namespace bp = boost::parser;
-
-        auto field = +(bp::char_ - (bp::char_(' ') | bp::char_('"')));
-        
-        auto fieldsRes = bp::parse(fen,
-            field >> bp::lit(' ') >> field >> bp::lit(' ') >>
-            field >> bp::lit(' ') >> field
-        );
-        if (!fieldsRes) {
-            std::println("Error parsing FEN string");
-            std::exit(EXIT_FAILURE);
-        }
-
-        const auto& [board, color, castlingPrivileges, enPessantData] = *fieldsRes;
 
         auto rowParser = +(bp::char_ - bp::char_('/'));
         auto rowsRes = bp::parse(board, +(rowParser >> -bp::lit('/')));
@@ -98,8 +80,62 @@ namespace chess {
             parseRow(row, squareCount, m_whitePieces, m_blackPieces);
             squareCount -= 16;
         }
+    }
 
-        m_isWhiteMoving = (color[0] == 'w');
+    void Position::parseCastlingPrivileges(std::string_view castlingPrivileges) {
+        auto [white, black] = getColorSides();
+
+        auto verify = [&](PieceState& pieces, char king, char queen) {
+            if (!castlingPrivileges.contains(king)) {
+                pieces.disallowKingsideCastling();
+            }
+            if (!castlingPrivileges.contains(queen)) {
+                pieces.disallowQueensideCastling();
+            }
+        };
+        verify(white, 'K', 'Q');
+        verify(black, 'k', 'q');
+    }
+
+    void Position::parseEnPessantSquare(std::string_view enPessantSquareStr) {
+        auto turnData = getTurnData();
+
+        auto enPessantSquare = parseSquare(enPessantSquareStr);
+        if (enPessantSquare) {
+            auto jumpedPawn = turnData.isWhite ? southSquare(*enPessantSquare) : northSquare(*enPessantSquare);
+            turnData.enemies.jumpedPawn = jumpedPawn;
+        } 
+    }
+
+    void Position::setFen(std::string_view fen) {
+        m_whitePieces.clear();
+        m_blackPieces.clear();
+
+        if (fen == STARTING_FEN_STRING) {
+            setStartPos();
+            return;
+        }
+
+        namespace bp = boost::parser;
+
+        auto field = +(bp::char_ - (bp::char_(' ') | bp::char_('"')));
+        
+        auto fieldsRes = bp::parse(fen,
+            field >> bp::lit(' ') >> field >> bp::lit(' ') >>
+            field >> bp::lit(' ') >> field >> bp::omit[+bp::char_]
+        );
+        if (!fieldsRes) {
+            std::println("Error parsing FEN string");
+            std::exit(EXIT_FAILURE);
+        }
+
+    	auto& [board, color, castlingPrivileges, enPessantSquare] = *fieldsRes;
+        enPessantSquare[0] = std::toupper(enPessantSquare[0]);
+
+        m_isWhiteMoving = (color == "w"); //do this BEFORE parsing en pessant squares
+        parseBoard(board);
+        parseCastlingPrivileges(castlingPrivileges);
+        parseEnPessantSquare(enPessantSquare);
     }
 
     template<Bitboard PieceRow, Bitboard PawnRow>
@@ -140,6 +176,37 @@ namespace chess {
         return false;
     }
 
+    bool hasPawnJumped(const Position::MutableTurnData& turnData, const Move& move) {
+        assert(move.movedPiece == Pawn);
+
+        auto fromBoard = makeBitboard(move.from);
+        auto toBoard   = makeBitboard(move.to);
+
+        return (fromBoard & turnData.allyPawnRank) && (toBoard & turnData.jumpedAllyPawnRank);
+    }
+
+    void movePawn(const Position::MutableTurnData& turnData, const Move& move, Bitboard& pawns) {
+        if (hasPawnJumped(turnData, move)) {
+            turnData.allies.jumpedPawn = move.to;
+        }
+    	if (move.promotedPiece != Piece::None) {
+            addSquare(turnData.allies[move.promotedPiece], move.to);
+        } else {
+            addSquare(pawns, move.to);
+        }
+    }
+
+    void capturePiece(const Position::MutableTurnData& turnData, const Move& move) {
+        if (move.capturedPiece == Rook) {
+            if (move.to == turnData.enemyKingside.rookFrom) {
+                turnData.enemies.disallowKingsideCastling();
+            } else if (move.to == turnData.enemyQueenside.rookFrom) {
+                turnData.enemies.disallowQueensideCastling();
+            }
+        }
+        removeSquare(turnData.enemies[move.capturedPiece], move.to);
+    }
+
     void normalMove(const Position::MutableTurnData& turnData, const Move& move) {
         //move the piece (destination square handled with pawn promotions)
         auto& movedPiecePos = turnData.allies[move.movedPiece];
@@ -147,19 +214,14 @@ namespace chess {
 
         //capture the piece!
         if (move.capturedPiece != Piece::None) {
-            if (move.capturedPiece == Rook) {
-                if (move.to == turnData.enemyKingside.rookFrom) {
-                    turnData.enemies.disallowKingsideCastling();
-                } else if (move.to == turnData.enemyQueenside.rookFrom) {
-                    turnData.enemies.disallowQueensideCastling();
-                }
-            }
-            removeSquare(turnData.enemies[move.capturedPiece], move.to);
+            capturePiece(turnData, move);
         }
 
-        //check for pawn promotions
-        if (move.promotedPiece != Piece::None) {
-            addSquare(turnData.allies[move.promotedPiece], move.to);
+        turnData.allies.jumpedPawn = Square::None;
+        turnData.enemies.jumpedPawn = Square::None;
+
+        if (move.movedPiece == Pawn) {
+            movePawn(turnData, move, movedPiecePos);
         } else {
             addSquare(movedPiecePos, move.to);
         }
@@ -178,32 +240,25 @@ namespace chess {
             normalMove(turnData, move);
 		}
         m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
-        int x = 0;
 	}
-
-    Square parseSquare(std::string_view squareStr) {
-        auto file = squareStr[0] - 'a';
-        auto rank = squareStr[1] - '1';
-        auto index = (rank * 8) + file;
-        return static_cast<Square>(index);
-    }
 
     void Position::move(std::string_view moveStr) { 
         assert(moveStr.size() == 4 || moveStr.size() == 5);
 
     	auto from = parseSquare(moveStr.substr(0, 2));
         auto to   = parseSquare(moveStr.substr(2, 2));
+        assert(from && to);
 
         auto turnData = getTurnData();
 
-        auto movedPiece    = turnData.allies.findPiece(from);
+        auto movedPiece = turnData.allies.findPiece(*from);
         assert(movedPiece != Piece::None);
 
-        auto capturedPiece = turnData.enemies.findPiece(to);
+        auto capturedPiece = turnData.enemies.findPiece(*to);
         auto promotedPiece = Piece::None;
         if (moveStr.size() == 5) { //if there is a pawn promotion
             promotedPiece = parsePiece(moveStr[4]);
         }
-        move({ from, to, movedPiece, capturedPiece, promotedPiece });
+        move({ *from, *to, movedPiece, capturedPiece, promotedPiece });
 	}
 }

@@ -16,6 +16,34 @@ export namespace chess {
         None
     };
 
+    constexpr Square westSquare(Square square) {
+        if (std::popcount(static_cast<std::underlying_type_t<Square>>(square)) == 1 || square == A1) {
+            return None;
+        }
+        return static_cast<Square>(square - 1);
+    }
+    constexpr Square eastSquare(Square square) {
+        auto right = static_cast<std::underlying_type_t<Square>>(square + 1);
+        if (std::popcount(right) == 1) { //disallow wraparound
+            return None;
+        }
+        return static_cast<Square>(right);
+    }
+    constexpr Square southSquare(Square square) {
+        auto num = static_cast<std::underlying_type_t<Square>>(square);
+        if (num < 8) {
+            return None;
+        }
+        return static_cast<Square>(num - 8);
+    }
+    constexpr Square northSquare(Square square) {
+        auto num = static_cast<std::underlying_type_t<Square>>(square);
+        if (num > 55) {
+            return None;
+        }
+        return static_cast<Square>(num + 8);
+    }
+
     constexpr Bitboard movePiece(Bitboard board, Square from, Square to) {
         board &= ~(Bitboard{ 1 } << from);
         board |= (Bitboard{ 1 } << to);
@@ -63,4 +91,6 @@ export namespace chess {
         removeSquare(bitboard, from);
         addSquare(bitboard, to);
     }
+
+    std::optional<Square> parseSquare(std::string_view square);
 }

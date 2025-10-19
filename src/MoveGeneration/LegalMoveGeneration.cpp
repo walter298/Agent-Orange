@@ -50,9 +50,10 @@ namespace chess {
 		};
 
 		template<typename PawnMoveGenerator>
-		static auto wrapPawnMoveGenerator(PawnMoveGenerator pawnMoveGenerator, Bitboard enemies) {
+		static auto wrapPawnMoveGenerator(PawnMoveGenerator pawnMoveGen, Bitboard enemies)
+		{
 			return [=](Bitboard pawns, Bitboard empty) {
-				return pawnMoveGenerator(pawns, empty, enemies);
+				return pawnMoveGen(pawns, empty, enemies);
 			};
 		}
 
@@ -202,6 +203,17 @@ namespace chess {
 			addMoves(moves, nextSquare(pieceLocations.allyKing), kingMoves, King, pieceLocations, turnData.enemies, DEFAULT_MOVE_ADDER);
 		}
 
+		static void addEnPessantMoves(std::vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
+			auto enPessantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
+			if (!enPessantData.pawns) {
+				return;
+			}
+			auto from = Square::None;
+			while (nextSquare(enPessantData.pawns, from)) {
+				moves.emplace_back(from, enPessantData.destSquare, Pawn, Pawn);
+			}
+		}
+
 		static std::vector<Move> calcAllLegalMoves(const Position::ImmutableTurnData& turnData)
 		{
 			std::vector<Move> moves;
@@ -233,6 +245,11 @@ namespace chess {
 			addMovesImpl(Knight, knightMoveGenerator);
 			addMovesImpl(Pawn, wrapPawnMoveGenerator(allyPawnMoveGenerator, pieceLocations.enemies));
 
+			auto jumpedEnemyPawn = enemies.jumpedPawn;
+			if (jumpedEnemyPawn != Square::None) {
+				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, jumpedEnemyPawn);
+			}
+			
 			return moves;
 		}
 	};

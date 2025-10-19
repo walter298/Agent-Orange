@@ -7,31 +7,40 @@ export import Chess.Move;
 export import Chess.Square;
 
 import Chess.PieceMap;
+import Chess.RankCalculator;
 
 namespace chess {
 	export struct PieceState : public PieceMap<Bitboard> {
 	private:
-		std::uint8_t m_movementData = 0b11111111;
+		bool m_canCastleKingside = true;
+		bool m_canCastleQueenside = true;
 	public:
+		Square jumpedPawn = Square::None;
+
 		constexpr Bitboard calcAllLocations() const {
 			return m_data[0] | m_data[1] | m_data[2] | m_data[3] | m_data[4] | m_data[5];
 		}
 		Piece findPiece(Square square) const;
 
 		constexpr bool canCastleKingside() const {
-			return 1 & m_movementData;
+			return m_canCastleKingside;
 		}
 		constexpr void disallowKingsideCastling() {
-			m_movementData &= ~std::uint8_t{ 1 };
+			m_canCastleKingside = false;
 		}
 		constexpr bool canCastleQueenside() const {
-			return 0b10 & m_movementData;
+			return m_canCastleQueenside;
 		}
 		constexpr void disallowQueensideCastling() {
-			m_movementData &= ~std::uint8_t{ 0b10 };
+			m_canCastleQueenside = false;
 		}
-		constexpr Square getEnPessantSquare() const {
-			return static_cast<Square>(m_movementData >> 2);
+		void clear() {
+			std::ranges::transform(m_data, m_data.begin(), [](auto& bitboard) {
+				return 0;
+			});
+			m_canCastleKingside = true;
+			m_canCastleQueenside = true;
+			jumpedPawn = Square::None;
 		}
 	};
 
@@ -57,6 +66,8 @@ namespace chess {
 			const CastleMove& enemyKingside;
 			const CastleMove& enemyQueenside;
 			bool isWhite = true;
+			Bitboard allyPawnRank     = 0;
+			Bitboard jumpedAllyPawnRank = 0;
 		};
 	public:
 		using MutableTurnData   = TurnData<PieceState>;
@@ -68,48 +79,48 @@ namespace chess {
 		bool m_isWhiteMoving = true;
 
 		template<typename MaybeConstPieceState>
-		TurnData<MaybeConstPieceState> getSidesImpl(this auto&& self) {
+		TurnData<MaybeConstPieceState> getTurnDataImpl(this auto&& self) {
 			if (self.m_isWhiteMoving) {
 				return TurnData<MaybeConstPieceState>{
 					self.m_whitePieces, self.m_blackPieces,
 					WHITE_KINGSIDE, WHITE_QUEENSIDE,
 					BLACK_KINGSIDE, BLACK_QUEENSIDE,
-					self.m_isWhiteMoving
+					self.m_isWhiteMoving,
+					calcRank<2>(), calcRank<4>()
 				};
 			} else {
 				return TurnData<MaybeConstPieceState>{
 					self.m_blackPieces, self.m_whitePieces,
 					BLACK_KINGSIDE, BLACK_QUEENSIDE,
 					WHITE_KINGSIDE, WHITE_QUEENSIDE,
-					self.m_isWhiteMoving
+					self.m_isWhiteMoving,
+					calcRank<7>(), calcRank<5>()
 				};
 			}
 		}
 
-		static Position startPos();
+		void parseBoard(std::string_view board);
+		void parseCastlingPrivileges(std::string_view castlingPrivileges);
+		void parseEnPessantSquare(std::string_view enPessantPriviliges);
 	public:
 		static constexpr std::string_view STARTING_FEN_STRING = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 		Position() = default;
 
-
 		void setStartPos();
 		void setFen(std::string_view fen);
-
-		static Position fromStartPos(std::string_view fen);
-		static Position fromFENString(std::string_view fen);
 
 		void move(const Move& move);
 		void move(std::string_view moveStr);
 
 		TurnData<const PieceState> getTurnData() const {
-			return getSidesImpl<const PieceState>();
+			return getTurnDataImpl<const PieceState>();
 		}
 		TurnData<PieceState> getTurnData()  {
-			return getSidesImpl<PieceState>();
+			return getTurnDataImpl<PieceState>();
 		}
-		auto getColorSides() const {
-			return std::tie(m_whitePieces, m_blackPieces);
+		auto getColorSides(this auto&& self) {
+			return std::tie(self.m_whitePieces, self.m_blackPieces);
 		}
 	};
 }
