@@ -15,7 +15,7 @@ namespace chess {
 		bool m_canCastleKingside = true;
 		bool m_canCastleQueenside = true;
 	public:
-		Square jumpedPawn = Square::None;
+		Square doubleJumpedPawn = Square::None;
 
 		constexpr Bitboard calcAllLocations() const {
 			return m_data[0] | m_data[1] | m_data[2] | m_data[3] | m_data[4] | m_data[5];
@@ -40,7 +40,7 @@ namespace chess {
 			});
 			m_canCastleKingside = true;
 			m_canCastleQueenside = true;
-			jumpedPawn = Square::None;
+			doubleJumpedPawn = Square::None;
 		}
 	};
 
@@ -106,6 +106,14 @@ namespace chess {
 		static constexpr std::string_view STARTING_FEN_STRING = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 		Position() = default;
+		Position(Position&&) noexcept = default;
+		Position(const Position&) = default;
+		Position& operator=(const Position&) = default;
+
+		Position(const Position& pos, const Move& move) {
+			*this = pos;
+			this->move(move);
+		}
 
 		void setStartPos();
 		void setFen(std::string_view fen);

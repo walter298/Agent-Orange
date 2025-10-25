@@ -16,6 +16,7 @@ export namespace chess {
         None
     };
 
+  
     constexpr Square westSquare(Square square) {
         if (std::popcount(static_cast<std::underlying_type_t<Square>>(square)) == 1 || square == A1) {
             return None;

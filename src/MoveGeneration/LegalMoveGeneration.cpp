@@ -210,12 +210,11 @@ namespace chess {
 			}
 			auto from = Square::None;
 			while (nextSquare(enPessantData.pawns, from)) {
-				moves.emplace_back(from, enPessantData.destSquare, Pawn, Pawn);
+				moves.emplace_back(from, enPessantData.destSquare, jumpedEnemyPawn, Pawn, Pawn, Piece::None);
 			}
 		}
 
-		static std::vector<Move> calcAllLegalMoves(const Position::ImmutableTurnData& turnData)
-		{
+		static std::vector<Move> calcAllLegalMoves(const Position::ImmutableTurnData& turnData) {
 			std::vector<Move> moves;
 			auto& allies = turnData.allies;
 			auto& enemies = turnData.enemies;
@@ -245,9 +244,8 @@ namespace chess {
 			addMovesImpl(Knight, knightMoveGenerator);
 			addMovesImpl(Pawn, wrapPawnMoveGenerator(allyPawnMoveGenerator, pieceLocations.enemies));
 
-			auto jumpedEnemyPawn = enemies.jumpedPawn;
-			if (jumpedEnemyPawn != Square::None) {
-				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, jumpedEnemyPawn);
+			if (enemies.doubleJumpedPawn != Square::None) {
+				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, enemies.doubleJumpedPawn);
 			}
 			
 			return moves;

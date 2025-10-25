@@ -4,5 +4,5 @@ import Chess.Position;
 export import :Rating;
 
 export namespace chess {
-	Rating calcPositionRating(const Position& pos);
+	Rating calcMaterialRating(const Position& pos);
 }

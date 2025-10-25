@@ -103,7 +103,7 @@ namespace chess {
         auto enPessantSquare = parseSquare(enPessantSquareStr);
         if (enPessantSquare) {
             auto jumpedPawn = turnData.isWhite ? southSquare(*enPessantSquare) : northSquare(*enPessantSquare);
-            turnData.enemies.jumpedPawn = jumpedPawn;
+            turnData.enemies.doubleJumpedPawn = jumpedPawn;
         } 
     }
 
@@ -157,10 +157,10 @@ namespace chess {
     }
 
     bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
-        if (!(turnData.allies.canCastleKingside() && turnData.allies.canCastleQueenside() && move.movedPiece == King)) {
+        if ((!turnData.allies.canCastleKingside() && !turnData.allies.canCastleQueenside()) || move.movedPiece != King) {
             return false;
         }
-        assert(turnData.allies.canCastleKingside() && turnData.allies.canCastleQueenside() && move.movedPiece == King);
+        
         turnData.allies.disallowQueensideCastling();
         turnData.allies.disallowKingsideCastling();
 
@@ -176,19 +176,14 @@ namespace chess {
         return false;
     }
 
-    bool hasPawnJumped(const Position::MutableTurnData& turnData, const Move& move) {
-        assert(move.movedPiece == Pawn);
-
-        auto fromBoard = makeBitboard(move.from);
-        auto toBoard   = makeBitboard(move.to);
-
-        return (fromBoard & turnData.allyPawnRank) && (toBoard & turnData.jumpedAllyPawnRank);
+    bool isPawnDoubleJump(const Position::MutableTurnData& turnData, const Move& move) {
+        return (makeBitboard(move.from) & turnData.allyPawnRank) && (makeBitboard(move.to) & turnData.jumpedAllyPawnRank);
     }
 
     void movePawn(const Position::MutableTurnData& turnData, const Move& move, Bitboard& pawns) {
-        if (hasPawnJumped(turnData, move)) {
-            turnData.allies.jumpedPawn = move.to;
-        }
+		if (isPawnDoubleJump(turnData, move)) {
+            turnData.allies.doubleJumpedPawn = move.to;
+		}
     	if (move.promotedPiece != Piece::None) {
             addSquare(turnData.allies[move.promotedPiece], move.to);
         } else {
@@ -204,7 +199,11 @@ namespace chess {
                 turnData.enemies.disallowQueensideCastling();
             }
         }
-        removeSquare(turnData.enemies[move.capturedPiece], move.to);
+		if (move.enPessantSquare == Square::None) {
+            removeSquare(turnData.enemies[move.capturedPiece], move.to);
+		} else {
+            removeSquare(turnData.enemies[move.capturedPiece], move.enPessantSquare);
+		}
     }
 
     void normalMove(const Position::MutableTurnData& turnData, const Move& move) {
@@ -217,11 +216,11 @@ namespace chess {
             capturePiece(turnData, move);
         }
 
-        turnData.allies.jumpedPawn = Square::None;
-        turnData.enemies.jumpedPawn = Square::None;
+        turnData.allies.doubleJumpedPawn = Square::None;
+        turnData.enemies.doubleJumpedPawn = Square::None;
 
         if (move.movedPiece == Pawn) {
-            movePawn(turnData, move, movedPiecePos);
+            movePawn(turnData, move, turnData.allies[Pawn]);
         } else {
             addSquare(movedPiecePos, move.to);
         }
@@ -245,20 +244,31 @@ namespace chess {
     void Position::move(std::string_view moveStr) { 
         assert(moveStr.size() == 4 || moveStr.size() == 5);
 
+        auto move = Move::null();
+
     	auto from = parseSquare(moveStr.substr(0, 2));
         auto to   = parseSquare(moveStr.substr(2, 2));
         assert(from && to);
+        move.from = *from;
+        move.to   = *to;
 
         auto turnData = getTurnData();
 
-        auto movedPiece = turnData.allies.findPiece(*from);
-        assert(movedPiece != Piece::None);
+        move.movedPiece = turnData.allies.findPiece(*from);
+        assert(move.movedPiece != Piece::None);
+        
+        move.capturedPiece = turnData.enemies.findPiece(*to);
 
-        auto capturedPiece = turnData.enemies.findPiece(*to);
-        auto promotedPiece = Piece::None;
-        if (moveStr.size() == 5) { //if there is a pawn promotion
-            promotedPiece = parsePiece(moveStr[4]);
+		//detect en passant capture
+        if (move.movedPiece == Pawn && move.capturedPiece == Piece::None) {
+			if (move.to != northSquare(move.from) && move.to != southSquare(move.from)) {
+                move.enPessantSquare = turnData.enemies.doubleJumpedPawn;
+            }
         }
-        move({ *from, *to, movedPiece, capturedPiece, promotedPiece });
+
+        if (moveStr.size() == 5) { //if there is a pawn promotion
+            move.promotedPiece = parsePiece(moveStr[4]);
+        }
+        this->move(move);
 	}
 }

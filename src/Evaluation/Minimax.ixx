@@ -1,8 +1,8 @@
 export module Chess.Evaluation:Minimax;
 
+export import std;
 import Chess.Position;
-import :Rating;
 
 namespace chess {
-	export Rating minimax(const Position& pos, int depth, bool maximizing);
+	export std::optional<Move> minimax(const Position& pos, int depth);
 }

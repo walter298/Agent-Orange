@@ -25,7 +25,7 @@ namespace chess {
 	}
 
 	std::string GameState::calcBestMove() {
-		auto move = bestMove(m_pos, 5); //todo: handle depth
+		auto move = bestMove(m_pos, 2); //todo: handle depth
 		if (!move) {
 			return "";
 		} else {

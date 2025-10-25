@@ -28,7 +28,7 @@ namespace chess {
 		return ret;
 	}
 
-	Rating calcPositionRating(const Position& pos) {
+	Rating calcMaterialRating(const Position& pos) {
 		auto [white, black] = pos.getColorSides();
 		return getPieceRating(white) - getPieceRating(black);
 	}

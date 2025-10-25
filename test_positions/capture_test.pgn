@@ -1,0 +1,22 @@
+[Event "Computer chess game"]
+[Site "WALTER_S_S_S"]
+[Date "2025.10.25"]
+[Round "?"]
+[White "walte"]
+[Black "Agent Orange Debug"]
+[Result "*"]
+[BlackElo "2000"]
+[ECO "B00"]
+[Opening "King's Pawn"]
+[Time "01:24:42"]
+[WhiteElo "2400"]
+[TimeControl "300"]
+[Termination "unterminated"]
+[PlyCount "3"]
+[WhiteType "human"]
+[BlackType "program"]
+
+rnbqkbnr/ppppppp1/B7/7p/4P3/8/PPPP1PPP/RNBQK1NR b KQkq - 1 2 
+
+1. e4 h5 2. Ba6 *
+
