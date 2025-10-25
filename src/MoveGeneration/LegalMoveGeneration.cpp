@@ -186,11 +186,14 @@ namespace chess {
 		static void addKingMoves(std::vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
 			const PieceLocationData& pieceLocations, Bitboard enemyMoves)
 		{
-			auto isCastlingClear = [enemyMoves](const auto& castleMove) {
-				return (castleMove.squaresBetweenRookAndKing == 0 && (castleMove.squaresBetweenRookAndKing & enemyMoves));
+			bool inCheck = (enemyMoves & pieceLocations.allyKing);
+			auto isCastlingClear = [&](const auto& castleMove) {
+				return (!inCheck && 
+					castleMove.squaresBetweenRookAndKing == 0 && 
+					(castleMove.squaresBetweenRookAndKing & enemyMoves));
 			};
 			auto kingMoves = calcLegalKingMovesNoCheck(pieceLocations, enemyMoves);;
-			if (enemyMoves & pieceLocations.allyKing) {
+			if (inCheck) {
 				kingMoves &= ~calcIndirectlyCheckedSquares(turnData.enemies, pieceLocations);
 			} else { //if the king is not in check, then we might be able to castle
 				if (turnData.allies.canCastleKingside() && isCastlingClear(turnData.allyKingside)) {
@@ -214,7 +217,7 @@ namespace chess {
 			}
 		}
 
-		static std::vector<Move> calcAllLegalMoves(const Position::ImmutableTurnData& turnData) {
+		static LegalMoves calcAllLegalMoves(const Position::ImmutableTurnData& turnData) {
 			std::vector<Move> moves;
 			auto& allies = turnData.allies;
 			auto& enemies = turnData.enemies;
@@ -227,7 +230,7 @@ namespace chess {
 			onto a square that was blocked but is still indirectly checked*/
 			addKingMoves(moves, turnData, pieceLocations, enemyMoveData.squares);
 			if (enemyMoveData.checklines.multipleChecks) { //if there are multiple checks, we have to move the king
-				return moves;
+				return { moves, moves.empty() };
 			}
 
 			auto attackedAllies = enemyMoveData.squares & pieceLocations.allies;
@@ -247,12 +250,13 @@ namespace chess {
 			if (enemies.doubleJumpedPawn != Square::None) {
 				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, enemies.doubleJumpedPawn);
 			}
-			
-			return moves;
+
+			bool inCheck = (enemyMoveData.squares & pieceLocations.allyKing);
+			return { moves, inCheck && moves.empty() };
 		}
 	};
 
-	std::vector<Move> calcAllLegalMoves(const Position& pos) {
+	LegalMoves calcAllLegalMoves(const Position& pos) {
 		auto turnData = pos.getTurnData();
 		
 		if (turnData.isWhite) {

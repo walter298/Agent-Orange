@@ -4,6 +4,10 @@ import std;
 export import Chess.Move;
 export import Chess.Position;
 
-namespace chess {
-	export std::vector<Move> calcAllLegalMoves(const Position& pos);
+export namespace chess {
+	struct LegalMoves {
+		std::vector<Move> moves;
+		bool isCheckmate = false;
+	};
+	LegalMoves calcAllLegalMoves(const Position& pos);
 }

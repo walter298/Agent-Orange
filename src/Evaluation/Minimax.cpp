@@ -9,28 +9,34 @@ import :StaticEvaluation;
 import :ThreadPool;
 
 namespace chess {
-	template<bool Maximizing>
-	struct Comp {
-		static constexpr decltype(auto) extreme(const auto& a, const auto& b) {
+	class AlphaBeta {
+	private:
+		Rating m_alpha = std::numeric_limits<Rating>::lowest();
+		Rating m_beta  = std::numeric_limits<Rating>::max();
+	public:
+		template<bool Maximizing>
+		bool update(Rating childRating) {
+			auto updateImpl = [](Rating& bound, Rating childRating, auto combiner) {
+				auto temp = bound;
+				bound = combiner(bound, childRating);
+				return temp != bound;
+			}; 
 			if constexpr (Maximizing) {
-				return std::max(a, b);
+				return updateImpl(m_alpha, childRating, std::ranges::max);
 			} else {
-				return std::min(a, b);
+				return updateImpl(m_beta, childRating, std::ranges::min);
 			}
 		}
-		static constexpr decltype(auto) extreme(auto&& range) {
-			if constexpr (Maximizing) {
-				return std::ranges::max(range);
-			} else {
-				return std::ranges::min(range);
-			}
+		bool canPrune() const {
+			return m_beta <= m_alpha;
 		}
-		template<std::ranges::viewable_range Range>
-		static constexpr decltype(auto) extreme(Range&& range, auto projection) {
+
+		template<bool Maximizing>
+		Rating getAllyRating() const {
 			if constexpr (Maximizing) {
-				return std::ranges::max(range, {}, projection);
+				return m_alpha;
 			} else {
-				return std::ranges::min(range, {}, projection);
+				return m_beta;
 			}
 		}
 	};
@@ -53,7 +59,7 @@ namespace chess {
 			Node ret;
 			ret.m_pos = { parent.m_pos, move }; //initialize BEFORE calculating its rating
 			ret.m_materialRating = calcMaterialRating(ret.m_pos);
-			ret.m_inCaptureSequence = (move.capturedPiece != Piece::None);
+			ret.m_inCaptureSequence = (move.capturedPiece != Piece::None) || move.promotedPiece != Piece::None;
 			return ret;
 		}
 		const Position& getPos() const {
@@ -67,22 +73,16 @@ namespace chess {
 		}
 	};
 
-	template<bool Maximizing>
-	Rating minimax(const Node& node, int depth);
-
-	template<bool MaximizingNoAlternate>
-	auto projectMove(const Node& parent, int depthNoChange) {
-		return [&parent, depthNoChange](const Move& move) {
-			auto child = Node::makeChild(parent, move);
-			auto newDepth = depthNoChange - 1;
-			auto childRating = minimax<!MaximizingNoAlternate>(child, newDepth);
-			storePositionRating(child.getPos(), newDepth, childRating);
-			return childRating;
-		};
+	LegalMoves getMovesInLikelyBestOrder(const Position& pos) {
+		auto legalMoves = calcAllLegalMoves(pos);
+		std::ranges::partition(legalMoves.moves, [](const Move& move) {
+			return move.capturedPiece != Piece::None;
+		});
+		return legalMoves;
 	}
 
 	template<bool Maximizing>
-	Rating minimax(const Node& node, int depth) {
+	Rating minimax(const Node& node, int depth, AlphaBeta alphaBeta) {
 		auto cachedRating = getPositionRating(node.getPos(), depth);
 		if (cachedRating) {
 			return *cachedRating;
@@ -92,29 +92,55 @@ namespace chess {
 			return node.getMaterialRating();
 		}
 
-		auto legalMoves = calcAllLegalMoves(node.getPos());
-		if (legalMoves.empty()) {
-			return node.getMaterialRating();
+		auto legalMoves = getMovesInLikelyBestOrder(node.getPos());
+		if (legalMoves.moves.empty()) {
+			if (legalMoves.isCheckmate) {
+				if constexpr (Maximizing) {
+					return std::numeric_limits<Rating>::lowest(); 
+				} else {
+					return std::numeric_limits<Rating>::max();
+				}
+			}
+			return 0.0; //stalemate
 		}
 
-		auto extractRating = projectMove<Maximizing>(node, depth);
-		auto ratings = legalMoves | std::views::transform( extractRating);
+		for (const auto& move : legalMoves.moves) {
+			auto child = Node::makeChild(node, move);
+			auto newDepth = depth - 1;
+			auto childRating = minimax<!Maximizing>(child, newDepth, alphaBeta);
+			storePositionRating(child.getPos(), newDepth, childRating);
 
-		return Comp<Maximizing>::extreme(ratings);
+			alphaBeta.update<Maximizing>(childRating);
+			if (alphaBeta.canPrune()) { 
+				break;
+			}
+		}
+
+		return alphaBeta.getAllyRating<Maximizing>();
 	}
 
 	template<bool Maximizing>
 	std::optional<Move> bestMoveImpl(const Position& rootPos, int depth) {
+		AlphaBeta alphaBeta;
 		auto root = Node::makeRoot(rootPos);
 
-		auto legalMoves = calcAllLegalMoves(root.getPos());
-		if (legalMoves.empty()) {
+		auto legalMoves = getMovesInLikelyBestOrder(root.getPos());
+		if (legalMoves.moves.empty()) {
 			return std::nullopt;
 		}
 
-		auto extractRating = projectMove<Maximizing>(root, depth);
-		
-		return Comp<Maximizing>::extreme(legalMoves, extractRating);
+		auto bestMove = Move::null();
+		for (const auto& move : legalMoves.moves) {
+			auto child = Node::makeChild(root, move);
+			auto newDepth = depth - 1;
+			auto childRating = minimax<!Maximizing>(child, newDepth, alphaBeta);
+			storePositionRating(child.getPos(), newDepth, childRating);
+			if (alphaBeta.update<Maximizing>(childRating)) {
+				bestMove = move;
+			}
+		}
+
+		return bestMove;
 	}
 
 	std::optional<Move> minimax(const Position& pos, int depth) {

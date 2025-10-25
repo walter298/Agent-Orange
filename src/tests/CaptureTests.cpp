@@ -12,7 +12,7 @@ namespace chess {
 			pos.setFen(FEN);
 
 			auto moves = calcAllLegalMoves(pos);
-			for (const auto& move : moves) {
+			for (const auto& move : moves.moves) {
 				if (move.capturedPiece != Piece::None) {
 					std::println("{}", move.getUCIString());
 				}
@@ -27,10 +27,10 @@ namespace chess {
 			startPos.move("f1a6");
 
 			auto legalMovesFromStart = calcAllLegalMoves(startPos);
-			if (!std::ranges::equal(legalMovesFromStart, moves)) {
+			if (!std::ranges::equal(legalMovesFromStart.moves, moves.moves)) {
 				std::println("Error: moves from test position do not match moves from start position after moves!");
 			}
-			for (const auto& move : legalMovesFromStart) {
+			for (const auto& move : legalMovesFromStart.moves) {
 				if (move.capturedPiece != Piece::None) {
 					std::println("{}", move.getUCIString());
 				}
