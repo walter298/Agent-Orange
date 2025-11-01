@@ -18,11 +18,11 @@ namespace chess {
 		ret[0] = std::tolower(ret[0]);
 		ret[2] = std::tolower(ret[2]);
 
-		if (promotedPiece != Piece::None) {
-			if (promotedPiece == Knight) { //Knight doesn't start with n, so we need a special branch
+		if (promotionPiece != Piece::None) {
+			if (promotionPiece == Knight) { //Knight doesn't start with n, so we need a special branch
 				ret.push_back('n');
 			} else { 
-				auto promotedPieceName = magic_enum::enum_name(promotedPiece);
+				auto promotedPieceName = magic_enum::enum_name(promotionPiece);
 				ret.push_back(std::tolower(promotedPieceName[0]));
 			}
 		}

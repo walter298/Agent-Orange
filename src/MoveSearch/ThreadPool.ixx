@@ -1,4 +1,4 @@
-export module Chess.Evaluation:ThreadPool;
+export module Chess.MoveSearch:ThreadPool;
 
 export import std;
 

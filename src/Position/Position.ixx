@@ -5,44 +5,13 @@ import std;
 export import Chess.Bitboard;
 export import Chess.Move;
 export import Chess.Square;
+export import Chess.Position.PieceState;
+export import Chess.PositionCommand;
 
 import Chess.PieceMap;
 import Chess.RankCalculator;
 
 namespace chess {
-	export struct PieceState : public PieceMap<Bitboard> {
-	private:
-		bool m_canCastleKingside = true;
-		bool m_canCastleQueenside = true;
-	public:
-		Square doubleJumpedPawn = Square::None;
-
-		constexpr Bitboard calcAllLocations() const {
-			return m_data[0] | m_data[1] | m_data[2] | m_data[3] | m_data[4] | m_data[5];
-		}
-		Piece findPiece(Square square) const;
-
-		constexpr bool canCastleKingside() const {
-			return m_canCastleKingside;
-		}
-		constexpr void disallowKingsideCastling() {
-			m_canCastleKingside = false;
-		}
-		constexpr bool canCastleQueenside() const {
-			return m_canCastleQueenside;
-		}
-		constexpr void disallowQueensideCastling() {
-			m_canCastleQueenside = false;
-		}
-		void clear() {
-			std::ranges::transform(m_data, m_data.begin(), [](auto& bitboard) {
-				return 0;
-			});
-			m_canCastleKingside = true;
-			m_canCastleQueenside = true;
-			doubleJumpedPawn = Square::None;
-		}
-	};
 
 	export class Position {
 	private:
@@ -98,13 +67,7 @@ namespace chess {
 				};
 			}
 		}
-
-		void parseBoard(std::string_view board);
-		void parseCastlingPrivileges(std::string_view castlingPrivileges);
-		void parseEnPessantSquare(std::string_view enPessantPriviliges);
 	public:
-		static constexpr std::string_view STARTING_FEN_STRING = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 		Position() = default;
 		Position(Position&&) noexcept = default;
 		Position(const Position&) = default;
@@ -115,8 +78,7 @@ namespace chess {
 			this->move(move);
 		}
 
-		void setStartPos();
-		void setFen(std::string_view fen);
+		void setPos(const PositionCommand& positionCommand);
 
 		void move(const Move& move);
 		void move(std::string_view moveStr);
@@ -129,6 +91,9 @@ namespace chess {
 		}
 		auto getColorSides(this auto&& self) {
 			return std::tie(self.m_whitePieces, self.m_blackPieces);
+		}
+		bool isWhite() const {
+			return m_isWhiteMoving;
 		}
 	};
 }

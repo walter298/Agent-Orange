@@ -7,4 +7,17 @@ export namespace chess {
 	consteval Bitboard calcRank() requires(Rank >= 1 && Rank <= 8) {
 		return Bitboard{ 0xFF } << ((Rank - 1) * 8);
 	}
+
+	constexpr Bitboard calcRank(int rankIndex) {
+		return Bitboard{ 0xFF } << (rankIndex * 8);
+	}
+
+	template<int File>
+	consteval Bitboard calcFile() {
+		return 0x0101010101010101ULL << File;
+	}
+
+	constexpr Bitboard calcFile(int fileIndex) {
+		return 0x0101010101010101ULL << fileIndex;
+	}
 }

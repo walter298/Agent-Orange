@@ -15,32 +15,6 @@ import :GameState;
 namespace chess {
 	GameState gameState;
 
-	void handlePositionInput(std::istringstream& iss) {
-		std::string fen;
-		
-		std::string token;
-		iss >> token;
-
-		std::vector<std::string> moves;
-
-		if (token == "startpos") {
-			iss >> token; //consumes "moves"
-			fen = Position::STARTING_FEN_STRING;
-		} else {
-			assert(token == "fen");
-			while (iss >> token && token != "moves") {
-				fen += token + " ";
-			}
-			fen.pop_back();
-		}
-
-		while (iss >> token) {
-			moves.push_back(token);
-		}
-
-		gameState.setPos(fen, moves);
-	}
-
 	void playUCI() {
 		std::istringstream iss;
 		std::string line;
@@ -54,7 +28,7 @@ namespace chess {
 			if (token == "quit") {
 				std::exit(EXIT_SUCCESS);
 			} else if (token == "position") {
-				handlePositionInput(iss);
+				gameState.setPos(iss.str());
 			} else if (token == "ucinewgame") {
 				gameState.reset();
 			} else if (token == "isready") {

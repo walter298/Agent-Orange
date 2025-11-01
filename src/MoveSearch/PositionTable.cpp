@@ -1,9 +1,9 @@
 module;
 
-#include <boost/functional/hash.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_node_map.hpp>
 
-module Chess.Evaluation:PositionTable;
+module Chess.MoveSearch:PositionTable;
 
 namespace chess {
 	struct PositionHasher {
@@ -45,7 +45,7 @@ namespace chess {
 		Rating rating = 0;
 	};
 
-	using PositionMap   = boost::unordered_node_map<Position, DepthToRating, PositionHasher, PositionEqual>;
+	using PositionMap = boost::unordered_node_map<Position, DepthToRating, PositionHasher, PositionEqual>;
 
 	PositionMap positionMap;
 
@@ -74,5 +74,26 @@ namespace chess {
 			depthMap.depth = depth;
 			depthMap.rating = rating;
 		}
+	}
+
+	struct MoveHasher {
+		size_t operator()(const Move& move) {
+			size_t hash = 0;
+			boost::hash_combine(hash, move.from);
+			boost::hash_combine(hash, move.to);
+			boost::hash_combine(hash, move.movedPiece);
+			boost::hash_combine(hash, move.capturedPiece);
+			boost::hash_combine(hash, move.promotionPiece);
+			boost::hash_combine(hash, move.enPessantSquare);
+			return hash;
+		}
+	};
+
+	using MoveMap = boost::unordered_flat_map<Move, Rating, MoveHasher>;
+
+	MoveMap moveMap;
+
+	void improveHistoricalMoveRating(const Move& move, Rating rating) {
+		
 	}
 }

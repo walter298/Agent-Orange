@@ -2,7 +2,7 @@ module;
 
 #include <cassert>
 
-module Chess.Evaluation:ThreadPool;
+module Chess.MoveSearch:ThreadPool;
 
 import std;
 

@@ -4,28 +4,27 @@ module;
 
 module Chess.UCI:GameState;
 
-import Chess.Evaluation;
+import Chess.MoveSearch;
+import Chess.PositionCommand;
 
 namespace chess {
 	void GameState::reset() {
 		m_inNewPos = true;
 	}
 
-	void GameState::setPos(std::string_view fen, const std::vector<std::string>& moves) {
+	void GameState::setPos(const std::string& commandStr) {
+		auto command = parsePositionCommand(commandStr);
 		if (m_inNewPos) {
-			m_pos.setFen(fen);
-			for (const auto& move : moves) {
-				m_pos.move(move);
-			}
+			m_pos.setPos(command);
 		} else {
-			assert(!moves.empty());
-			m_pos.move(moves.back());
+			assert(!command.moves.empty());
+			m_pos.move(command.moves.back());
 		}
 		m_inNewPos = false;
 	}
 
 	std::string GameState::calcBestMove() {
-		auto move = bestMove(m_pos, 4); //todo: handle depth
+		auto move = findBestMove(m_pos, 5); 
 		if (!move) {
 			return "";
 		} else {

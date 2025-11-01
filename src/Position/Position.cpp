@@ -1,159 +1,25 @@
 module;
 
-#include <cstdlib>
-#include <boost/parser/parser.hpp>
+#include <cassert>
 
 module Chess.Position;
+
 import Chess.RankCalculator;
+import :Parse;
 
 namespace chess {
-    Piece PieceState::findPiece(Square square) const {
-        auto board = makeBitboard(square);
-
-        for (auto piece : ALL_PIECE_TYPES) {
-            if ((*this)[piece] & board) {
-                return piece;
-            }
-        }
-        return Piece::None;
-    }
-
-    Piece parsePiece(char chr) {
-        auto piece = Piece::None;
-        switch (chr) {
-        case 'k':
-            piece = King;
-            break;
-        case 'q':
-            piece = Queen;
-            break;
-        case 'r':
-            piece = Rook;
-            break;
-        case 'b':
-            piece = Bishop;
-            break;
-        case 'n':
-            piece = Knight;
-            break;
-        case 'p':
-            piece = Pawn;
-            break;
-        default:
-            std::println("Error: {} not yet implemented :(", chr);
-            std::exit(EXIT_FAILURE);
-        }
-        return piece;
-    }
-
-    void parseRow(std::string_view row, int& squareCount, PieceState& whitePieces, PieceState& blackPieces) {
-        auto setPiecePosition = [](PieceState& pieces, char pieceChr, int squareCount) {
-            addSquare(pieces[parsePiece(pieceChr)], static_cast<Square>(squareCount));
-        };
-
-        for (auto chr : row) {
-            if (std::isdigit(static_cast<unsigned char>(chr))) {
-                squareCount += (chr - '0'); //skip empty squares
-            } else {
-                if (std::islower(static_cast<unsigned char>(chr))) {
-                    setPiecePosition(blackPieces, chr, squareCount);
-                } else {
-                    setPiecePosition(whitePieces, std::tolower(static_cast<unsigned char>(chr)), squareCount);
-                }
-                squareCount++; 
-            }
-        }
-    }
-
-    void Position::parseBoard(std::string_view board) {
-        namespace bp = boost::parser;
-
-        auto rowParser = +(bp::char_ - bp::char_('/'));
-        auto rowsRes = bp::parse(board, +(rowParser >> -bp::lit('/')));
-        if (!rowsRes) {
-            std::println("Error: failed to parse rows from FEN string");
-            std::exit(EXIT_FAILURE);
-        }
-
-        int squareCount = 56;
-        for (const auto& row : *rowsRes) {
-            parseRow(row, squareCount, m_whitePieces, m_blackPieces);
-            squareCount -= 16;
-        }
-    }
-
-    void Position::parseCastlingPrivileges(std::string_view castlingPrivileges) {
-        auto [white, black] = getColorSides();
-
-        auto verify = [&](PieceState& pieces, char king, char queen) {
-            if (!castlingPrivileges.contains(king)) {
-                pieces.disallowKingsideCastling();
-            }
-            if (!castlingPrivileges.contains(queen)) {
-                pieces.disallowQueensideCastling();
-            }
-        };
-        verify(white, 'K', 'Q');
-        verify(black, 'k', 'q');
-    }
-
-    void Position::parseEnPessantSquare(std::string_view enPessantSquareStr) {
-        auto turnData = getTurnData();
-
-        auto enPessantSquare = parseSquare(enPessantSquareStr);
-        if (enPessantSquare) {
-            auto jumpedPawn = turnData.isWhite ? southSquare(*enPessantSquare) : northSquare(*enPessantSquare);
-            turnData.enemies.doubleJumpedPawn = jumpedPawn;
-        } 
-    }
-
-    void Position::setFen(std::string_view fen) {
+    void Position::setPos(const PositionCommand& positionCommand) {
         m_whitePieces.clear();
         m_blackPieces.clear();
 
-        if (fen == STARTING_FEN_STRING) {
-            setStartPos();
-            return;
-        }
-
-        namespace bp = boost::parser;
-
-        auto field = +(bp::char_ - (bp::char_(' ') | bp::char_('"')));
+        parseBoard(positionCommand.board, m_whitePieces, m_blackPieces);
+        m_isWhiteMoving = (positionCommand.color == 'w');
+        parseCastlingPrivileges(positionCommand.castlingPrivileges, m_whitePieces, m_blackPieces);
+        parseEnPessantSquare(positionCommand.enPessantSquare, m_isWhiteMoving, m_isWhiteMoving ? m_blackPieces : m_whitePieces);
         
-        auto fieldsRes = bp::parse(fen,
-            field >> bp::lit(' ') >> field >> bp::lit(' ') >>
-            field >> bp::lit(' ') >> field >> bp::omit[+bp::char_]
-        );
-        if (!fieldsRes) {
-            std::println("Error parsing FEN string");
-            std::exit(EXIT_FAILURE);
-        }
-
-    	auto& [board, color, castlingPrivileges, enPessantSquare] = *fieldsRes;
-        enPessantSquare[0] = std::toupper(enPessantSquare[0]);
-
-        m_isWhiteMoving = (color == "w"); //do this BEFORE parsing en pessant squares
-        parseBoard(board);
-        parseCastlingPrivileges(castlingPrivileges);
-        parseEnPessantSquare(enPessantSquare);
-    }
-
-    template<Bitboard PieceRow, Bitboard PawnRow>
-    consteval PieceState makeStartingSides() {
-        PieceState ret;
-        ret[Pawn] = PawnRow;
-        ret[Rook] = makeBitboard(getSquare(PieceRow, 1)) | makeBitboard(getSquare(PieceRow, 8));
-        ret[Knight] = makeBitboard(getSquare(PieceRow, 2)) | makeBitboard(getSquare(PieceRow, 7));
-        ret[Bishop] = makeBitboard(getSquare(PieceRow, 3)) | makeBitboard(getSquare(PieceRow, 6));
-        ret[Queen] = makeBitboard(getSquare(PieceRow, 4));
-        ret[King] = makeBitboard(getSquare(PieceRow, 5));
-        return ret;
-    }
-
-    void Position::setStartPos() {
-        m_whitePieces = makeStartingSides<calcRank<1>(), calcRank<2>()>();
-        m_blackPieces = makeStartingSides<calcRank<8>(), calcRank<7>()>();
-        m_isWhiteMoving = true;
+        for (const auto& moveStr : positionCommand.moves) {
+            move(moveStr);
+		}
     }
 
     bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
@@ -184,8 +50,8 @@ namespace chess {
 		if (isPawnDoubleJump(turnData, move)) {
             turnData.allies.doubleJumpedPawn = move.to;
 		}
-    	if (move.promotedPiece != Piece::None) {
-            addSquare(turnData.allies[move.promotedPiece], move.to);
+    	if (move.promotionPiece != Piece::None) {
+            addSquare(turnData.allies[move.promotionPiece], move.to);
         } else {
             addSquare(pawns, move.to);
         }
@@ -241,6 +107,15 @@ namespace chess {
         m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
 	}
 
+    bool isEnPessant(const Move& move) {
+	    if (move.movedPiece != Piece::None || move.capturedPiece != Piece::None) {
+            return false;
+	    }
+		auto fromFile = calcFile(fileOf(move.from));
+        auto destFile = calcFile(fileOf(move.to));
+        return fromFile != destFile;
+    }
+
     void Position::move(std::string_view moveStr) { 
         assert(moveStr.size() == 4 || moveStr.size() == 5);
 
@@ -260,14 +135,13 @@ namespace chess {
         move.capturedPiece = turnData.enemies.findPiece(*to);
 
 		//detect en passant capture
-        if (move.movedPiece == Pawn && move.capturedPiece == Piece::None) {
-			if (move.to != northSquare(move.from) && move.to != southSquare(move.from)) {
-                move.enPessantSquare = turnData.enemies.doubleJumpedPawn;
-            }
+        if (isEnPessant(move)) {
+            move.enPessantSquare = turnData.enemies.doubleJumpedPawn;
+            move.capturedPiece = Pawn;
         }
 
         if (moveStr.size() == 5) { //if there is a pawn promotion
-            move.promotedPiece = parsePiece(moveStr[4]);
+            move.promotionPiece = parsePiece(moveStr[4]);
         }
         this->move(move);
 	}

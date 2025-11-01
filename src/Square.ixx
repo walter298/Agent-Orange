@@ -2,6 +2,7 @@ export module Chess.Square;
 
 import std;
 import Chess.Bitboard;
+import Chess.RankCalculator;
 
 export namespace chess {
     enum Square : std::uint8_t {
@@ -15,7 +16,6 @@ export namespace chess {
         A8, B8, C8, D8, E8, F8, G8, H8,
         None
     };
-
   
     constexpr Square westSquare(Square square) {
         if (std::popcount(static_cast<std::underlying_type_t<Square>>(square)) == 1 || square == A1) {
@@ -37,6 +37,7 @@ export namespace chess {
         }
         return static_cast<Square>(num - 8);
     }
+
     constexpr Square northSquare(Square square) {
         auto num = static_cast<std::underlying_type_t<Square>>(square);
         if (num > 55) {
@@ -91,6 +92,22 @@ export namespace chess {
     constexpr void moveSquare(Bitboard& bitboard, Square from, Square to) {
         removeSquare(bitboard, from);
         addSquare(bitboard, to);
+    }
+
+    constexpr int rankOf(Square square) {
+        return static_cast<int>(square) / 8;
+    }
+    constexpr int fileOf(Square square) {
+        return static_cast<int>(square) % 8;
+    }
+
+    constexpr Bitboard northSquares(Square square) {
+        auto file = fileOf(square);
+        return calcFile(file) & ~((Bitboard{ 1 } << (square + 1)) - 1);
+    }
+    constexpr Bitboard southSquares(Square square) {
+        auto file = fileOf(square);
+		return calcFile(file) & ((Bitboard{ 1 } << square) - 1);
     }
 
     std::optional<Square> parseSquare(std::string_view square);

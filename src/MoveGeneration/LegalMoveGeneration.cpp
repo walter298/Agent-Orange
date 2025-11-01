@@ -37,7 +37,7 @@ namespace chess {
 			if (makeBitboard(move.to) & PromotionRank) {
 				constexpr std::array PROMOTION_PIECES{ Queen, Rook, Bishop, Knight };
 				for (auto piece : PROMOTION_PIECES) {
-					move.promotedPiece = piece;
+					move.promotionPiece = piece;
 					moves.push_back(move);
 				}
 			} else {

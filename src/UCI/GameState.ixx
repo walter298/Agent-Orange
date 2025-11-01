@@ -10,8 +10,8 @@ namespace chess {
 		bool m_inNewPos = true;
 	public:
 		void reset();
-		void setPos(std::string_view fen, const std::vector<std::string>& moves);
-		
+		void setPos(const std::string& command);
+
 		std::string calcBestMove();
 	};
 }
