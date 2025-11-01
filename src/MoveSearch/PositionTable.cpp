@@ -84,7 +84,7 @@ namespace chess {
 			boost::hash_combine(hash, move.movedPiece);
 			boost::hash_combine(hash, move.capturedPiece);
 			boost::hash_combine(hash, move.promotionPiece);
-			boost::hash_combine(hash, move.enPessantSquare);
+			boost::hash_combine(hash, move.capturedPawnSquareEnPassant);
 			return hash;
 		}
 	};

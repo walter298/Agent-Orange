@@ -65,10 +65,10 @@ namespace chess {
                 turnData.enemies.disallowQueensideCastling();
             }
         }
-		if (move.enPessantSquare == Square::None) {
+		if (move.capturedPawnSquareEnPassant == Square::None) {
             removeSquare(turnData.enemies[move.capturedPiece], move.to);
 		} else {
-            removeSquare(turnData.enemies[move.capturedPiece], move.enPessantSquare);
+            removeSquare(turnData.enemies[move.capturedPiece], move.capturedPawnSquareEnPassant);
 		}
     }
 
@@ -108,7 +108,7 @@ namespace chess {
 	}
 
     bool isEnPessant(const Move& move) {
-	    if (move.movedPiece != Piece::None || move.capturedPiece != Piece::None) {
+	    if (move.movedPiece != Pawn || move.capturedPiece != Piece::None) {
             return false;
 	    }
 		auto fromFile = calcFile(fileOf(move.from));
@@ -136,7 +136,7 @@ namespace chess {
 
 		//detect en passant capture
         if (isEnPessant(move)) {
-            move.enPessantSquare = turnData.enemies.doubleJumpedPawn;
+            move.capturedPawnSquareEnPassant = turnData.enemies.doubleJumpedPawn;
             move.capturedPiece = Pawn;
         }
 

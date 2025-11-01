@@ -16,23 +16,27 @@ namespace chess {
 		//"position" token should already have been consumed in UCI command parser 
 		assert(token != "position");
 
+		auto getFENTokens = [&ret](std::istringstream& iss) {
+			iss >> ret.board;
+			iss >> ret.color;
+			iss >> ret.castlingPrivileges;
+			iss >> ret.enPessantSquare;
+		};
+		
 		if (token == "startpos") {
-			iss.clear();
-			iss.str(std::string{ STARTING_FEN_STRING.data(), STARTING_FEN_STRING.size() });
+			std::istringstream newIss{ std::string{ STARTING_FEN_STRING.data(), STARTING_FEN_STRING.size() } };
+			getFENTokens(newIss);
 		} else {
 			assert(token == "fen");
+			getFENTokens(iss);
 		}
-
-		iss >> ret.board;
-		iss >> ret.color;
-		iss >> ret.castlingPrivileges;
-		iss >> ret.enPessantSquare;
 
 		//skip halfmove clock and fullmove number
 		while (iss >> token && token != "moves");
 
 		if (token == "moves") {
 			while (iss >> token) {
+				std::println("Moving: {}", token);
 				ret.moves.push_back(token);
 			}
 		}

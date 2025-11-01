@@ -15,6 +15,12 @@ import :GameState;
 namespace chess {
 	GameState gameState;
 
+	std::string getRemainingTokens(std::istringstream& iss) {
+		auto buff = iss.str();
+		auto currentPos = static_cast<size_t>(iss.tellg());
+		return buff.substr(currentPos);
+	}
+
 	void playUCI() {
 		std::istringstream iss;
 		std::string line;
@@ -28,7 +34,8 @@ namespace chess {
 			if (token == "quit") {
 				std::exit(EXIT_SUCCESS);
 			} else if (token == "position") {
-				gameState.setPos(iss.str());
+				std::println("Pos: {}", iss.str());
+				gameState.setPos(getRemainingTokens(iss));
 			} else if (token == "ucinewgame") {
 				gameState.reset();
 			} else if (token == "isready") {

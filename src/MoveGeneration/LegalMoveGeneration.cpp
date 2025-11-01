@@ -213,7 +213,7 @@ namespace chess {
 			}
 			auto from = Square::None;
 			while (nextSquare(enPessantData.pawns, from)) {
-				moves.emplace_back(from, enPessantData.destSquare, jumpedEnemyPawn, Pawn, Pawn, Piece::None);
+				moves.emplace_back(from, enPessantData.squareInFrontOfEnemyPawn, jumpedEnemyPawn, Pawn, Pawn, Piece::None);
 			}
 		}
 

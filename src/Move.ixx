@@ -8,13 +8,13 @@ namespace chess {
 	export struct Move {
 		Square from;
 		Square to;
-		Square enPessantSquare;
+		Square capturedPawnSquareEnPassant;
 		Piece movedPiece;
 		Piece capturedPiece;
 		Piece promotionPiece;
 
 		constexpr Move(Square from, Square to, Square enPessantSquare, Piece movedPiece, Piece capturedPiece, Piece promotedPiece)
-			: from{ from }, to{ to }, enPessantSquare{ enPessantSquare }, movedPiece { movedPiece }, capturedPiece{ capturedPiece },
+			: from{ from }, to{ to }, capturedPawnSquareEnPassant{ enPessantSquare }, movedPiece { movedPiece }, capturedPiece{ capturedPiece },
 			promotionPiece{ promotedPiece }
 		{
 		}
@@ -36,7 +36,7 @@ namespace chess {
 		constexpr bool operator==(const Move& other) const {
 			return from == other.from && to == other.to && movedPiece == other.movedPiece &&
 				capturedPiece == other.capturedPiece && promotionPiece == other.promotionPiece &&
-				enPessantSquare == other.enPessantSquare;
+				capturedPawnSquareEnPassant == other.capturedPawnSquareEnPassant;
 		}
 		
 		std::string getUCIString() const;

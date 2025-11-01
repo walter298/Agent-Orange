@@ -3,12 +3,12 @@ import :Direction;
 import Chess.RankCalculator;
 
 namespace chess {
-	template<dir::Direction BehindEnPessantSquare>
+	template<dir::Direction FrontOfJumpedEnemyPawn>
 	EnPessantData calcEnPessantDataImpl(Bitboard pawns, Square jumpedEnemyPawn) {
 		EnPessantData ret;
 
 		auto addAdjacentSquare = [&](Square square) {
-			if (square != Square::None) {
+			if (square != None) {
 				auto board = makeBitboard(square);
 				if (board & pawns) {
 					ret.pawns |= board;
@@ -19,7 +19,7 @@ namespace chess {
 		addAdjacentSquare(eastSquare(jumpedEnemyPawn));
 
 		if (ret.pawns) {
-			ret.destSquare = nextSquare(BehindEnPessantSquare::move(makeBitboard(jumpedEnemyPawn)));
+			ret.squareInFrontOfEnemyPawn = nextSquare(FrontOfJumpedEnemyPawn::move(makeBitboard(jumpedEnemyPawn)));
 		}
 		return ret;
 	}

@@ -91,25 +91,29 @@ namespace chess {
 			};
 
 			pos.setPos(parsePositionCommand("startpos"));
+
 			pos.move("e2e4");
 			testPawnLocation("e2e4", white, E4);
+
 			pos.move("a7a5");
 			testPawnLocation("a7a5", white, E4);
 			testPawnLocation("a7a5", black, A5);
+
 			pos.move("d2d4");
 			testPawnLocation("d2d4", white, E4);
 			testPawnLocation("d2d4", black, A5);
+
 			pos.move("d7d5");
 			testPawnLocation("d7d5", white, E4);
 			testPawnLocation("d7d5", black, A5);
+
 			pos.move("e4d5");
-
 			testPawnLocation("e4d5", black, A5);
+
 			pos.move("d8d5");
-
 			testPawnLocation("d8d5", black, A5);
-			pos.move("c2c4");
 
+			pos.move("c2c4");
 			testPawnLocation("c2c4", black, A5);
 
 			auto legalMoves = calcAllLegalMoves(pos);
@@ -149,15 +153,19 @@ namespace chess {
 			auto legalMoves = calcAllLegalMoves(pos);
 			if (legalMoves.moves.empty()) {
 				std::println("Error: no legal moves found in testThatLegalMovesExist3!");
-			} else {
-				for (const auto& move : legalMoves.moves) {
-					std::println("{}", move.getUCIString());
-				}
 			}
 		}
 
 		void testEnPessant() {
-			//2025-10-30 20:34:03.034-->1:position startpos moves e2e4 a7a5 d2d4 c7c6 c2c4 a5a4 b1c3 d8a5 a2a3 g8f6 f1d3 h7h5 e4e5 f6g8 g1f3 d7d5 e5d6 e7d6 e1g1
+			Position pos;
+			pos.setPos(parsePositionCommand("fen 8/8/8/2k5/5p2/8/6P1/3K4 w - - 0 1"));
+			pos.move("g2g4");
+			pos.move("f4g3");
+
+			auto [white, black] = pos.getColorSides();
+
+			assert_equality(nextSquare(white[Pawn]), Square::None);
+			assert_equality(nextSquare(black[Pawn]), G3);
 		}
 
 		void runAllTests() {
@@ -166,6 +174,7 @@ namespace chess {
 			testThatLegalMovesExist();
 			testThatLegalMovesExist2();
 			testThatLegalMovesExist3();
+			testEnPessant();
 		}
 	}
 }

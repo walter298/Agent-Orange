@@ -6,10 +6,8 @@ export import :MoveGen;
 namespace chess {
 	export struct EnPessantData {
 		Bitboard pawns = 0;
-		Square destSquare = None;
+		Square squareInFrontOfEnemyPawn = None;
 	};
-
-	export EnPessantData calcEnPessantData(Bitboard pawns, Square enPessantSquare, bool isWhite);
 
 	struct WhitePawnAttackGenerator {
 		EnPessantData operator()(Bitboard pawns, Square jumpedEnemyPawn) const;
