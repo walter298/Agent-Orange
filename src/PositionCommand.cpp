@@ -36,7 +36,6 @@ namespace chess {
 
 		if (token == "moves") {
 			while (iss >> token) {
-				std::println("Moving: {}", token);
 				ret.moves.push_back(token);
 			}
 		}

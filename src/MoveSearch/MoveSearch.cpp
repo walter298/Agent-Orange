@@ -11,10 +11,13 @@ import Chess.LegalMoveGeneration;
 import Chess.Position;
 import Chess.Rating;
 
+import :MoveHistory;
+import :MovePriority;
 import :PositionTable;
 import :ThreadPool;
 
 namespace chess {
+	int startingDepth = 0;
 	std::chrono::steady_clock::time_point beginCalculation;
 	constexpr std::chrono::seconds MAX_CALCULATION_TIME{ 120 };
 
@@ -93,23 +96,6 @@ namespace chess {
 		}
 	};
 
-	LegalMoves getMovesInLikelyBestOrder(const Position& pos) {
-		auto legalMoves = calcAllLegalMoves(pos);
-		auto [unpartitionedBegin, end] = std::ranges::partition(legalMoves.moves, [](const Move& move) {
-			if (move.capturedPiece == Piece::None) {
-				return false;
-			}
-			return getPieceRating(move.movedPiece) <= getPieceRating(move.capturedPiece);
-		});
-		auto captures = std::ranges::subrange(legalMoves.moves.begin(), unpartitionedBegin);
-		std::ranges::sort(captures, [](const Move& a, const Move& b) {
-			auto diff1 = getPieceRating(a.capturedPiece) - getPieceRating(a.movedPiece);
-			auto diff2 = getPieceRating(b.capturedPiece) - getPieceRating(b.movedPiece);
-			return diff1 > diff2;
-		});
-		return legalMoves;
-	}
-
 	template<bool Maximizing>
 	Rating minimax(const Node& node, int depth, AlphaBeta alphaBeta) {
 		auto cachedRating = getPositionRating(node.getPos(), depth);
@@ -122,22 +108,24 @@ namespace chess {
 			return node.getRating();
 		}
 
-		auto legalMoves = getMovesInLikelyBestOrder(node.getPos());
+		auto legalMoves = calcAllLegalMoves(node.getPos());
 		if (legalMoves.moves.empty()) {
-			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0.0;
+			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0rt;
 		}
+		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1);
 
 		auto bestRating = worstPossibleRating<Maximizing>();
+		auto distFromRoot = std::abs(startingDepth - depth);
 
-		for (const auto& move : legalMoves.moves) {
+		for (const auto& [move, recommendedDepth] : movePriorities) {
 			auto child = Node::makeChild(node, move);
-			auto newDepth = depth - 1;
-			auto childRating = minimax<!Maximizing>(child, newDepth, alphaBeta);
-			storePositionRating(child.getPos(), newDepth, childRating);
+			auto childRating = minimax<!Maximizing>(child, recommendedDepth, alphaBeta);
+			storePositionRating(child.getPos(), recommendedDepth, childRating);
 
 			bestRating = extreme<Maximizing>(bestRating, childRating);
 			alphaBeta.update<Maximizing>(bestRating);
-			if (alphaBeta.canPrune()) { 
+			if (alphaBeta.canPrune()) {
+				updateHistoryScore(move, distFromRoot);
 				break;
 			}
 		}
@@ -150,17 +138,17 @@ namespace chess {
 		AlphaBeta alphaBeta;
 		auto root = Node::makeRoot(rootPos);
 
-		auto legalMoves = getMovesInLikelyBestOrder(root.getPos());
+		auto legalMoves = calcAllLegalMoves(rootPos);
 		if (legalMoves.moves.empty()) {
 			return std::nullopt;
 		}
+		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1);
 
 		auto bestMove = Move::null();
-		for (const auto& move : legalMoves.moves) {
+		for (const auto& [move, recommendedDepth] : movePriorities) {
 			auto child = Node::makeChild(root, move);
-			auto newDepth = depth - 1;
-			auto childRating = minimax<!Maximizing>(child, newDepth, alphaBeta);
-			storePositionRating(child.getPos(), newDepth, childRating);
+			auto childRating = minimax<!Maximizing>(child, recommendedDepth, alphaBeta);
+			storePositionRating(child.getPos(), recommendedDepth, childRating);
 			if (alphaBeta.update<Maximizing>(childRating)) {
 				bestMove = move;
 			}
@@ -172,6 +160,7 @@ namespace chess {
 	}
 
 	std::optional<Move> findBestMove(const Position& pos, int depth) {
+		startingDepth = depth;
 		beginCalculation = std::chrono::steady_clock::now();
 
 		if (pos.getTurnData().isWhite) {

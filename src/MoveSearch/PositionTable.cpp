@@ -5,6 +5,8 @@ module;
 
 module Chess.MoveSearch:PositionTable;
 
+import :MoveHasher;
+
 namespace chess {
 	struct PositionHasher {
 		size_t operator()(const Position& pos) const {
@@ -76,24 +78,4 @@ namespace chess {
 		}
 	}
 
-	struct MoveHasher {
-		size_t operator()(const Move& move) {
-			size_t hash = 0;
-			boost::hash_combine(hash, move.from);
-			boost::hash_combine(hash, move.to);
-			boost::hash_combine(hash, move.movedPiece);
-			boost::hash_combine(hash, move.capturedPiece);
-			boost::hash_combine(hash, move.promotionPiece);
-			boost::hash_combine(hash, move.capturedPawnSquareEnPassant);
-			return hash;
-		}
-	};
-
-	using MoveMap = boost::unordered_flat_map<Move, Rating, MoveHasher>;
-
-	MoveMap moveMap;
-
-	void improveHistoricalMoveRating(const Move& move, Rating rating) {
-		
-	}
 }
