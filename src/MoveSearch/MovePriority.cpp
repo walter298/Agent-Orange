@@ -11,8 +11,7 @@ namespace chess {
 		if (maxDepth <= 0) {
 			return 0;
 		}
-		auto min = 4 < maxDepth ? 4 : maxDepth;
-		return std::clamp(maxDepth / 2, min, maxDepth);
+		return std::clamp(maxDepth / 2, 1, maxDepth);
 	}
 
 	int getRecommendedDepth(Rating rating, Rating bestRating, int maxDepth) {
@@ -24,8 +23,10 @@ namespace chess {
 		}
 		auto maxDepthScore = static_cast<Rating>(maxDepth);
 		auto val = static_cast<int>(rating * maxDepthScore / bestRating);
-		// clamp into [0, maxDepth]
-		if (val <0) val =0;
+		
+		if (val <= 0) {
+			val = 0;
+		}
 		if (val > maxDepth) val = maxDepth;
 		return val;
 	}
@@ -45,8 +46,8 @@ namespace chess {
 
 			movePriorities.append_range(recordedMoves | std::views::transform([&](const Move& move) {
 				auto historyRating = getHistoryRating(move);
-				auto depth = getRecommendedDepth(historyRating, bestHistoryRating, maxDepth);
-				return MovePriority{ move, depth };
+				//auto depth = getRecommendedDepth(historyRating, bestHistoryRating, maxDepth);
+				return MovePriority{ move, maxDepth };
 			}));
 		}
 
@@ -70,8 +71,8 @@ namespace chess {
 
 			movePriorities.append_range(captures | std::views::transform([&](const Move& move) {
 				auto captureDiff = getPieceRating(move.capturedPiece) - getPieceRating(move.movedPiece);
-				auto depth = getRecommendedDepth(captureDiff, bestCaptureRating, maxDepth);
-				return MovePriority{ move, depth };
+				//auto depth = getRecommendedDepth(captureDiff, bestCaptureRating, maxDepth);
+				return MovePriority{ move, maxDepth };
 			}));
 		}
 
@@ -82,14 +83,14 @@ namespace chess {
 		auto temp = legalMoves;
 		std::vector<MovePriority> priorities;
 
-		auto unrecordedBegin = addHistoryMoves(temp, priorities, maxDepth);
+		auto unrecordedBegin  = addHistoryMoves(temp, priorities, maxDepth);
 		auto noncapturedBegin = addCaptures(temp, unrecordedBegin, priorities, maxDepth);
 
 		auto likelyBadMoves = std::ranges::subrange(noncapturedBegin, temp.end());
 		if (!std::ranges::empty(likelyBadMoves)) {
 			priorities.append_range(likelyBadMoves | std::views::transform([&](const Move& move) {
 				auto depth = minDepth(maxDepth);
-				return MovePriority{ move, depth };
+				return MovePriority{ move, maxDepth };
 			}));
 		}
 

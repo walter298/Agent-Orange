@@ -24,7 +24,7 @@ namespace chess {
 	}
 
 	std::string GameState::calcBestMove() {
-		auto move = findBestMove(m_pos, 7); 
+		auto move = findBestMove(m_pos, 5); 
 		if (!move) {
 			return "";
 		} else {
