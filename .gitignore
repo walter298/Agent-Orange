@@ -4,5 +4,5 @@
 Chess.vcxproj
 Chess.vcxproj.filters
 Chess.vcxproj.user
-/Profiler_Visualizer/.venv
-/Profiler_Visualizer/__pycache__
+/profiler_visualizer/.venv
+/profiler_visualizer/__pycache__

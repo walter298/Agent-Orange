@@ -1,0 +1,58 @@
+[
+  {
+    "average_ns": "165026127",
+    "child_percentages": {
+      "calcAllLegalMoves": 11.675379887504315,
+      "getMovePriorities": 11.988195367851946,
+      "getPositionRating": 15.851335716867753,
+      "storePositionRating": 41.996506999387535
+    },
+    "name": "findBestMove",
+    "times_run": 11
+  },
+  {
+    "average_ns": "118",
+    "child_percentages": null,
+    "name": "getPositionRating",
+    "times_run": 2426132
+  },
+  {
+    "average_ns": "41",
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "times_run": 2426143
+  },
+  {
+    "average_ns": "893",
+    "child_percentages": {
+      "diagonalMoveGenerator": 11.72605485376403,
+      "orthogonalMoveGenerator": 11.61588304708323
+    },
+    "name": "calcAllLegalMoves",
+    "times_run": 237241
+  },
+  {
+    "average_ns": "314",
+    "child_percentages": null,
+    "name": "storePositionRating",
+    "times_run": 2426132
+  },
+  {
+    "average_ns": "22",
+    "child_percentages": null,
+    "name": "orthogonalMoveGenerator",
+    "times_run": 1079344
+  },
+  {
+    "average_ns": "23",
+    "child_percentages": null,
+    "name": "diagonalMoveGenerator",
+    "times_run": 1053309
+  },
+  {
+    "average_ns": "917",
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "times_run": 237211
+  }
+]
