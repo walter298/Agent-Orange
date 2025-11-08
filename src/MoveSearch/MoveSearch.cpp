@@ -9,6 +9,7 @@ import std;
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
 import Chess.Position;
+import Chess.Profiler;
 import Chess.Rating;
 
 import :MoveHistory;
@@ -110,12 +111,25 @@ namespace chess {
 
 		auto legalMoves = calcAllLegalMoves(node.getPos());
 		if (legalMoves.moves.empty()) {
-			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0rt;
+			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
 		}
 		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1);
 
 		auto bestRating = worstPossibleRating<Maximizing>();
 		auto distFromRoot = std::abs(startingDepth - depth);
+
+		/*for (const auto& move : legalMoves.moves) {
+			auto child = Node::makeChild(node, move);
+			auto childRating = minimax<!Maximizing>(child, depth - 1, alphaBeta);
+			storePositionRating(child.getPos(), depth, childRating);
+
+			bestRating = extreme<Maximizing>(bestRating, childRating);
+			alphaBeta.update<Maximizing>(bestRating);
+			if (alphaBeta.canPrune()) {
+				updateHistoryScore(move, distFromRoot);
+				break;
+			}
+		}*/
 
 		for (const auto& [move, recommendedDepth] : movePriorities) {
 			auto child = Node::makeChild(node, move);
@@ -160,6 +174,9 @@ namespace chess {
 	}
 
 	std::optional<Move> findBestMove(const Position& pos, int depth) {
+		static MaybeProfiler profiler{ "findBestMove" };
+		ProfilerLock l{ profiler };
+
 		startingDepth = depth;
 		beginCalculation = std::chrono::steady_clock::now();
 

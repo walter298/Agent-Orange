@@ -2,6 +2,7 @@ import std;
 
 import Chess.UCI;
 import Chess.Move;
+import Chess.Profiler;
 import Chess.Tests;
 
 namespace {
@@ -13,6 +14,8 @@ namespace {
 }
 
 int main(int argc, char** argv) {
+	chess::MaybeProfilerGuard guard;
+
 	if (argc == 1) {
 		std::println("Error: no command line arguments supplied. Options: ");
 		printCommandLineArgumentOptions();

@@ -1,5 +1,7 @@
 module Chess.LegalMoveGeneration:SlidingMoveGeneration;
 
+import Chess.Profiler;
+
 namespace chess {
 	template<dir::Direction Direction>
 	MoveGen calcSlidingMoves(Bitboard movingPieces, Bitboard empty) {
@@ -20,6 +22,8 @@ namespace chess {
 	}
 
 	MoveGen DiagonalMoveGenerator::operator()(Bitboard movingPieces, Bitboard empty) const {
+		static MaybeProfiler profiler{ "calcAllLegalMoves", "diagonalMoveGenerator" };
+		ProfilerLock l{ profiler };
 		return calcSlidingMoves<dir::sliding::NorthWest>(movingPieces, empty) |
 			   calcSlidingMoves<dir::sliding::NorthEast>(movingPieces, empty) |
 			   calcSlidingMoves<dir::sliding::SouthWest>(movingPieces, empty) |
@@ -27,6 +31,8 @@ namespace chess {
 	}
 
 	MoveGen OrthogonalMoveGenerator::operator()(Bitboard movingPieces, Bitboard empty) const {
+		static MaybeProfiler profiler{ "calcAllLegalMoves", "orthogonalMoveGenerator" };
+		ProfilerLock l{ profiler };
 		return calcSlidingMoves<dir::sliding::North>(movingPieces, empty) |
 			   calcSlidingMoves<dir::sliding::East>(movingPieces, empty)  |
 			   calcSlidingMoves<dir::sliding::South>(movingPieces, empty) |

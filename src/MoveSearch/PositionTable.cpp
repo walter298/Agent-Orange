@@ -5,6 +5,7 @@ module;
 
 module Chess.MoveSearch:PositionTable;
 
+import Chess.Profiler;
 import :MoveHasher;
 
 namespace chess {
@@ -52,6 +53,9 @@ namespace chess {
 	PositionMap positionMap;
 
 	std::optional<Rating> getPositionRating(const Position& pos, int depth) {
+		static MaybeProfiler profiler{ "findBestMove", "getPositionRating" };
+		ProfilerLock l{ profiler };
+
 		auto depthToRatings = positionMap.find(pos);
 		if (depthToRatings == positionMap.end()) {
 			return std::nullopt;
@@ -65,6 +69,9 @@ namespace chess {
 	}
 
 	void storePositionRating(const Position& pos, int depth, Rating rating) {
+		static MaybeProfiler profiler{ "findBestMove", "storePositionRating" };
+		ProfilerLock l{ profiler };
+
 		auto posIt = positionMap.find(pos);
 		if (posIt == positionMap.end()) {
 			positionMap.emplace(pos, DepthToRating{ depth, rating });

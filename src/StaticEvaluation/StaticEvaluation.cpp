@@ -5,6 +5,7 @@ import std;
 //redundant import, compiler bug mandates it
 import Chess.PieceMap;
 import Chess.Position;
+import Chess.Profiler;
 import Chess.RankCalculator;
 import Chess.Rating;
 
@@ -66,6 +67,8 @@ namespace chess {
 	}
 
 	Rating staticEvaluation(const Position& pos) {
+		static MaybeProfiler profiler{ "staticEvaluation" };
+		ProfilerLock l{ profiler };
 		return calcMaterialRating(pos) + calcPawnAdvancementRating(pos);
 	}
 

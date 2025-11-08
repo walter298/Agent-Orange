@@ -2,6 +2,7 @@ module Chess.MoveSearch:MovePriority;
 
 import Chess.Rating;
 import Chess.Evaluation;
+import Chess.Profiler;
 import :MoveHistory;
 
 namespace chess {
@@ -18,7 +19,7 @@ namespace chess {
 		if (maxDepth <= 0) {
 			return 0;
 		}
-		if (bestRating == 0rt) {
+		if (bestRating == 0_rt) {
 			return minDepth(maxDepth);
 		}
 		auto maxDepthScore = static_cast<Rating>(maxDepth);
@@ -27,14 +28,17 @@ namespace chess {
 		if (val <= 0) {
 			val = 0;
 		}
-		if (val > maxDepth) val = maxDepth;
+		if (val > maxDepth) {
+			val = maxDepth;
+		}
+
 		return val;
 	}
 
 	MoveIterator addHistoryMoves(std::vector<Move>& moves, std::vector<MovePriority>& movePriorities, int maxDepth) {
 		auto [unrecordedMovesBegin, end] = std::ranges::partition(moves, [&](const Move& move) {
 			auto historyRating = getHistoryRating(move);
-			return historyRating > 0rt;
+			return historyRating > 0_rt;
 		});
 
 		auto recordedMoves = std::ranges::subrange(moves.begin(), unrecordedMovesBegin);
@@ -46,7 +50,6 @@ namespace chess {
 
 			movePriorities.append_range(recordedMoves | std::views::transform([&](const Move& move) {
 				auto historyRating = getHistoryRating(move);
-				//auto depth = getRecommendedDepth(historyRating, bestHistoryRating, maxDepth);
 				return MovePriority{ move, maxDepth };
 			}));
 		}
@@ -71,7 +74,7 @@ namespace chess {
 
 			movePriorities.append_range(captures | std::views::transform([&](const Move& move) {
 				auto captureDiff = getPieceRating(move.capturedPiece) - getPieceRating(move.movedPiece);
-				//auto depth = getRecommendedDepth(captureDiff, bestCaptureRating, maxDepth);
+				auto depth = getRecommendedDepth(captureDiff, bestCaptureRating, maxDepth);
 				return MovePriority{ move, maxDepth };
 			}));
 		}
@@ -80,6 +83,9 @@ namespace chess {
 	}
 
 	FixedVector<MovePriority> getMovePriorities(const std::vector<Move>& legalMoves, int maxDepth) {
+		static MaybeProfiler profiler{ "findBestMove", "getMovePriorities" };
+		ProfilerLock l{ profiler };
+
 		auto temp = legalMoves;
 		std::vector<MovePriority> priorities;
 
@@ -89,7 +95,6 @@ namespace chess {
 		auto likelyBadMoves = std::ranges::subrange(noncapturedBegin, temp.end());
 		if (!std::ranges::empty(likelyBadMoves)) {
 			priorities.append_range(likelyBadMoves | std::views::transform([&](const Move& move) {
-				auto depth = minDepth(maxDepth);
 				return MovePriority{ move, maxDepth };
 			}));
 		}

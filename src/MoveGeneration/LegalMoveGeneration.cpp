@@ -2,6 +2,7 @@ module Chess.LegalMoveGeneration;
 
 import std;
 import Chess.PieceMap;
+import Chess.Profiler;
 import Chess.RankCalculator;
 import :ChainedMoveGenerator;
 import :KingMoveGeneration;
@@ -257,6 +258,9 @@ namespace chess {
 	};
 
 	LegalMoves calcAllLegalMoves(const Position& pos) {
+		static MaybeProfiler profiler{ "findBestMove", "calcAllLegalMoves" };
+		ProfilerLock l{ profiler };
+
 		auto turnData = pos.getTurnData();
 		
 		if (turnData.isWhite) {

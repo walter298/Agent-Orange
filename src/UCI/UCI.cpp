@@ -32,7 +32,7 @@ namespace chess {
 			iss >> token;
 
 			if (token == "quit") {
-				std::exit(EXIT_SUCCESS);
+				break;
 			} else if (token == "position") {
 				std::println("Pos: {}", iss.str());
 				gameState.setPos(getRemainingTokens(iss));
