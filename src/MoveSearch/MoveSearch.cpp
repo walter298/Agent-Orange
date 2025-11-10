@@ -18,7 +18,6 @@ import :PositionTable;
 import :ThreadPool;
 
 namespace chess {
-	int startingDepth = 0;
 	std::chrono::steady_clock::time_point beginCalculation;
 	constexpr std::chrono::seconds MAX_CALCULATION_TIME{ 120 };
 
@@ -68,44 +67,65 @@ namespace chess {
 	class Node {
 	private:
 		Position m_pos;
-		Rating m_materialRating = 0;
 		bool m_inCaptureSequence = false;
-	
+		int m_level = 0;
+		int m_levelsToSearch = 0;
+
 		Node() = default;
 	public:
-		static Node makeRoot(const Position& root) {
+		static Node makeRoot(const Position& root, int maxDepth) {
 			Node ret;
 			ret.m_pos = root;
-			ret.m_materialRating = staticEvaluation(root);
+			ret.m_levelsToSearch = maxDepth;
 			return ret;
 		}
-		static Node makeChild(const Node& parent, const Move& move) {
+		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
 			Node ret;
-			ret.m_pos = { parent.m_pos, move }; //initialize BEFORE calculating its rating
-			ret.m_materialRating = staticEvaluation(ret.m_pos);
-			ret.m_inCaptureSequence = (move.capturedPiece != Piece::None) || move.promotionPiece != Piece::None;
+			ret.m_pos= { parent.m_pos, movePriority.move }; 
+			ret.m_level = parent.m_level + 1;
+			ret.m_levelsToSearch = movePriority.recommendedDepth;
+			//ret.m_inCaptureSequence = movePriority.move.isMaterialChange();
 			return ret;
 		}
+
+		/*bool inCaptureSequence() const {
+			return m_inCaptureSequence;
+		}*/
+
 		const Position& getPos() const {
 			return m_pos;
 		}
-		Rating getRating() const {
-			return m_materialRating;
+
+		int getLevel() const {
+			return m_level;
 		}
-		bool inCaptureSequence() const {
-			return m_inCaptureSequence;
+
+		int getLevelsToSearch() const {
+			return m_levelsToSearch;
+		}
+
+		bool isDone() const {
+			return m_levelsToSearch == 0;
+		}
+
+		Rating getRating() const {
+			return staticEvaluation(m_pos);
 		}
 	};
 
 	template<bool Maximizing>
-	Rating minimax(const Node& node, int depth, AlphaBeta alphaBeta) {
-		auto cachedRating = getPositionRating(node.getPos(), depth);
+	Rating minimax(const Node& node, AlphaBeta alphaBeta) {
+		auto cachedRating = getPositionRating(node.getPos(), node.getLevelsToSearch());
 		if (cachedRating) {
 			return *cachedRating;
 		}
 
 		auto timeCalculated = std::chrono::steady_clock::now() - beginCalculation;
-		if (timeCalculated > MAX_CALCULATION_TIME || (depth <= 0 && !node.inCaptureSequence())) {
+		if (timeCalculated > MAX_CALCULATION_TIME) {
+			return node.getRating();
+		}
+
+		if (node.isDone()) {
 			return node.getRating();
 		}
 
@@ -113,33 +133,19 @@ namespace chess {
 		if (legalMoves.moves.empty()) {
 			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
 		}
-		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1);
+		auto movePriorities = getMovePriorities(legalMoves.moves, node.getLevelsToSearch(), Maximizing);
 
 		auto bestRating = worstPossibleRating<Maximizing>();
-		auto distFromRoot = std::abs(startingDepth - depth);
-
-		/*for (const auto& move : legalMoves.moves) {
-			auto child = Node::makeChild(node, move);
-			auto childRating = minimax<!Maximizing>(child, depth - 1, alphaBeta);
-			storePositionRating(child.getPos(), depth, childRating);
-
-			bestRating = extreme<Maximizing>(bestRating, childRating);
-			alphaBeta.update<Maximizing>(bestRating);
-			if (alphaBeta.canPrune()) {
-				updateHistoryScore(move, distFromRoot);
-				break;
-			}
-		}*/
-
-		for (const auto& [move, recommendedDepth] : movePriorities) {
-			auto child = Node::makeChild(node, move);
-			auto childRating = minimax<!Maximizing>(child, recommendedDepth, alphaBeta);
-			storePositionRating(child.getPos(), recommendedDepth, childRating);
+		
+		for (const auto& movePriority : movePriorities) {
+			auto child = Node::makeChild(node, movePriority);
+			auto childRating = minimax<!Maximizing>(child, alphaBeta);
+			storePositionRating(child.getPos(), movePriority.recommendedDepth, childRating);
 
 			bestRating = extreme<Maximizing>(bestRating, childRating);
 			alphaBeta.update<Maximizing>(bestRating);
 			if (alphaBeta.canPrune()) {
-				updateHistoryScore(move, distFromRoot);
+				updateHistoryScore(movePriority.move, node.getLevel());
 				break;
 			}
 		}
@@ -150,21 +156,21 @@ namespace chess {
 	template<bool Maximizing>
 	std::optional<Move> bestMoveImpl(const Position& rootPos, int depth) {
 		AlphaBeta alphaBeta;
-		auto root = Node::makeRoot(rootPos);
+		auto root = Node::makeRoot(rootPos, depth);
 
 		auto legalMoves = calcAllLegalMoves(rootPos);
 		if (legalMoves.moves.empty()) {
 			return std::nullopt;
 		}
-		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1);
+		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1, Maximizing);
 
 		auto bestMove = Move::null();
-		for (const auto& [move, recommendedDepth] : movePriorities) {
-			auto child = Node::makeChild(root, move);
-			auto childRating = minimax<!Maximizing>(child, recommendedDepth, alphaBeta);
-			storePositionRating(child.getPos(), recommendedDepth, childRating);
+		for (const auto& movePriority : movePriorities) {
+			auto child = Node::makeChild(root, movePriority);
+			auto childRating = minimax<!Maximizing>(child, alphaBeta);
+			storePositionRating(child.getPos(), movePriority.recommendedDepth, childRating);
 			if (alphaBeta.update<Maximizing>(childRating)) {
-				bestMove = move;
+				bestMove = movePriority.move;
 			}
 		}
 
@@ -177,7 +183,6 @@ namespace chess {
 		static MaybeProfiler profiler{ "findBestMove" };
 		ProfilerLock l{ profiler };
 
-		startingDepth = depth;
 		beginCalculation = std::chrono::steady_clock::now();
 
 		if (pos.getTurnData().isWhite) {

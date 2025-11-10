@@ -32,6 +32,7 @@ import std;
 import Chess.Position;
 import Chess.PositionCommand;
 import Chess.LegalMoveGeneration;
+import Chess.MoveSearch;
 
 namespace chess {
 	namespace tests {
@@ -169,6 +170,7 @@ namespace chess {
 		}
 
 		void runAllTests() {
+			std::println("Running tests...");
 			testStartPos();
 			testPawnLocations();
 			testThatLegalMovesExist();

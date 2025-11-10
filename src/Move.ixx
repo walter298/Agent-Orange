@@ -38,6 +38,10 @@ namespace chess {
 				capturedPiece == other.capturedPiece && promotionPiece == other.promotionPiece &&
 				capturedPawnSquareEnPassant == other.capturedPawnSquareEnPassant;
 		}
+
+		bool isMaterialChange() const {
+			return capturedPiece != Piece::None || promotionPiece != Piece::None;
+		}
 		
 		std::string getUCIString() const;
 	};
