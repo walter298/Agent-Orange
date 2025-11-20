@@ -96,7 +96,7 @@ namespace chess {
 	}
 
 	template<bool Maximizing>
-	FixedVector<MovePriority> getMovePrioritiesImpl(const std::vector<Move>& legalMoves, int maxDepth) {
+	FixedVector<MovePriority> getMovePrioritiesImpl(const std::vector<Move>& legalMoves, int maxDepth, int level) {
 		if (maxDepth <= 0) { //max depth can be negative if in a capture sequence
 			throw std::runtime_error{ "Error: maxDepth <= 0" };
 		}
@@ -109,7 +109,8 @@ namespace chess {
 		auto maxHistoryDepth = maxDepth - 1; //always greater than or equal to 1
 		auto minHistoryDepth = maxHistoryDepth / 2;
 		auto unexploredMoves = addHistoryMoves<Maximizing>(nonCaptures, priorities, minHistoryDepth, maxHistoryDepth);
-
+		auto movesToDiscard = std::clamp(0b1uz << level, 0uz, unexploredMoves.size());
+		auto keptMoves = unexploredMoves | std::views::drop(movesToDiscard);
 		if (!std::ranges::empty(unexploredMoves)) {
 			priorities.append_range(unexploredMoves | std::views::transform([&](const Move& move) {
 				return MovePriority{ move, minHistoryDepth };
@@ -119,14 +120,14 @@ namespace chess {
 		return FixedVector{ std::move(priorities) };
 	}
 
-	FixedVector<MovePriority> getMovePriorities(const std::vector<Move>& legalMoves, int maxDepth, bool maximizing) {
+	FixedVector<MovePriority> getMovePriorities(const std::vector<Move>& legalMoves, int maxDepth, int level, bool maximizing) {
 		static MaybeProfiler profiler{ "findBestMove", "getMovePriorities" };
 		ProfilerLock l{ profiler };
 
 		if (maximizing) {
-			return getMovePrioritiesImpl<true>(legalMoves, maxDepth);
+			return getMovePrioritiesImpl<true>(legalMoves, maxDepth, level);
 		} else {
-			return getMovePrioritiesImpl<false>(legalMoves, maxDepth);
+			return getMovePrioritiesImpl<false>(legalMoves, maxDepth, level);
 		}
 	}
 }

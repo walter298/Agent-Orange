@@ -133,7 +133,7 @@ namespace chess {
 		if (legalMoves.moves.empty()) {
 			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
 		}
-		auto movePriorities = getMovePriorities(legalMoves.moves, node.getLevelsToSearch(), Maximizing);
+		auto movePriorities = getMovePriorities(legalMoves.moves, node.getLevelsToSearch(), node.getLevel(), Maximizing);
 
 		auto bestRating = worstPossibleRating<Maximizing>();
 		
@@ -162,7 +162,7 @@ namespace chess {
 		if (legalMoves.moves.empty()) {
 			return std::nullopt;
 		}
-		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1, Maximizing);
+		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1, 0, Maximizing);
 
 		auto bestMove = Move::null();
 		for (const auto& movePriority : movePriorities) {

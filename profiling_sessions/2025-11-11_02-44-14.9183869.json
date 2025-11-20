@@ -1,0 +1,79 @@
+[
+  {
+    "average_ns": "17393690472",
+    "child_percentages": {
+      "calcAllLegalMoves": 6.5833419306689125,
+      "getMovePriorities": 9.578641503123281,
+      "getPositionRating": 12.016695278644072,
+      "storePositionRating": 65.85890718015182
+    },
+    "name": "findBestMove",
+    "times_run": 11
+  },
+  {
+    "average_ns": "82",
+    "child_percentages": null,
+    "name": "addMoves",
+    "times_run": 66765383
+  },
+  {
+    "average_ns": "1880",
+    "child_percentages": {
+      "addEnPessantMoves": 0.05675555660668729,
+      "addMoves": 43.979280542083565,
+      "calcEnemyMoves": 20.007129594770532,
+      "diagonalMoveGenerator": 7.9008595089946105,
+      "orthogonalMoveGenerator": 8.668785872103483
+    },
+    "name": "calcAllLegalMoves",
+    "times_run": 6699181
+  },
+  {
+    "average_ns": "2738",
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "times_run": 6693251
+  },
+  {
+    "average_ns": "188",
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "times_run": 13396028
+  },
+  {
+    "average_ns": "38",
+    "child_percentages": null,
+    "name": "orthogonalMoveGenerator",
+    "times_run": 28484274
+  },
+  {
+    "average_ns": "35",
+    "child_percentages": null,
+    "name": "diagonalMoveGenerator",
+    "times_run": 27950741
+  },
+  {
+    "average_ns": "44",
+    "child_percentages": null,
+    "name": "addEnPessantMoves",
+    "times_run": 160353
+  },
+  {
+    "average_ns": "51",
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "times_run": 49184643
+  },
+  {
+    "average_ns": "368",
+    "child_percentages": null,
+    "name": "getPositionRating",
+    "times_run": 62363287
+  },
+  {
+    "average_ns": "2020",
+    "child_percentages": null,
+    "name": "storePositionRating",
+    "times_run": 62363287
+  }
+]

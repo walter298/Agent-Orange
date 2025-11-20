@@ -10,5 +10,5 @@ namespace chess {
 		bool inCaptureSequence = false;
 	};
 
-	FixedVector<MovePriority> getMovePriorities(const std::vector<Move>& legalMoves, int depth, bool maximizing);
+	FixedVector<MovePriority> getMovePriorities(const std::vector<Move>& legalMoves, int depth, int level, bool maximizing);
 }

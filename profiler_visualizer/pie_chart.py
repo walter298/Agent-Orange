@@ -1,13 +1,16 @@
-import stats
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
-import matplotlib.pyplot as plt
-
-def make_pie_chart(stats_list):
-    labels = []
-    sizes = []
-    for stat in stats_list:
-        labels.append(stat.name())
-        sizes.append(stat.average())
-    plt.pie(sizes, labels=labels, autopct='%1.1f%%')
-    plt.axis('equal')
-    return plt.gcf()
+class Slice:
+    def __init__(self, function_name : str, percentage : float):
+        self.function_name = function_name
+        self.percentage = percentage
+        
+class PieChart:
+    def __init__(self, slices : list[Slice]):
+        total_percentage = sum(slice.percentage for slice in slices)
+        missing = 100.0 - total_percentage
+        slices.append(Slice("other", missing))
+        self.slices = slices
+        

@@ -106,6 +106,9 @@ namespace chess {
 		}
 
 		static EnemyMoveData calcEnemyMoves(const PieceState& enemies, const PieceLocationData& pieceLocations) {
+			static MaybeProfiler enemyMoveProfiler{ "calcAllLegalMoves", "calcEnemyMoves" };
+			ProfilerLock l{ enemyMoveProfiler };
+
 			EnemyMoveData ret;
 			ret.squares |= kingMoveGenerator(enemies[King], pieceLocations.empty).all();
 
@@ -115,15 +118,6 @@ namespace chess {
 			calcEnemyMovesImpl(ret, enemies[Pawn], pieceLocations, wrapPawnAttackGenerator(enemyPawnAttackGenerator, ALL_SQUARES));
 
 			return ret;
-		}
-
-		static Bitboard getPinnedAllies(const PieceState& enemies, Bitboard attackedAllies, const PieceLocationData& pieceLocations, bool isWhite) {
-			PieceLocationData pieceLocationsWithoutAttackedAllies{
-				pieceLocations.allyKing, pieceLocations.allies & ~attackedAllies, pieceLocations.enemies
-			};
-			auto enemyMoves = calcEnemyMoves(enemies, pieceLocationsWithoutAttackedAllies);
-
-			return enemyMoves.checklines.squares & attackedAllies & ~pieceLocations.allyKing;
 		}
 
 		static Bitboard getPinnedAllies(const PieceState& enemies, Bitboard attackedAllies, const PieceLocationData& pieceLocations) {
@@ -154,6 +148,9 @@ namespace chess {
 		static void addMoves(std::vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveAdder moveAdder)
 		{
+			static MaybeProfiler moveAdderProfiler{ "calcAllLegalMoves", "addMoves" };
+			ProfilerLock l{ moveAdderProfiler };
+
 			Move move{ piecePos, Square::None, pieceType, Piece::None };
 
 			while (nextSquare(destSquares.emptyDestSquares, move.to)) {
@@ -208,6 +205,9 @@ namespace chess {
 		}
 
 		static void addEnPessantMoves(std::vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
+			static MaybeProfiler enPassantProfiler{ "calcAllLegalMoves", "addEnPessantMoves" };
+			ProfilerLock l{ enPassantProfiler };
+
 			auto enPessantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
 			if (!enPessantData.pawns) {
 				return;

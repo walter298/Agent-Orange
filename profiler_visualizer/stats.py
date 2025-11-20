@@ -1,13 +1,10 @@
-class ChildStats:
-    def __init__(self, name : str, percentage : float):
-        self._name = name
-        self._percentage = percentage
-        
+from pie_chart import PieChart
+
 class Stats:
-    def __init__(self, name : str, average : float, child_stats : list[ChildStats]):
+    def __init__(self, name : str, average : float, pie_chart : PieChart):
         self._name = name
         self._average = average
-        self._child_stats = child_stats
+        self._pie_chart = pie_chart
 
     def name(self):
         return self._name
@@ -15,5 +12,5 @@ class Stats:
     def average(self):
         return self._average
 
-    def child_stats(self):
-        return self._child_stats
+    def pie_chart(self):
+        return self._pie_chart

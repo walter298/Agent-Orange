@@ -11,20 +11,15 @@ namespace chess {
 		}
 	}
 
-	void mapProfiler(const std::string& name, Profiler* profiler) {
-		if (!profilerMap.contains(name)) {
-			profilerMap.emplace(name, ProfilerNode{ profiler });
-		} else {
-			throw std::runtime_error{ "Profiler with name "s + name + " already exists." };
-		}
+	BasicProfiler* mapProfiler(const std::string& name) {
+		return &profilerMap[name].profiler;
 	}
+
 	void addChild(const std::string& parentName, const std::string& childName) {
 		auto& parentNode = profilerMap.at(parentName);
-		if (parentNode.childNames.contains(childName)) {
-			throw std::runtime_error{ "Child profiler with name "s + childName + " already exists for parent " + parentName + "." };
-		}
 		parentNode.childNames.insert(childName);
 	}
+
 	const ProfilerNode& getProfilerNode(const std::string& name) {
 		return profilerMap.at(name);
 	}

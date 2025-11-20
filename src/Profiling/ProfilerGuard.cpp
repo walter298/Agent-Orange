@@ -4,7 +4,6 @@ module;
 
 module Chess.Profiler:ProfilerGuard;
 
-import :FunctionProfiler;
 import :Path;
 import :ProfilerMap;
 
@@ -12,8 +11,8 @@ namespace chess {
 	auto getChildrenPercentages(const ProfilerNode& parent) {
 		return parent.childNames | std::views::transform([&](const auto& name) {
 			auto& child = getProfilerNode(name);
-			auto percentage = static_cast<double>(child.profiler->getTotalTimeSpent().count()) /
-							  static_cast<double>(parent.profiler->getTotalTimeSpent().count());
+			auto percentage = static_cast<double>(child.profiler.getTotalTimeSpent().count()) /
+							  static_cast<double>(parent.profiler.getTotalTimeSpent().count());
 			percentage *= 100.0;
 			return std::pair{ name, percentage };
 		});
@@ -33,8 +32,8 @@ namespace chess {
 		forEachProfilerNode([&](const std::string& name, const ProfilerNode& node) {
 			json.push_back({
 				{ "name", name },
-				{ "times_run", node.profiler->getTimesRun() },
-				{ "average_ns", std::format("{}", node.profiler->getAverage().count()) },
+				{ "times_run", node.profiler.getTimesRun() },
+				{ "average_ns", std::format("{}", node.profiler.getAverage().count()) },
 				{ "child_percentages", getChildPercentagesJson(node) }
 			});
 		});

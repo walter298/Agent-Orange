@@ -1,18 +1,18 @@
 import json
 import os
 
+from pie_chart import *
 from stats import Stats
-from stats import ChildStats
 
-def get_child_stats(child_percentages_json) -> list[ChildStats]:
-    child_stats = []
+def parse_pie_chart(child_percentages_json) -> PieChart:
+    slices = []
     if not child_percentages_json:
-        return child_stats
-
+        return None
+    
     for name, percentage in child_percentages_json.items():
-        child_stats.append(ChildStats(name, float(percentage)))
+        slices.append(Slice(name, float(percentage)))
 
-    return child_stats
+    return PieChart(slices)
 
 def load_stats_file(file_path) -> list[Stats]:
     stats = []
@@ -21,8 +21,8 @@ def load_stats_file(file_path) -> list[Stats]:
         for func in stats_json:
             average = int(func["average_ns"])
             name = func["name"]
-            child_stats = get_child_stats(func["child_percentages"])
-            stats.append(Stats(name, average, child_stats))
+            pie_chart = parse_pie_chart(func["child_percentages"])
+            stats.append(Stats(name, average, pie_chart))
         return stats
     
 def load_stats_map() -> dict[(str, list[Stats])]:

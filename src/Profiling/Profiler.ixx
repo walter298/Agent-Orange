@@ -1,4 +1,4 @@
 export module Chess.Profiler;
 
-export import :FunctionProfiler;
+export import :ProfilerOwner;
 export import :ProfilerGuard;
