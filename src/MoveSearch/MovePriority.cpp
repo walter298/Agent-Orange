@@ -121,8 +121,7 @@ namespace chess {
 	}
 
 	FixedVector<MovePriority> getMovePriorities(const std::vector<Move>& legalMoves, int maxDepth, int level, bool maximizing) {
-		static MaybeProfiler profiler{ "findBestMove", "getMovePriorities" };
-		ProfilerLock l{ profiler };
+		ProfilerLock l{ getMovePrioritiesProfiler() };
 
 		if (maximizing) {
 			return getMovePrioritiesImpl<true>(legalMoves, maxDepth, level);

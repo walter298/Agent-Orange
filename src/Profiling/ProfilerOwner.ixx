@@ -2,43 +2,56 @@ export module Chess.Profiler:ProfilerOwner;
 
 import std;
 
-import :BasicProfiler;
+export import :BasicProfiler;
+import :ProfilerMap;
 
 namespace chess {
+	template<std::derived_from<BasicProfiler> Profiler = BasicProfiler>
 	class ProfilerOwner {
 	private:
-		BasicProfiler* m_profiler;
+		Profiler m_profiler;
+		std::string m_name;
 	public:
-		ProfilerOwner(const std::string& name);
-		ProfilerOwner(const std::string& parent, const std::string& name);
+		ProfilerOwner(auto&& profiler, const std::string& name, const std::string& parent)
+			: m_profiler{ std::forward<Profiler>(profiler) }, m_name{ name }
+		{
+			mapProfiler(name, &m_profiler);
+			if (!parent.empty()) {
+				addChild(name, parent);
+			}
+		}
+
+		ProfilerOwner(const std::string& name, const std::string& parent = "")
+			: ProfilerOwner{ Profiler{}, name, parent }
+		{
+		}
 
 		void start() {
-			m_profiler->start();
+			m_profiler.start();
 		}
 		void end() {
-			m_profiler->end();
+			m_profiler.end();
+		}
+
+		auto& get(this auto&& self) {
+			return self.m_profiler;
+		}
+
+		~ProfilerOwner() {
+			if (!isProgramFinished()) {
+				std::println("Error: {} destructed before program ended", m_name);
+				std::exit(-1);
+			}
 		}
 	};
 
 	struct DummyProfiler {
-		DummyProfiler(std::string name) {}
-		DummyProfiler(std::string parentName, std::string name) {}
+		DummyProfiler(auto&&, std::string, std::string) {}
+		DummyProfiler(std::string, std::string) {}
 		void start() {}
 		void end() {}
 	};
 
-	export using MaybeProfiler = std::conditional_t<PROFILING, ProfilerOwner, DummyProfiler>;
-
-	export template<typename P>
-		struct ProfilerLock {
-		P& profiler;
-
-		ProfilerLock(P& profiler) : profiler{ profiler }
-		{
-			profiler.start();
-		}
-		~ProfilerLock() {
-			profiler.end();
-		}
-	};
+	export template<typename Profiler = BasicProfiler>
+	using MaybeProfiler = std::conditional_t<PROFILING, ProfilerOwner<Profiler>, DummyProfiler>;
 }

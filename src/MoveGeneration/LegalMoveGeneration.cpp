@@ -1,5 +1,7 @@
 module Chess.LegalMoveGeneration;
 
+import nlohmann.json;
+
 import std;
 import Chess.PieceMap;
 import Chess.Profiler;
@@ -106,8 +108,7 @@ namespace chess {
 		}
 
 		static EnemyMoveData calcEnemyMoves(const PieceState& enemies, const PieceLocationData& pieceLocations) {
-			static MaybeProfiler enemyMoveProfiler{ "calcAllLegalMoves", "calcEnemyMoves" };
-			ProfilerLock l{ enemyMoveProfiler };
+			ProfilerLock l{ getEnemyMoveProfiler() };
 
 			EnemyMoveData ret;
 			ret.squares |= kingMoveGenerator(enemies[King], pieceLocations.empty).all();
@@ -148,8 +149,7 @@ namespace chess {
 		static void addMoves(std::vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveAdder moveAdder)
 		{
-			static MaybeProfiler moveAdderProfiler{ "calcAllLegalMoves", "addMoves" };
-			ProfilerLock l{ moveAdderProfiler };
+			ProfilerLock l{ getMoveAdderProfiler() };
 
 			Move move{ piecePos, Square::None, pieceType, Piece::None };
 
@@ -205,8 +205,7 @@ namespace chess {
 		}
 
 		static void addEnPessantMoves(std::vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
-			static MaybeProfiler enPassantProfiler{ "calcAllLegalMoves", "addEnPessantMoves" };
-			ProfilerLock l{ enPassantProfiler };
+			ProfilerLock l{ getEnPessantProfiler() };
 
 			auto enPessantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
 			if (!enPessantData.pawns) {
@@ -252,14 +251,18 @@ namespace chess {
 				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, enemies.doubleJumpedPawn);
 			}
 
+			if constexpr (PROFILING) {
+				auto& profiler = getLegalMoveGenerationProfiler().get();
+				profiler.legalMovesGenerated += moves.size();
+			}
+
 			bool inCheck = (enemyMoveData.squares & pieceLocations.allyKing);
 			return { moves, inCheck && moves.empty() };
 		}
 	};
 
 	LegalMoves calcAllLegalMoves(const Position& pos) {
-		static MaybeProfiler profiler{ "findBestMove", "calcAllLegalMoves" };
-		ProfilerLock l{ profiler };
+		ProfilerLock l{ getLegalMoveGenerationProfiler() };
 
 		auto turnData = pos.getTurnData();
 		

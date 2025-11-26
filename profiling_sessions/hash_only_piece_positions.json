@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 9871149343,
+    "child_percentages": {
+      "calcAllLegalMoves": 8.790604769336337,
+      "getMovePriorities": 17.583855633781805,
+      "getPositionRating": 32.078589733878474,
+      "staticEvaluation": 2.16361728824644,
+      "storePositionRating": 31.176192220194825
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 157938389500,
+    "times_run": 16,
+    "unique_data": null
+  },
+  {
+    "average_ns": 99,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 7580842800,
+    "times_run": 76109988,
+    "unique_data": null
+  },
+  {
+    "average_ns": 1488,
+    "child_percentages": {
+      "addMoves": 54.602311901614755,
+      "calcEnemyMoves": 11.77329701574063,
+      "getEnPessantMoves": 0.039996428627918086
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 13883739600,
+    "times_run": 9327528,
+    "unique_data": {
+      "moves_per_second": 19629829.923076924,
+      "total_moves_generated": 255187789
+    }
+  },
+  {
+    "average_ns": 2982,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 27771658400,
+    "times_run": 9311235,
+    "unique_data": null
+  },
+  {
+    "average_ns": 87,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 1634573900,
+    "times_run": 18653484,
+    "unique_data": null
+  },
+  {
+    "average_ns": 49,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 3417182300,
+    "times_run": 69614740,
+    "unique_data": null
+  },
+  {
+    "average_ns": 572,
+    "child_percentages": null,
+    "name": "getPositionRating",
+    "time_spent_ns": 50664408000,
+    "times_run": 88470149,
+    "unique_data": null
+  },
+  {
+    "average_ns": 556,
+    "child_percentages": null,
+    "name": "storePositionRating",
+    "time_spent_ns": 49239175900,
+    "times_run": 88470149,
+    "unique_data": null
+  },
+  {
+    "average_ns": 53,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 5553000,
+    "times_run": 103539,
+    "unique_data": null
+  }
+]

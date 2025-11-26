@@ -84,13 +84,8 @@ namespace chess {
 			ret.m_pos= { parent.m_pos, movePriority.move }; 
 			ret.m_level = parent.m_level + 1;
 			ret.m_levelsToSearch = movePriority.recommendedDepth;
-			//ret.m_inCaptureSequence = movePriority.move.isMaterialChange();
 			return ret;
 		}
-
-		/*bool inCaptureSequence() const {
-			return m_inCaptureSequence;
-		}*/
 
 		const Position& getPos() const {
 			return m_pos;
@@ -180,8 +175,7 @@ namespace chess {
 	}
 
 	std::optional<Move> findBestMove(const Position& pos, int depth) {
-		static MaybeProfiler profiler{ "findBestMove" };
-		ProfilerLock l{ profiler };
+		ProfilerLock l{ getBestMoveProfiler() };
 
 		beginCalculation = std::chrono::steady_clock::now();
 

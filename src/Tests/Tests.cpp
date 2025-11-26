@@ -33,6 +33,7 @@ import Chess.Position;
 import Chess.PositionCommand;
 import Chess.LegalMoveGeneration;
 import Chess.MoveSearch;
+import Chess.Profiler;
 
 namespace chess {
 	namespace tests {

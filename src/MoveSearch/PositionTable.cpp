@@ -11,23 +11,11 @@ import :MoveHasher;
 namespace chess {
 	struct PositionHasher {
 		size_t operator()(const Position& pos) const {
-			auto turnData = pos.getTurnData();
+			auto [white, black] = pos.getColorSides();
 
-			size_t hash = 0;
+			auto allPieces = white.calcAllLocations() | black.calcAllLocations();
 
-			auto hashSides = [&](const PieceState& pieces) {
-				for (const auto& piece : ALL_PIECE_TYPES) {
-					boost::hash_combine(hash, pieces[piece]);
-				}
-			};
-
-			hashSides(turnData.allies);
-			hashSides(turnData.enemies);
-
-			boost::hash_combine(hash, turnData.allies.doubleJumpedPawn);
-			boost::hash_combine(hash, turnData.enemies.doubleJumpedPawn);
-
-			return hash;
+			return static_cast<size_t>(allPieces);
 		}
 	};
 
@@ -53,8 +41,7 @@ namespace chess {
 	PositionMap positionMap;
 
 	std::optional<Rating> getPositionRating(const Position& pos, int depth) {
-		static MaybeProfiler profiler{ "findBestMove", "getPositionRating" };
-		ProfilerLock l{ profiler };
+		ProfilerLock l{ getGetPositionRatingProfiler() };
 
 		auto depthToRatings = positionMap.find(pos);
 		if (depthToRatings == positionMap.end()) {
@@ -69,8 +56,7 @@ namespace chess {
 	}
 
 	void storePositionRating(const Position& pos, int depth, Rating rating) {
-		static MaybeProfiler profiler{ "findBestMove", "storePositionRating" };
-		ProfilerLock l{ profiler };
+		ProfilerLock l{ getStorePositionRatingProfiler() };
 
 		auto posIt = positionMap.find(pos);
 		if (posIt == positionMap.end()) {
@@ -84,5 +70,4 @@ namespace chess {
 			depthMap.rating = rating;
 		}
 	}
-
 }

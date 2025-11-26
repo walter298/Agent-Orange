@@ -6,6 +6,7 @@ namespace chess {
 	struct Dummy {};
 
 	struct ProfilerGuard {
+		ProfilerGuard();
 		~ProfilerGuard();
 	};
 

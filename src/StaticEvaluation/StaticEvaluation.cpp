@@ -67,8 +67,7 @@ namespace chess {
 	}
 
 	Rating staticEvaluation(const Position& pos) {
-		static MaybeProfiler profiler{ "staticEvaluation" };
-		ProfilerLock l{ profiler };
+		ProfilerLock l{ getStaticEvaluationProfiler() };
 		return calcMaterialRating(pos) + calcPawnAdvancementRating(pos);
 	}
 

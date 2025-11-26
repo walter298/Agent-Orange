@@ -1,6 +1,9 @@
 export module Chess.Profiler:BasicProfiler;
 
 import std;
+import nlohmann.json;
+
+import :FinishedProgramFlag;
 
 export namespace chess {
 	namespace chrono = std::chrono;
@@ -11,6 +14,10 @@ export namespace chess {
 		chrono::nanoseconds m_totalTimeSpent{ 0 };
 		chrono::system_clock::time_point m_startOfMeasurement;
 	public:
+		virtual nlohmann::json getUniqueJson() const {
+			return nlohmann::json{};
+		}
+
 		void start() {
 			m_startOfMeasurement = chrono::system_clock::now();
 		}
@@ -30,7 +37,12 @@ export namespace chess {
 		}
 
 		chrono::nanoseconds getAverage() const {
+			if (m_timesRun == 0) { //prevent division by zero
+				return chrono::nanoseconds{ 0 };
+			}
 			return m_totalTimeSpent / m_timesRun;
 		}
+
+		virtual ~BasicProfiler() = default;
 	};
 }
