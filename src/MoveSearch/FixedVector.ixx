@@ -8,7 +8,7 @@ export namespace chess {
 	private:
 		std::vector<T> m_data;
 	public:
-		explicit FixedVector(std::vector<T> data) : m_data{ std::move(data) } {}
+		explicit FixedVector(std::vector<T>&& data) : m_data{ std::move(data) } {}
 
 		auto begin() const {
 			return m_data.begin();

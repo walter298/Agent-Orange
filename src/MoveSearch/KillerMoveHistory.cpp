@@ -2,7 +2,7 @@ module;
 
 #include <boost/unordered/unordered_flat_map.hpp>
 
-module Chess.MoveSearch:MoveHistory;
+module Chess.MoveSearch:KillerMoveHistory;
 
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;

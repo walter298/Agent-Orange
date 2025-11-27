@@ -1,4 +1,4 @@
-export module Chess.MoveSearch:MoveHistory;
+export module Chess.MoveSearch:KillerMoveHistory;
 
 export import std;
 export import Chess.Move;

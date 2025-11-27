@@ -19,8 +19,7 @@ int main(int argc, char** argv) {
 	if (argc == 1) {
 		std::println("Error: no command line arguments supplied. Options: ");
 		printCommandLineArgumentOptions();
-	}
-	else if (std::strcmp(argv[1], "local") == 0) {
+	} else if (std::strcmp(argv[1], "local") == 0) {
 		chess::playUCI();
 	} else if (std::strcmp(argv[1], "test") == 0) {
 		chess::tests::runAllTests();

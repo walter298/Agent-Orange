@@ -12,8 +12,9 @@ import Chess.Position;
 import Chess.Profiler;
 import Chess.Rating;
 
-import :MoveHistory;
-import :MovePriority;
+import :KillerMoveHistory;
+import :MovePriorityGeneration;
+import :Node;
 import :PositionTable;
 import :ThreadPool;
 
@@ -64,50 +65,6 @@ namespace chess {
 		}
 	};
 
-	class Node {
-	private:
-		Position m_pos;
-		bool m_inCaptureSequence = false;
-		int m_level = 0;
-		int m_levelsToSearch = 0;
-
-		Node() = default;
-	public:
-		static Node makeRoot(const Position& root, int maxDepth) {
-			Node ret;
-			ret.m_pos = root;
-			ret.m_levelsToSearch = maxDepth;
-			return ret;
-		}
-		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
-			Node ret;
-			ret.m_pos= { parent.m_pos, movePriority.move }; 
-			ret.m_level = parent.m_level + 1;
-			ret.m_levelsToSearch = movePriority.recommendedDepth;
-			return ret;
-		}
-
-		const Position& getPos() const {
-			return m_pos;
-		}
-
-		int getLevel() const {
-			return m_level;
-		}
-
-		int getLevelsToSearch() const {
-			return m_levelsToSearch;
-		}
-
-		bool isDone() const {
-			return m_levelsToSearch == 0;
-		}
-
-		Rating getRating() const {
-			return staticEvaluation(m_pos);
-		}
-	};
-
 	template<bool Maximizing>
 	Rating minimax(const Node& node, AlphaBeta alphaBeta) {
 		auto cachedRating = getPositionRating(node.getPos(), node.getLevelsToSearch());
@@ -123,24 +80,24 @@ namespace chess {
 		if (node.isDone()) {
 			return node.getRating();
 		}
-
+		
 		auto legalMoves = calcAllLegalMoves(node.getPos());
 		if (legalMoves.moves.empty()) {
 			return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
 		}
-		auto movePriorities = getMovePriorities(legalMoves.moves, node.getLevelsToSearch(), node.getLevel(), Maximizing);
+		auto movePriorities = getMovePriorities(node, legalMoves.moves, Maximizing);
 
 		auto bestRating = worstPossibleRating<Maximizing>();
 		
 		for (const auto& movePriority : movePriorities) {
 			auto child = Node::makeChild(node, movePriority);
 			auto childRating = minimax<!Maximizing>(child, alphaBeta);
-			storePositionRating(child.getPos(), movePriority.recommendedDepth, childRating);
+			storePositionRating(child.getPos(), movePriority.getDepth(), childRating);
 
 			bestRating = extreme<Maximizing>(bestRating, childRating);
 			alphaBeta.update<Maximizing>(bestRating);
 			if (alphaBeta.canPrune()) {
-				updateHistoryScore(movePriority.move, node.getLevel());
+				updateHistoryScore(movePriority.getMove(), node.getLevel());
 				break;
 			}
 		}
@@ -151,21 +108,23 @@ namespace chess {
 	template<bool Maximizing>
 	std::optional<Move> bestMoveImpl(const Position& rootPos, int depth) {
 		AlphaBeta alphaBeta;
-		auto root = Node::makeRoot(rootPos, depth);
+		auto root = Node::makeRoot(rootPos, depth, rootPos.isWhite());
 
 		auto legalMoves = calcAllLegalMoves(rootPos);
 		if (legalMoves.moves.empty()) {
 			return std::nullopt;
 		}
-		auto movePriorities = getMovePriorities(legalMoves.moves, depth - 1, 0, Maximizing);
+		std::vector<Move> postponedMoves;
+
+		auto movePriorities = getMovePriorities(root, legalMoves.moves, Maximizing);
 
 		auto bestMove = Move::null();
 		for (const auto& movePriority : movePriorities) {
 			auto child = Node::makeChild(root, movePriority);
 			auto childRating = minimax<!Maximizing>(child, alphaBeta);
-			storePositionRating(child.getPos(), movePriority.recommendedDepth, childRating);
+			storePositionRating(child.getPos(), movePriority.getDepth(), childRating);
 			if (alphaBeta.update<Maximizing>(childRating)) {
-				bestMove = movePriority.move;
+				bestMove = movePriority.getMove();
 			}
 		}
 
