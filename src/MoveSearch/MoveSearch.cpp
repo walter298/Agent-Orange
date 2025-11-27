@@ -16,7 +16,6 @@ import :KillerMoveHistory;
 import :MovePriorityGeneration;
 import :Node;
 import :PositionTable;
-import :ThreadPool;
 
 namespace chess {
 	std::chrono::steady_clock::time_point beginCalculation;
