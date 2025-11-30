@@ -29,6 +29,8 @@ module;
 module Chess.Tests;
 
 import std;
+
+import Chess.BitboardImage;
 import Chess.Position;
 import Chess.PositionCommand;
 import Chess.LegalMoveGeneration;
@@ -170,14 +172,65 @@ namespace chess {
 			assert_equality(nextSquare(black[Pawn]), G3);
 		}
 
+		void testPin() {
+			Position pos;
+			pos.setPos(parsePositionCommand("fen k7/8/8/3r4/8/8/8/rB1BK3 w - - 0 1"));
+
+			auto legalMoveData = calcAllLegalMoves(pos);
+			auto d1BishopMove = std::ranges::find_if(legalMoveData.moves, [](const Move& move) {
+				return move.from == D1;
+			});
+			if (d1BishopMove == legalMoveData.moves.end()) {
+				std::println("testPin failed: d1 bishop is not pinned but it is not moveable");
+			}
+		}
+
+		void testPinWithCheck() {
+			Position pos;
+			pos.setPos(parsePositionCommand("fen 8/8/1r2knR1/2b5/1p2pBBP/1P1p4/5PP1/6K1 b - - 4 44"));
+
+			auto legalMoveData = calcAllLegalMovesAndDrawBitboards(pos);
+			auto illegalKnightMove = std::ranges::find_if(legalMoveData.moves, [](const Move& move) {
+				return move.from == F6;
+			});
+			if (illegalKnightMove != legalMoveData.moves.end()) {
+				std::println("testPinWithCheck failed: illegal knight move: {}", illegalKnightMove->getUCIString());
+			}
+			int;
+		}
+
+		void testBitboardImageCreation() {
+			Position pos;
+			pos.setPos(parsePositionCommand("startpos"));
+
+			auto [white, black] = pos.getColorSides();
+			auto whitePieces = white.calcAllLocations();
+			auto blackPieces = black.calcAllLocations();
+
+			auto colorGetter = [&](Bitboard bitboard) -> RGB {
+				if (bitboard & whitePieces) {
+					return { 255, 255, 255 }; 
+				} else if (bitboard & blackPieces) {
+					return { 0, 0, 0 };
+				} else {
+					return { 240, 255, 91 }; 
+				}
+			};
+			drawBitboardImage(colorGetter, "start_position.bmp");
+		}
+
 		void runAllTests() {
 			std::println("Running tests...");
+
 			testStartPos();
 			testPawnLocations();
 			testThatLegalMovesExist();
 			testThatLegalMovesExist2();
 			testThatLegalMovesExist3();
 			testEnPessant();
+			testPin();
+			testPinWithCheck();
+			testBitboardImageCreation();
 		}
 	}
 }

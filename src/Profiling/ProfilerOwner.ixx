@@ -47,7 +47,7 @@ namespace chess {
 
 	struct DummyProfiler {
 		DummyProfiler(auto&&, std::string, std::string) {}
-		DummyProfiler(std::string, std::string) {}
+		DummyProfiler(std::string, std::string = "") {}
 		void start() {}
 		void end() {}
 	};

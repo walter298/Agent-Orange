@@ -25,6 +25,7 @@ export namespace chess {
 			if (!isWhite) {
 				ret.m_materialSignSwap *= -1_rt;
 			}
+
 			return ret;
 		}
 		static Node makeChild(const Node& parent, const MovePriority& movePriority) {

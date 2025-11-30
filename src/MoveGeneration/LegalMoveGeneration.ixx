@@ -10,4 +10,5 @@ export namespace chess {
 		bool isCheckmate = false;
 	};
 	LegalMoves calcAllLegalMoves(const Position& pos);
+	LegalMoves calcAllLegalMovesAndDrawBitboards(const Position& pos);
 }

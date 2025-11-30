@@ -12,12 +12,12 @@ export namespace chess {
 	private:
 		std::tuple<MoveGenerators...> m_generators;
 	public:
-		ChainedMoveGenerator(MoveGenerators... generators) :
+		constexpr ChainedMoveGenerator(MoveGenerators... generators) :
 			m_generators{ generators... }
 		{
 		}
 
-		MoveGen operator()(Bitboard movingPieces, Bitboard empty) {
+		MoveGen operator()(Bitboard movingPieces, Bitboard empty) const {
 			return std::apply([&](auto... generators) {
 				return (generators(movingPieces, empty) | ...);
 			}, m_generators);
@@ -25,7 +25,7 @@ export namespace chess {
 	};
 
 	template<typename M1, typename M2>
-	ChainedMoveGenerator<M1, M2> operator|(M1 m1, M2 m2) {
+	consteval ChainedMoveGenerator<M1, M2> operator|(M1 m1, M2 m2) {
 		return { m1, m2 };
 	}
 }

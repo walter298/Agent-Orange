@@ -23,8 +23,8 @@ namespace chess {
 	struct BlackPawnMoveGenerator {
 		MoveGen operator()(Bitboard pawns, Bitboard emptySquares, Bitboard enemies) const;
 	};
-	export WhitePawnMoveGenerator whitePawnMoveGenerator;
-	export BlackPawnMoveGenerator blackPawnMoveGenerator;
-	export WhitePawnAttackGenerator whitePawnAttackGenerator;
-	export BlackPawnAttackGenerator blackPawnAttackGenerator;
+	export constexpr WhitePawnMoveGenerator whitePawnMoveGenerator;
+	export constexpr BlackPawnMoveGenerator blackPawnMoveGenerator;
+	export constexpr WhitePawnAttackGenerator whitePawnAttackGenerator;
+	export constexpr BlackPawnAttackGenerator blackPawnAttackGenerator;
 }

@@ -1,8 +1,8 @@
 module;
 
 #define MAKE_PROFILER_IMPL(ProfilerType, funcName, strName, ...)\
-	ProfilerOwner<ProfilerType>& funcName() { \
-		static ProfilerOwner<ProfilerType> profiler{ strName, ##__VA_ARGS__ }; \
+	MaybeProfiler<ProfilerType>& funcName() { \
+		static MaybeProfiler<ProfilerType> profiler{ strName, ##__VA_ARGS__ }; \
 		return profiler; \
 	}; \
 
