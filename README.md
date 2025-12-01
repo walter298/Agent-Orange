@@ -21,7 +21,7 @@ Agent Orange is a chess engine. It uses the UCI protocol, meaning that it can an
 
 ### Profiling
 
-To use the profiling version of Agent Orange, simply select agent_orange_profiling.exe in step 3 above. After the binary exits, a new profiling session file should appear in the profiling_sessions directory. To visualize this file, run the Activate script in profiler_visualizer/.venv/Scripts. Then run "python main.py" from the profiler_visualizer directory. 
+To use the profiling version of Agent Orange, simply select agent_orange_profiling.exe in step 3 above. After the binary exits, a new profiling session file should appear in the profiling_sessions directory. Profiling sessions can be visualized inside the custom profiler app. To run this app, first create a custom Python environment in the profiler_visualizer directory. Then run /.venv/Scripts/Activate. Finally, run "python main.py" from the profiler_visualizer directory. 
 
 ## Move Search Strategy
 Agent Orange uses the minimax algorithm with alpha-beta pruning in order to find the best move. Upon calculating each legal move, Agent Orange will order them in a way that allows maximum pruning. Captures are ordered first, then historically good moves (i.e. moves that caused alpha to be greater than beta and vice versa), then unexplored non-captures. 
