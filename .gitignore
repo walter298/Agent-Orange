@@ -6,3 +6,4 @@ Chess.vcxproj.filters
 Chess.vcxproj.user
 /profiler_visualizer/.venv
 /profiler_visualizer/__pycache__
+/releases
