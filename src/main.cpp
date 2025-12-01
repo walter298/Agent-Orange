@@ -74,7 +74,6 @@ namespace chess {
 		std::println("test\t\t\t\t\t\t- Run all tests");
 		std::println("draw_bitboard [bitboard, base, filename]\t- Draw a bitboard image");
 	}
-
 }
 
 int main(int argc, const char** argv) {

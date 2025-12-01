@@ -7,6 +7,22 @@
 ## Overview
 Agent Orange is a chess engine. It uses the UCI protocol, meaning that it can analyze moves from any given position and can be installed in almost any modern Chess GUI. (Chess Arena is so far the only tested GUI, however). Chess "states" (i.e. piece locations, attacked squares, etc) are all represented in unsigned 64 bit integers, or "bitboards." This allows for extremely fast move generation, as most algorithms consist entirely of integer operations. Agent Orange can calculate over one million moves per second.
 
+
+## 1 Minute Installation 
+
+1. Go to releases and download the latest version of Agent Orange. 
+2. Extract the zip folder to any location. The directory should contain agent_orange.exe and agent_orange_profiling.exe. Note that to use the profiler app, you must have python installed. 
+
+## Usage 
+
+1. Open your Chess GUI of choice (Chess Arena is recommended). 
+2. Go to the engine management section and add a new UCI engine.
+3. Select either the agent_orange.exe or agent_orange_profiling.exe file from the extracted folder.
+
+### Profiling
+
+To use the profiling version of Agent Orange, simply select agent_orange_profiling.exe in step 3 above. After the binary exits, a new profiling session file should appear in the profiling_sessions directory. To visualize this file, run the Activate script in profiler_visualizer/.venv/Scripts. Then run "python main.py" from the profiler_visualizer directory. 
+
 ## Move Search Strategy
 Agent Orange uses the minimax algorithm with alpha-beta pruning in order to find the best move. Upon calculating each legal move, Agent Orange will order them in a way that allows maximum pruning. Captures are ordered first, then historically good moves (i.e. moves that caused alpha to be greater than beta and vice versa), then unexplored non-captures. 
 
