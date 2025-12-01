@@ -13,3 +13,10 @@ Branch exploration is not automatically ended upon depth cutoff. Rather, Agent O
 
 ## Position Evaluation
 Agent Orange uses the following three heuristics: piece material, pawn advancement, and whether the enemy king is checkmated. 
+
+## Profiling
+Agent Orange uses a custom profiling app built off Python's Tkinter library. You can look at individual function benchmarks in a bar graph visualization, or at how much relative time they are taking in the engine's evaluation. 
+
+<p align="center">
+  <img src="assets/profiling.png" alt="Logo" width="1250">
+</p>
