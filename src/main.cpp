@@ -45,26 +45,54 @@ namespace chess {
 		drawBitboardImage(colorGetter, argv[FILENAME_INDEX]);
 	}
 
+	void playUCIWithDepth(const char** argv, int argc) {
+		if (argc != 3) {
+			std::println("Error: uci with depth requires 1 argument: [depth]");
+			return;
+		}
+		auto depth = 0;
+		auto depthStr = argv[2];
+		auto depthStrEnd = depthStr + std::strlen(depthStr);
+		auto depthRes = std::from_chars(depthStr, depthStrEnd, depth, 10);
+		if (depthRes.ec != std::errc{}) {
+			std::println("Error: could not parse depth argument");
+			return;
+		}
+
+		if (depth < 2) {
+			std::println("Error: depth must be at least 2");
+			return;
+		}
+
+		playUCI(depth);
+	}
+
+	void printCommandLineArgumentOptions() {
+		std::println("Options:");
+		std::println("(none)\t\t\t\t\t\t- Start the engine in UCI mode (default depth = 6)");
+		std::println("uci [depth]\t\t\t\t\t- Start the engine in UCI mode with specified depth");
+		std::println("test\t\t\t\t\t\t- Run all tests");
+		std::println("draw_bitboard [bitboard, base, filename]\t- Draw a bitboard image");
+	}
+
 }
 
 int main(int argc, const char** argv) {
 	chess::MaybeProfilerGuard guard;
 
 	if (argc == 1) {
-		std::println("Error: no command line arguments supplied");
-	} else if (std::strcmp(argv[1], "local") == 0) {
 		chess::playUCI();
+	} else if (std::strcmp(argv[1], "uci") == 0) {
+		chess::playUCIWithDepth(argv, argc);
 	} else if (std::strcmp(argv[1], "test") == 0) {
 		chess::tests::runAllTests();
 	} else if (std::strcmp(argv[1], "draw_bitboard") == 0) {
 		chess::handleBitboardInput(argv, argc);
+	} else if (std::strcmp(argv[1], "help") == 0) {
+		chess::printCommandLineArgumentOptions();
 	} else {
-		std::println("{}", argv[1]);
-		std::print("Error: ");
-		for (int i = 0; i < argc; i++) {
-			std::print("{} ", argv[i]);
-		}
-		std::println("are invalid command line arguments");
+		std::print("Invalid command line arguments. ");
+		chess::printCommandLineArgumentOptions();
 	}
 	return 0;
 }

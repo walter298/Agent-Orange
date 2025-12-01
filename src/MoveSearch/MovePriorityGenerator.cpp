@@ -116,24 +116,14 @@ namespace chess {
 		auto minHistoryDepth = maxHistoryDepth / 2;
 		auto nonKillerMoves = addKillerMoves<Maximizing>(nonCaptures, priorities, minHistoryDepth, maxHistoryDepth);
 
-		auto movesToDiscard = std::clamp(0b1uz << node.getLevel(), 0uz, nonKillerMoves.size());
-
 		if (node.inWinningAttackSequence()) {
 			if (!priorities.empty() && !node.inWinningAttackSequence()) {
 				return FixedVector{ std::move(priorities) };
 			}
 		}
 
-		//prevent discarding moves so that there will be literally zero moves to evaluate
-		if (priorities.empty() && movesToDiscard == nonKillerMoves.size()) {
-			assert(!std::ranges::empty(nonKillerMoves));
-			movesToDiscard -= 1; //should not wrap around because nonKillerMoves.size() > 0
-			assert(movesToDiscard != std::numeric_limits<size_t>::max());
-		}
-		auto reducedNonKillerMoves = nonKillerMoves | std::views::drop(movesToDiscard);
-
-		if (!std::ranges::empty(reducedNonKillerMoves)) {
-			priorities.append_range(reducedNonKillerMoves | std::views::transform([&](const Move& move) {
+		if (!std::ranges::empty(nonKillerMoves)) {
+			priorities.append_range(nonKillerMoves | std::views::transform([&](const Move& move) {
 				return MovePriority{ move, minHistoryDepth };
 			}));
 		} 

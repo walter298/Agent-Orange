@@ -21,10 +21,12 @@ namespace chess {
 		return buff.substr(currentPos);
 	}
 
-	void playUCI() {
+	void playUCI(int depth) {
 		std::istringstream iss;
 		std::string line;
 		std::string token;
+
+		gameState.depth = depth;
 
 		while (std::getline(std::cin, line)) {
 			iss.clear();
