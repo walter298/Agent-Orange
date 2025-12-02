@@ -11,23 +11,23 @@ Agent B is a chess engine. It uses the UCI protocol, meaning that it can analyze
 ## 30 Second Installation 
 
 1. Go to releases and download the latest version of Agent B. 
-2. Extract the zip folder to any location. The directory should contain agent_B.exe and agent_B_profiling.exe. Note that to use the profiler app, you must have python installed. 
+2. Extract the zip folder to any location. The directory should contain agent_b.exe and agent_b_profiling.exe. Note that to use the profiler app, you must have python installed. 
 
 ## Usage 
 
 ### Installing Agent B in a Chess GUI
 1. Open your Chess GUI of choice (Chess Arena is recommended). 
 2. Go to the engine management section and add a new UCI engine.
-3. Select either the agent_B.exe or agent_B_profiling.exe file from the extracted folder.
+3. Select either the agent_b.exe or agent_b_profiling.exe file from the extracted folder.
 
 ### Command Line Usage
 
-Run ./agent_B help to see a list of all available commands. Note that to create a bitboard image, you must set the CHESS_BITBOARD_IMAGES environment variable, which will specify the directory in which the images are stored.
+Run ./agent_b help to see a list of all available commands. Note that to create a bitboard image, you must set the CHESS_BITBOARD_IMAGES environment variable, which will specify the directory in which the images are stored.
 
 ### Profiling
 
 1. Set the CHESS_PROFILING_SESSIONS environment variable to specify the directory in which profiling session files will be stored.
-2. Run agent_B_profiling.exe in step 3 above. After the binary exits, a new profiling session file should appear in the specified directory. 
+2. Run agent_b_profiling.exe in step 3 above. After the binary exits, a new profiling session file should appear in the specified directory. 
 3. Profiling sessions can be visualized inside the custom profiler app. To run this app, first create a custom Python environment in the profiler_visualizer directory. 
 4. Run /.venv/Scripts/Activate. Finally, run "python main.py" from the profiler_visualizer directory.
 
