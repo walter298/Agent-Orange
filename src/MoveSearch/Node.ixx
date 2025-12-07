@@ -63,7 +63,7 @@ export namespace chess {
 			return m_level;
 		}
 
-		int getLevelsToSearch() const {
+		int getRemainingDepth() const {
 			return m_levelsToSearch;
 		}
 

@@ -7,3 +7,4 @@ Chess.vcxproj.user
 /profiler_visualizer/.venv
 /profiler_visualizer/__pycache__
 /releases
+/test_executables

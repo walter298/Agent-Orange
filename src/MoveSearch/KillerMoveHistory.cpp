@@ -11,11 +11,8 @@ import :MoveHasher;
 namespace chess {
 	boost::unordered_flat_map<Move, Rating, MoveHasher> historyTable;
 
-	void updateHistoryScore(const Move& move, int distFromRoot) {
-		if (distFromRoot > 63) {
-			distFromRoot = 63;
-		}
-		auto delta = static_cast<Rating>(1 << distFromRoot);
+	void updateHistoryScore(const Move& move, int remainingDepth) {
+		auto delta = static_cast<Rating>(remainingDepth * remainingDepth);
 		auto& rating = historyTable[move];
 		if (std::numeric_limits<Rating>::max() - rating > delta) {
 			rating += delta;

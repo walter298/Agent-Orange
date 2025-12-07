@@ -21,15 +21,6 @@ namespace chess {
 	std::chrono::steady_clock::time_point beginCalculation;
 	constexpr std::chrono::seconds MAX_CALCULATION_TIME{ 120 };
 
-	template<bool Maximizing>
-	Rating extreme(Rating a, Rating b) {
-		if constexpr (Maximizing) {
-			return std::ranges::max(a, b);
-		} else {
-			return std::ranges::min(a, b);
-		}
-	}
-
 	class AlphaBeta {
 	private:
 		//add or subtract 1 so that checkmate ratings are always worse than these bounds
@@ -87,14 +78,21 @@ namespace chess {
 			auto child = Node::makeChild(node, movePriority);
 			auto childRating = minimax<!Maximizing>(child, alphaBeta);
 
-			bestRating = extreme<Maximizing>(bestRating, childRating);
-			if (bestRating == childRating) {
-				bestMove = movePriority.getMove();
+			if constexpr (Maximizing) {
+				if (childRating > bestRating) {
+					bestRating = childRating;
+					bestMove = movePriority.getMove();
+				}
+			} else {
+				if (childRating < bestRating) {
+					bestRating = childRating;
+					bestMove = movePriority.getMove();
+				}
 			}
 
 			alphaBeta.update<Maximizing>(bestRating);
 			if (alphaBeta.canPrune()) {
-				updateHistoryScore(movePriority.getMove(), node.getLevel());
+				updateHistoryScore(movePriority.getMove(), node.getRemainingDepth());
 				bound = Maximizing ? LowerBound : UpperBound;
 				break;
 			}
@@ -113,7 +111,7 @@ namespace chess {
 			}
 		}
 
-		storePositionEntry(node.getPos(), { bestRating, bound, node.getLevelsToSearch(), bestMove });
+		storePositionEntry(node.getPos(), { bestRating, bound, node.getRemainingDepth(), bestMove });
 
 		if constexpr (std::same_as<Ret, std::optional<Move>>) {
 			return bestMove;
@@ -127,13 +125,13 @@ namespace chess {
 		auto cachedEntryRes = getPositionEntry(node.getPos());
 		if (cachedEntryRes) {
 			const auto& cachedEntry = cachedEntryRes->get();
-			if (cachedEntry.depth >= node.getLevelsToSearch()) {
+			if (cachedEntry.depth >= node.getRemainingDepth()) {
 				switch (cachedEntry.bound) {
 				case InWindow:
 					return cachedEntry.rating;
 					break;
 				case LowerBound:
-					if (cachedEntry.rating >= alphaBeta.getBeta()) { //prune
+					if (cachedEntry.rating >= alphaBeta.getBeta()) { 
 						return cachedEntry.rating;
 					}
 					alphaBeta.updateAlpha(cachedEntry.rating);
@@ -170,10 +168,10 @@ namespace chess {
 
 		auto iterativeDeepening = [&]<bool Maximizing>() {
 			//to slow at the moment!
-			/*for (auto iterDepth = 1; iterDepth < depth; iterDepth++) {
+			for (auto iterDepth = 1; iterDepth < depth; iterDepth++) {
 				std::println("Iterative deepening at depth {}", iterDepth);
 				bestMoveImpl<Maximizing>(pos, iterDepth);
-			}*/
+			}
 			return bestMoveImpl<Maximizing>(pos, depth);
 		};
 		if (pos.getTurnData().isWhite) {

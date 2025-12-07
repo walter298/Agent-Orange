@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 311450,
+    "child_percentages": {
+      "calcAllLegalMoves": 45.737678600096324,
+      "getMovePriorities": 15.2512441804463,
+      "getPositionEntry": 5.329908492534917,
+      "staticEvaluation": 7.336651147856799,
+      "storePositionEntry": 7.641676031465725
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 622900,
+    "times_run": 2,
+    "unique_data": null
+  },
+  {
+    "average_ns": 96,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 151800,
+    "times_run": 1579,
+    "unique_data": null
+  },
+  {
+    "average_ns": 2739,
+    "child_percentages": {
+      "addMoves": 53.28185328185329,
+      "calcEnemyMoves": 4.247104247104247,
+      "getEnPessantMoves": 0.35100035100035104
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 284900,
+    "times_run": 104,
+    "unique_data": {
+      "moves_per_second": 7985257.985257986,
+      "total_moves_generated": 2275
+    }
+  },
+  {
+    "average_ns": 913,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 95000,
+    "times_run": 104,
+    "unique_data": null
+  },
+  {
+    "average_ns": 116,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 12100,
+    "times_run": 104,
+    "unique_data": null
+  },
+  {
+    "average_ns": 68,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 45700,
+    "times_run": 672,
+    "unique_data": null
+  },
+  {
+    "average_ns": 457,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 47600,
+    "times_run": 104,
+    "unique_data": null
+  },
+  {
+    "average_ns": 34,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 1000,
+    "times_run": 29,
+    "unique_data": null
+  },
+  {
+    "average_ns": 37,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 33200,
+    "times_run": 878,
+    "unique_data": null
+  }
+]

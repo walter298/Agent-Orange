@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 166080828,
+    "child_percentages": {
+      "calcAllLegalMoves": 27.363522133542894,
+      "getMovePriorities": 26.083689198495257,
+      "getPositionEntry": 11.860580278552836,
+      "staticEvaluation": 9.107385577659347,
+      "storePositionEntry": 3.635123276463147
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 2325131600,
+    "times_run": 14,
+    "unique_data": null
+  },
+  {
+    "average_ns": 125,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 336348700,
+    "times_run": 2674838,
+    "unique_data": null
+  },
+  {
+    "average_ns": 2287,
+    "child_percentages": {
+      "addMoves": 52.86524113071541,
+      "calcEnemyMoves": 6.56616023660332,
+      "getEnPessantMoves": 0.03608713030141713
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 636237900,
+    "times_run": 278106,
+    "unique_data": {
+      "moves_per_second": 11579181.309381288,
+      "total_moves_generated": 7367114
+    }
+  },
+  {
+    "average_ns": 2182,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 606480100,
+    "times_run": 277896,
+    "unique_data": null
+  },
+  {
+    "average_ns": 150,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 41776400,
+    "times_run": 278106,
+    "unique_data": null
+  },
+  {
+    "average_ns": 77,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 211758700,
+    "times_run": 2733701,
+    "unique_data": null
+  },
+  {
+    "average_ns": 304,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 84521400,
+    "times_run": 277896,
+    "unique_data": null
+  },
+  {
+    "average_ns": 110,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 229600,
+    "times_run": 2070,
+    "unique_data": null
+  },
+  {
+    "average_ns": 83,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 275774100,
+    "times_run": 3321411,
+    "unique_data": null
+  }
+]

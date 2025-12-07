@@ -45,7 +45,7 @@ namespace chess {
 	};
 
 	template<bool Maximizing, std::ranges::viewable_range Moves>
-	auto addKillerMoves(Moves&& moves, std::vector<MovePriority>& movePriorities, int minDepth, 
+	auto addKillerMoves(Moves& moves, std::vector<MovePriority>& movePriorities, int minDepth, 
 		int maxDepth)
 	{
 		auto [partitionPoint, end] = std::ranges::partition(moves, [&](const Move& move) {
@@ -104,11 +104,12 @@ namespace chess {
 	}
 
 	auto getPVEntry(const Node& node, std::vector<Move>& moves, std::vector<MovePriority>& priorities) {
-		auto entry = getPositionEntry(node.getPos());
-		if (entry) {
-			auto it = std::ranges::find(moves, entry->get().bestMove);
+		auto entryRes = getPositionEntry(node.getPos());
+		if (entryRes) {
+			auto& entry = entryRes->get();
+			auto it = std::ranges::find(moves, entry.bestMove);
 			if (it != moves.end()) {
-				priorities.emplace_back(entry->get().bestMove, node.getLevelsToSearch());
+				priorities.emplace_back(entry.bestMove, node.getRemainingDepth());
 				std::iter_swap(it, moves.begin());
 				return std::ranges::subrange(std::next(moves.begin()), moves.end());
 			}
@@ -118,8 +119,8 @@ namespace chess {
 
 	template<bool Maximizing>
 	FixedVector<MovePriority> getMovePrioritiesImpl(const Node& node, const std::vector<Move>& legalMoves) {
-		if (node.getLevelsToSearch() <= 0) {
-			std::println("Error: incorrect depth search: {}", node.getLevelsToSearch());
+		if (node.getRemainingDepth() <= 0) {
+			std::println("Error: incorrect depth search: {}", node.getRemainingDepth());
 			std::exit(-1);
 		}
 
@@ -128,15 +129,15 @@ namespace chess {
 		auto temp = legalMoves;
 
 		auto nonPVMoves = getPVEntry(node, temp, priorities);
-		auto nonCaptures = addCaptures(nonPVMoves, priorities, node.getLevelsToSearch());
-		auto maxHistoryDepth = node.getLevelsToSearch() - 1; //always greater than or equal to 1
+
+		auto captureDepth = node.getRemainingDepth();
+		if (captureDepth > 1) {
+			captureDepth--;
+		}
+		auto nonCaptures = addCaptures(nonPVMoves, priorities, captureDepth);
+		auto maxHistoryDepth = node.getRemainingDepth() - 1; //always greater than or equal to 1
 		auto minHistoryDepth = maxHistoryDepth / 2;
 		auto nonKillerMoves = addKillerMoves<Maximizing>(nonCaptures, priorities, minHistoryDepth, maxHistoryDepth);
-
-		//prune all sacrifice lines if we can
-		if (!priorities.empty() && node.inLosingAttackSequence()) {
-			return FixedVector{ std::move(priorities) };
-		}
 
 		if (!std::ranges::empty(nonKillerMoves)) {
 			priorities.append_range(nonKillerMoves | std::views::transform([&](const Move& move) {
@@ -146,7 +147,6 @@ namespace chess {
 
 		assert(!priorities.empty());
 
-		auto priorityLen = priorities.size();
 		return FixedVector{ std::move(priorities) };
 	}
 
