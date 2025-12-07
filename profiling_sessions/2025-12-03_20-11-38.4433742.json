@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 0,
+    "child_percentages": {
+      "calcAllLegalMoves": 0.0,
+      "getMovePriorities": 0.0,
+      "getPositionEntry": 0.0,
+      "staticEvaluation": 0.0,
+      "storePositionEntry": 0.0
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 0,
+    "times_run": 0,
+    "unique_data": null
+  },
+  {
+    "average_ns": 320,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 14400,
+    "times_run": 45,
+    "unique_data": null
+  },
+  {
+    "average_ns": 10683,
+    "child_percentages": {
+      "addMoves": 22.46489859594384,
+      "calcEnemyMoves": 16.69266770670827,
+      "getEnPessantMoves": 0.62402496099844
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 64100,
+    "times_run": 6,
+    "unique_data": {
+      "moves_per_second": 1107644.305772231,
+      "total_moves_generated": 71
+    }
+  },
+  {
+    "average_ns": 0,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 0,
+    "times_run": 0,
+    "unique_data": null
+  },
+  {
+    "average_ns": 1783,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 10700,
+    "times_run": 6,
+    "unique_data": null
+  },
+  {
+    "average_ns": 0,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 0,
+    "times_run": 0,
+    "unique_data": null
+  },
+  {
+    "average_ns": 0,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 0,
+    "times_run": 0,
+    "unique_data": null
+  },
+  {
+    "average_ns": 400,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 400,
+    "times_run": 1,
+    "unique_data": null
+  },
+  {
+    "average_ns": 0,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 0,
+    "times_run": 0,
+    "unique_data": null
+  }
+]

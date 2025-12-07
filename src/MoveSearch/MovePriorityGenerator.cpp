@@ -1,5 +1,6 @@
 module;
 
+#undef NDEBUG
 #include <cassert>
 
 module Chess.MoveSearch:MovePriorityGeneration;
@@ -9,12 +10,13 @@ import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
 import Chess.Profiler;
 import :KillerMoveHistory;
+import :PositionTable;
 
 namespace chess {
 	int calcDepth(Rating min, Rating max, Rating numerator, int minDepth, int maxDepth) {
 		auto denominator = max - min;
 		if (denominator == 0_rt) {
-			return 0;
+			return minDepth;
 		}
 		auto ret = (numerator / denominator) * static_cast<Rating>(maxDepth);
 		return std::clamp(static_cast<int>(ret), minDepth, maxDepth);
@@ -57,8 +59,8 @@ namespace chess {
 		};
 
 		if (!std::ranges::empty(killerMoves)) {
-			auto minRating = std::ranges::min(moves | std::views::transform(historyMoveCalculator));
-			auto maxRating = std::ranges::max(moves | std::views::transform(historyMoveCalculator));
+			auto minRating = std::ranges::min(killerMoves | std::views::transform(historyMoveCalculator));
+			auto maxRating = std::ranges::max(killerMoves | std::views::transform(historyMoveCalculator));
 
 			auto killerMovePriorities = killerMoves | std::views::transform([&](const Move& move) {
 				auto historyRating = getHistoryRating(move);
@@ -76,7 +78,8 @@ namespace chess {
 		return std::ranges::subrange(partitionPoint, end);
 	}
 
-	auto addCaptures(std::vector<Move>& moves, std::vector<MovePriority>& movePriorities, int maxDepth) {
+	template<std::ranges::viewable_range Moves>
+	auto addCaptures(Moves& moves, std::vector<MovePriority>& movePriorities, int maxDepth) {
 		auto [partitionPoint, end] = std::ranges::partition(moves, [&](const Move& move) {
 			return move.isMaterialChange();
 		});
@@ -100,6 +103,19 @@ namespace chess {
 		return std::ranges::subrange(partitionPoint, end);
 	}
 
+	auto getPVEntry(const Node& node, std::vector<Move>& moves, std::vector<MovePriority>& priorities) {
+		auto entry = getPositionEntry(node.getPos());
+		if (entry) {
+			auto it = std::ranges::find(moves, entry->get().bestMove);
+			if (it != moves.end()) {
+				priorities.emplace_back(entry->get().bestMove, node.getLevelsToSearch());
+				std::iter_swap(it, moves.begin());
+				return std::ranges::subrange(std::next(moves.begin()), moves.end());
+			}
+		}
+		return std::ranges::subrange(moves.begin(), moves.end());
+	}
+
 	template<bool Maximizing>
 	FixedVector<MovePriority> getMovePrioritiesImpl(const Node& node, const std::vector<Move>& legalMoves) {
 		if (node.getLevelsToSearch() <= 0) {
@@ -111,23 +127,26 @@ namespace chess {
 		priorities.reserve(legalMoves.size());
 		auto temp = legalMoves;
 
-		auto nonCaptures = addCaptures(temp, priorities, node.getLevelsToSearch());
+		auto nonPVMoves = getPVEntry(node, temp, priorities);
+		auto nonCaptures = addCaptures(nonPVMoves, priorities, node.getLevelsToSearch());
 		auto maxHistoryDepth = node.getLevelsToSearch() - 1; //always greater than or equal to 1
 		auto minHistoryDepth = maxHistoryDepth / 2;
 		auto nonKillerMoves = addKillerMoves<Maximizing>(nonCaptures, priorities, minHistoryDepth, maxHistoryDepth);
 
-		if (node.inWinningAttackSequence()) {
-			if (!priorities.empty() && !node.inWinningAttackSequence()) {
-				return FixedVector{ std::move(priorities) };
-			}
+		//prune all sacrifice lines if we can
+		if (!priorities.empty() && node.inLosingAttackSequence()) {
+			return FixedVector{ std::move(priorities) };
 		}
 
 		if (!std::ranges::empty(nonKillerMoves)) {
 			priorities.append_range(nonKillerMoves | std::views::transform([&](const Move& move) {
 				return MovePriority{ move, minHistoryDepth };
 			}));
-		} 
+		}
 
+		assert(!priorities.empty());
+
+		auto priorityLen = priorities.size();
 		return FixedVector{ std::move(priorities) };
 	}
 

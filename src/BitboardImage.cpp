@@ -43,11 +43,7 @@ namespace chess {
 		}
 	};
 
-	void drawBitboardImage(ColorGetter colorGetter, const std::string& filename)
-	{
-		RenderData renderData;
-		SDL_RenderClear(renderData.renderer);
-
+	void renderBitboard(SDL_Renderer* renderer, ColorGetter& colorGetter) {
 		constexpr auto SQUARE_COORDS = SQUARE_ARRAY | std::views::transform([](Square square) {
 			return std::pair{ fileOf(square), rankOf(square) };
 		});
@@ -60,17 +56,26 @@ namespace chess {
 			};
 		};
 
+	
 		for (auto [file, rank] : SQUARE_COORDS) {
 			auto cell = makeCell(file, rank);
 
 			Bitboard bit = 1ull << (rank * 8 + file);
 			auto [r, g, b] = colorGetter(bit);
 
-			SDL_SetRenderDrawColor(renderData.renderer, r, g, b, 255);
-			SDL_RenderFillRect(renderData.renderer, &cell);
-			SDL_SetRenderDrawColor(renderData.renderer, 0, 0, 0, 255);
-			SDL_RenderRect(renderData.renderer, &cell);
+			SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+			SDL_RenderFillRect(renderer, &cell);
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+			SDL_RenderRect(renderer, &cell);
 		}
+	}
+
+	void drawBitboardImage(ColorGetter colorGetter, const std::string& filename)
+	{
+		RenderData renderData;
+		SDL_RenderClear(renderData.renderer);
+
+		renderBitboard(renderData.renderer, colorGetter);
 
 		SDL_Rect rect{ 0, 0,
 			static_cast<int>(RenderData::SQUARE_LEN) * 8,

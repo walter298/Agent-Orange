@@ -145,4 +145,20 @@ namespace chess {
         }
         this->move(move);
 	}
+
+    size_t Position::hash() const {
+        auto white = m_whitePieces.calcAllLocations();
+        auto black = m_blackPieces.calcAllLocations();
+        return 0;
+    }
+
+    bool operator==(const Position& a, const Position& b) {
+        auto aTurnData = a.getTurnData();
+        auto bTurnData = b.getTurnData();
+        auto sidesEqual = std::ranges::equal(aTurnData.allies, bTurnData.allies) &&
+        	              std::ranges::equal(aTurnData.enemies, bTurnData.enemies);
+        auto jumpedPawnsEqual = (aTurnData.allies.doubleJumpedPawn == bTurnData.allies.doubleJumpedPawn) &&
+            (aTurnData.enemies.doubleJumpedPawn == bTurnData.enemies.doubleJumpedPawn);
+        return sidesEqual && jumpedPawnsEqual;
+    }
 }

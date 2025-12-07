@@ -92,6 +92,10 @@ export namespace chess {
         return currSquare;
     }
 
+	constexpr bool containsSquare(Bitboard bitboard, Square square) {
+        return (bitboard & makeBitboard(square)) != 0;
+    }
+
     constexpr void removeSquare(Bitboard& bitboard, Square square) {
         bitboard &= ~makeBitboard(square);
     }

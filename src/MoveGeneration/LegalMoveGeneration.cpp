@@ -61,29 +61,10 @@ namespace chess {
 			moves.push_back(move);
 		};
 
-		template<typename PawnMoveGenerator>
-		static auto wrapPawnMoveGenerator(PawnMoveGenerator pawnMoveGen, Bitboard enemies)
-		{
-			return [=](Bitboard pawns, Bitboard empty) {
-				return pawnMoveGen(pawns, empty, enemies);
-			};
-		}
-
-		/*template<typename PawnAttackGenerator>
-		static auto wrapPawnAttackGenerator(PawnAttackGenerator pawnAttackGenerator, Bitboard enemies) {
-			return [=](Bitboard pawns, Bitboard empty) {
-				return pawnAttackGenerator(pawns, enemies);
-			};
-		}*/
-
 		template<typename MoveGenerator>
-		static MoveGen calcReverseAttacks(const PieceLocationData& pieceLocations, MoveGenerator moveGenerator) {
+		static MoveGen calcReverseAttacks(const PieceLocationData& pieceLocations, MoveGenerator) {
 			constexpr auto reverseAttackGenerator = ReverseAttackGenerator<MoveGenerator>::get();
-			if constexpr (PawnMoveGenerator<MoveGenerator>) {
-				return reverseAttackGenerator(pieceLocations.allyKing, pieceLocations.enemies);
-			} else {
-				return reverseAttackGenerator(pieceLocations.allyKing, pieceLocations.empty);
-			}
+			return reverseAttackGenerator(pieceLocations.allyKing, pieceLocations.empty);
 		}
 
 		template<typename MoveGenerator>
@@ -112,11 +93,12 @@ namespace chess {
 		static void calcEnemyMovesImpl(EnemyMoveData& moveData, Bitboard movingEnemies, const PieceLocationData& pieceLocations,
 			EnemySquareCalculator enemyMoveCalculator)
 		{
-			auto moves = enemyMoveCalculator(movingEnemies, pieceLocations.empty);
-			if (moves.nonEmptyDestSquares & pieceLocations.allyKing) {
+			auto enemySquares = enemyMoveCalculator(movingEnemies, pieceLocations.empty);;
+			
+			if (enemySquares.nonEmptyDestSquares & pieceLocations.allyKing) {
 				calcChecklines(moveData.checklines, movingEnemies, pieceLocations, enemyMoveCalculator);
 			}
-			moveData.squares |= moves.all();
+			moveData.squares |= enemySquares.all();
 		}
 
 		static EnemyMoveData calcEnemyMoves(const PieceState& enemies, const PieceLocationData& pieceLocations) {
@@ -131,6 +113,31 @@ namespace chess {
 			calcEnemyMovesImpl(ret, enemies[Pawn], pieceLocations, enemyPawnAttackGenerator);
 
 			return ret;
+		}
+
+		static void drawEnemyLayoutBitboard(const PieceLocationData& pieceLocations,
+			const EnemyMoveData& enemyMoveData)
+		{
+			auto colorGetter = [&](Bitboard bit) -> RGB {
+				if (pieceLocations.allies & bit) {
+					if (bit & enemyMoveData.squares) { 
+						return RED; //ally under attack
+					} else {
+						return GREEN; //ally not under attack
+					}
+				}
+				if (pieceLocations.enemies & bit) {
+					if (bit & enemyMoveData.squares) {
+						return PURPLE; //defended enemy piece
+					}
+					return BROWN; //undefended enemy piece
+				}
+				if (enemyMoveData.squares & bit) {
+					return YELLOW; //empty square under attack
+				}
+				return WHITE; //empty square
+			};
+			drawBitboardImage(colorGetter, "enemy_layout_bitboard.png");
 		}
 
 		static void drawEnemyAttackBitboard(const PieceLocationData& pieceLocations, 
@@ -156,16 +163,13 @@ namespace chess {
 		}
 
 		static void drawPieceLocations(const PieceLocationData& pieceLocations, const std::string& filename) {
-			constexpr RGB ALLY_COLOR{ 0, 0, 255 };
-			constexpr RGB ENEMY_COLOR{ 255, 0, 0 };
-			constexpr RGB EMPTY_COLOR{ 255, 255, 0 };
 			auto colorGetter = [&](Bitboard bit) -> RGB {
 				if (pieceLocations.allies & bit) {
-					return ALLY_COLOR;
+					return LIGHT_TAN;
 				} else if (pieceLocations.enemies & bit) {
-					return ENEMY_COLOR;
+					return BROWN;
 				} else {
-					return EMPTY_COLOR;
+					return WHITE;
 				}
 			};
 			drawBitboardImage(colorGetter, filename);
@@ -214,6 +218,9 @@ namespace chess {
 		static MoveGen calcLegalKingMovesNoCheck(const PieceLocationData& pieceLocations, Bitboard enemyDestSquares) {
 			auto ret = kingMoveGenerator(pieceLocations.allyKing, pieceLocations.empty);
 			ret &= ~enemyDestSquares;
+			if (containsSquare(enemyDestSquares, A4)) {
+				int x = 0;
+			}
 			return ret;
 		}
 
@@ -272,6 +279,11 @@ namespace chess {
 					(castleMove.squaresBetweenRookAndKing & enemyMoves));
 			};
 			auto kingMoves = calcLegalKingMovesNoCheck(pieceLocations, enemyMoves);
+			if constexpr (DrawingBitboards) {
+				drawBitboardImage(getDefaultColorGetter(kingMoves.all()), "king_moves.png");
+				drawBitboardImage(getDefaultColorGetter(pieceLocations.allyKing, { 0, 255, 0 }), "ally_king.png");
+			}
+
 			if (inCheck) {
 				kingMoves &= ~calcIndirectlyCheckedSquares(turnData.enemies, pieceLocations);
 			} else { //if the king is not in check, then we might be able to castle
@@ -311,6 +323,7 @@ namespace chess {
 			auto enemyMoveData = calcEnemyMoves(enemies, pieceLocations);
 			if constexpr (DrawingBitboards) {
 				drawEnemyAttackBitboard(pieceLocations, enemyMoveData);
+				drawEnemyLayoutBitboard(pieceLocations, enemyMoveData);
 			}
 
 			/*Enemy destination squares are blocked by the king, so if the king in check, ensure that we are not moving
@@ -331,7 +344,7 @@ namespace chess {
 			addMovesImpl(Rook, orthogonalMoveGenerator);
 			addMovesImpl(Bishop, diagonalMoveGenerator);
 			addMovesImpl(Knight, knightMoveGenerator);
-			addMovesImpl(Pawn, wrapPawnMoveGenerator(allyPawnMoveGenerator, pieceLocations.enemies));
+			addMovesImpl(Pawn, allyPawnMoveGenerator);
 
 			if (enemies.doubleJumpedPawn != Square::None) {
 				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, enemies.doubleJumpedPawn);

@@ -19,55 +19,32 @@ namespace chess {
 		}
 	};
 
-	struct PositionEqual {
-		bool operator()(const Position& lhs, const Position& rhs) const {
-			auto lhsTurnData = lhs.getTurnData();
-			auto rhsTurnData = rhs.getTurnData();
-			auto sidesEqual = std::ranges::equal(lhsTurnData.allies, rhsTurnData.allies) &&
-				std::ranges::equal(lhsTurnData.enemies, rhsTurnData.enemies);
-			auto jumpedPawnsEqual = (lhsTurnData.allies.doubleJumpedPawn == rhsTurnData.allies.doubleJumpedPawn) &&
-				(lhsTurnData.enemies.doubleJumpedPawn == rhsTurnData.enemies.doubleJumpedPawn);
-			return sidesEqual && jumpedPawnsEqual;
-		}
-	};
-
-	struct DepthToRating {
-		int depth = 0;
-		Rating rating = 0;
-	};
-
-	using PositionMap = boost::unordered_node_map<Position, DepthToRating, PositionHasher, PositionEqual>;
+	using PositionMap = boost::unordered_node_map<Position, PositionEntry, PositionHasher>;
 
 	PositionMap positionMap;
 
-	std::optional<Rating> getPositionRating(const Position& pos, int depth) {
-		ProfilerLock l{ getGetPositionRatingProfiler() };
+	std::optional<PositionEntryRef> getPositionEntry(const Position& pos) {
+		ProfilerLock l{ getGetPositionEntryProfiler() };
 
-		auto depthToRatings = positionMap.find(pos);
-		if (depthToRatings == positionMap.end()) {
+		auto entry = positionMap.find(pos);
+		if (entry == positionMap.end()) {
 			return std::nullopt;
 		}
 
-		auto& depthToRating = depthToRatings->second;
-		if (depthToRating.depth >= depth) {
-			return depthToRating.rating;
-		}
-		return std::nullopt;
+		return std::ref(entry->second);
 	}
 
-	void storePositionRating(const Position& pos, int depth, Rating rating) {
-		ProfilerLock l{ getStorePositionRatingProfiler() };
+	void storePositionEntry(const Position& pos, const PositionEntry& entry) {
+		ProfilerLock l{ getStorePositionEntryProfiler() };
 
 		auto posIt = positionMap.find(pos);
 		if (posIt == positionMap.end()) {
-			positionMap.emplace(pos, DepthToRating{ depth, rating });
+			positionMap.emplace(pos, entry);
 		} else {
-			auto& depthMap = posIt->second;
-			if (depth < depthMap.depth) {
-				return;
-			}
-			depthMap.depth = depth;
-			depthMap.rating = rating;
+			auto& storedEntry = posIt->second;
+			if (entry.depth >= storedEntry.depth) {
+				storedEntry = entry;
+			} //sometimes we get shallower depths when we start a new game, ignore these
 		}
 	}
 }

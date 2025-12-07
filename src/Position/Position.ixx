@@ -11,9 +11,8 @@ export import Chess.PositionCommand;
 import Chess.PieceMap;
 import Chess.RankCalculator;
 
-namespace chess {
-
-	export class Position {
+export namespace chess {
+	class Position {
 	private:
 		struct CastleMove {
 			Square kingTo;
@@ -83,6 +82,8 @@ namespace chess {
 		void move(const Move& move);
 		void move(std::string_view moveStr);
 
+		size_t hash() const;
+
 		TurnData<const PieceState> getTurnData() const {
 			return getTurnDataImpl<const PieceState>();
 		}
@@ -96,4 +97,6 @@ namespace chess {
 			return m_isWhiteMoving;
 		}
 	};
+
+	bool operator==(const Position& a, const Position& b);
 }

@@ -11,17 +11,17 @@ namespace chess {
 
 	struct WhitePawnAttackGenerator {
 		EnPessantData operator()(Bitboard pawns, Square jumpedEnemyPawn) const;
-		MoveGen operator()(Bitboard pawns, Bitboard enemies) const;
+		MoveGen operator()(Bitboard pawns, Bitboard empty) const;
 	};
 	struct WhitePawnMoveGenerator {
-		MoveGen operator()(Bitboard pawns, Bitboard emptySquares, Bitboard enemies) const;
+		MoveGen operator()(Bitboard pawns, Bitboard empty) const;
 	};
 	struct BlackPawnAttackGenerator {
 		EnPessantData operator()(Bitboard pawns, Square jumpedEnemyPawn) const;
-		MoveGen operator()(Bitboard pawns, Bitboard enemies) const;
+		MoveGen operator()(Bitboard pawns, Bitboard empty) const;
 	};
 	struct BlackPawnMoveGenerator {
-		MoveGen operator()(Bitboard pawns, Bitboard emptySquares, Bitboard enemies) const;
+		MoveGen operator()(Bitboard pawns, Bitboard empty) const;
 	};
 	export constexpr WhitePawnMoveGenerator whitePawnMoveGenerator;
 	export constexpr BlackPawnMoveGenerator blackPawnMoveGenerator;

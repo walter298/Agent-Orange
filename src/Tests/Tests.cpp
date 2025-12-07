@@ -22,7 +22,7 @@ module;
 		};\
 		if ((value != expected)) { \
 			std::print("Test failed: {} != {}.", #value, #expected); \
-			std::println(" Actual value: {}", getPrintableValue(value)); \
+			std::println(" Expected value: {}", getPrintableValue(expected)); \
 		} \
 	} \
 
@@ -36,6 +36,8 @@ import Chess.PositionCommand;
 import Chess.LegalMoveGeneration;
 import Chess.MoveSearch;
 import Chess.Profiler;
+
+import :Pipe;
 
 namespace chess {
 	namespace tests {
@@ -129,6 +131,19 @@ namespace chess {
 			}
 		}
 
+		void testIllegalSquares() {
+			Position pos;
+			pos.setPos(parsePositionCommand("fen rn3b2/pp2p2p/4b3/k1pN1p2/P3pB2/1PP4P/5PP1/3R2K1 b KQkq - 0 1"));
+
+			auto legalMoves = calcAllLegalMoves(pos);
+			auto illegalMoveIt = std::ranges::find_if(legalMoves.moves, [](const Move& move) {
+				return move.movedPiece == King && move.to == A4;
+			});
+			if (illegalMoveIt != legalMoves.moves.end()) {
+				std::println("testIllegalSquares failed: found illegal king move to enemy-defended A4 square in testIllegalKingSquares!");
+			}
+		}
+
 		void testThatLegalMovesExist() {
 			constexpr auto POSITION_COMMAND = "fen r4b1r/p1p1p1pp/8/2Pp4/PP1PPBk1/6Q1/8/5RK1 b - - 1 31";
 			Position pos;
@@ -160,7 +175,25 @@ namespace chess {
 			}
 		}
 
-		void testEnPessant() {
+		void testThatLegalMovesExist4() {
+			Position pos;
+			pos.setPos(parsePositionCommand("startpos"));
+
+			std::string moves;
+
+			for (int i = 0; i < 20; i++) {
+				auto bestMove = findBestMove(pos, 6);
+				if (!bestMove) {
+					std::println("POTENTIAL Error: no best move found in testThatLegalMovesExist4 at ply {}!", i + 1);
+					std::println("Moves: {}", moves);
+					return;
+				}
+				pos.move(*bestMove);
+				moves += bestMove->getUCIString() + " ";
+			}
+		}
+
+		void testEnPassant() {
 			Position pos;
 			pos.setPos(parsePositionCommand("fen 8/8/8/2k5/5p2/8/6P1/3K4 w - - 0 1"));
 			pos.move("g2g4");
@@ -170,6 +203,49 @@ namespace chess {
 
 			assert_equality(nextSquare(white[Pawn]), Square::None);
 			assert_equality(nextSquare(black[Pawn]), G3);
+		}
+
+		void testEnPassant2() {
+			Position pos;
+			pos.setPos(parsePositionCommand("fen rnbqkbnr/pp1ppppp/8/8/2p5/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+			pos.move("d2d4");
+
+			auto [white, black] = pos.getColorSides();
+
+			//verify that white has moved the D pawn two squares forward
+			assert_equality(white.doubleJumpedPawn, D4);
+
+			auto legalMoves = calcAllLegalMoves(pos);
+			auto enPassantMoveIt = std::ranges::find_if(legalMoves.moves, [](const Move& move) {
+				return move.capturedPawnSquareEnPassant == D4;
+			});
+			if (enPassantMoveIt == legalMoves.moves.end()) {
+				std::println("testEnPassant2 failed: en passant not among legal moves");
+				return;
+			}
+
+			auto verifyStateAfterEnPassant = [](const Position& pos) {
+				auto [white, black] = pos.getColorSides();
+				//verify that black has captured the D pawn en passant
+				if (containsSquare(white[Pawn], D4)) {
+					std::println("testEnPassant2 failed: white pawn still on d4 after en passant capture");
+				}
+				if (!containsSquare(black[Pawn], D3)) {
+					std::println("testEnPassant2 failed: black pawn not on d3 after en passant capture");
+				}
+			};
+
+			auto temp = pos;
+
+			pos.move("c4d3");
+			verifyStateAfterEnPassant(pos);
+
+			temp.move(*enPassantMoveIt);
+			verifyStateAfterEnPassant(temp);
+
+			if (temp != pos) {
+				std::println("testEnPassant2 failed: positions after en passant do not match");
+			}
 		}
 
 		void testPin() {
@@ -189,14 +265,13 @@ namespace chess {
 			Position pos;
 			pos.setPos(parsePositionCommand("fen 8/8/1r2knR1/2b5/1p2pBBP/1P1p4/5PP1/6K1 b - - 4 44"));
 
-			auto legalMoveData = calcAllLegalMovesAndDrawBitboards(pos);
+			auto legalMoveData = calcAllLegalMoves(pos);
 			auto illegalKnightMove = std::ranges::find_if(legalMoveData.moves, [](const Move& move) {
 				return move.from == F6;
 			});
 			if (illegalKnightMove != legalMoveData.moves.end()) {
 				std::println("testPinWithCheck failed: illegal knight move: {}", illegalKnightMove->getUCIString());
 			}
-			int;
 		}
 
 		void testBitboardImageCreation() {
@@ -219,18 +294,47 @@ namespace chess {
 			drawBitboardImage(colorGetter, "start_position.bmp");
 		}
 
+		void doUCIHandshake(const Pipe& pipe) {
+			pipe.write("uci\n");
+			std::println("{}", pipe.read("id name"));
+			pipe.write("ucinewgame\n");
+			pipe.write("isready\n");
+			std::println("{}", pipe.read("readyok"));
+		}
+
+		void testUCIInput() {
+			Pipe pipe;
+			doUCIHandshake(pipe);
+
+			pipe.write("position startpos moves e2e4\ngo\n");
+			std::println("{}", pipe.read("bestmove"));
+			
+			pipe.write("ucinewgame\nposition startpos moves e2e4 h7h5 d2d4\ngo\n");
+			std::println("{}", pipe.read("bestmove"));
+
+			pipe.write("ucinewgame\nposition startpos moves e2e4 h7h5 d2d4 d7d5\ngo\n");
+			std::println("{}", pipe.read("bestmove"));
+
+			pipe.write("ucinewgame\nposition startpos moves e2e4 h7h5 d2d4 d7d5 e4d5\ngo\n");
+			std::println("{}", pipe.read("bestmove"));
+		}
+
 		void runAllTests() {
 			std::println("Running tests...");
 
 			testStartPos();
 			testPawnLocations();
+			testIllegalSquares();
 			testThatLegalMovesExist();
 			testThatLegalMovesExist2();
 			testThatLegalMovesExist3();
-			testEnPessant();
+			//testThatLegalMovesExist4(); //really really long!
+			testEnPassant();
+			testEnPassant2();
 			testPin();
 			testPinWithCheck();
 			testBitboardImageCreation();
+			testUCIInput();
 		}
 	}
 }

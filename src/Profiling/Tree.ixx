@@ -46,15 +46,15 @@ export namespace chess {
 	MAKE_PROFILER(getEnPessantProfiler, "getEnPessantMoves", "calcAllLegalMoves")
 	MAKE_PROFILER(getMovePrioritiesProfiler, "getMovePriorities", "findBestMove")
 	MAKE_PROFILER(getStaticEvaluationProfiler, "staticEvaluation", "findBestMove")
-	MAKE_PROFILER(getStorePositionRatingProfiler, "storePositionRating", "findBestMove")
-	MAKE_PROFILER(getGetPositionRatingProfiler, "getPositionRating", "findBestMove")
+	MAKE_PROFILER(getStorePositionEntryProfiler, "storePositionEntry", "findBestMove")
+	MAKE_PROFILER(getGetPositionEntryProfiler, "getPositionEntry", "findBestMove")
 
 	void createTree() {
-		static bool createdGraph = false;
-		if (createdGraph) {
-			throw std::runtime_error{ "Error: Profiler graph has already been created." };
+		static bool createdTree = false;
+		if (createdTree) {
+			throw std::runtime_error{ "Error: Profiler tree has already been created." };
 		}
-		createdGraph = true;
+		createdTree = true;
 
 		getBestMoveProfiler();
 		getLegalMoveGenerationProfiler();
@@ -62,7 +62,7 @@ export namespace chess {
 		getMoveAdderProfiler();
 		getMovePrioritiesProfiler();
 		getStaticEvaluationProfiler();
-		getStorePositionRatingProfiler();
-		getGetPositionRatingProfiler();
+		getStorePositionEntryProfiler();
+		getGetPositionEntryProfiler();
 	}
 }

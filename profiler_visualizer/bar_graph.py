@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from grid_layout import *
 from gui import GUI
 
-def show_bar_graph()
+def show_bar_graph():
     gui.canvas.get_tk_widget().grid(row=BAR_GRAPH_ROW, column=0, sticky="nsew") 
     
     sorted_functions = sorted(functions, key=lambda f: f.average(), reverse=True)

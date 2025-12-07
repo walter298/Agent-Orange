@@ -5,7 +5,20 @@ export import Chess.Position;
 export import Chess.Rating;
 
 export namespace chess {
-	std::optional<Rating> getPositionRating(const Position& pos, int depth);
-	void storePositionRating(const Position& pos, int depth, Rating rating);
-	void improveHistoricalMoveRating(const Move& move, Rating rating);
+	enum WindowBound {
+		InWindow,
+		LowerBound,
+		UpperBound
+	};
+
+	struct PositionEntry {
+		Rating rating = 0_rt;
+		WindowBound bound = InWindow;
+		int depth = 0;
+		Move bestMove = Move::null();
+	};
+	using PositionEntryRef = std::reference_wrapper<const PositionEntry>;
+
+	std::optional<PositionEntryRef> getPositionEntry(const Position& pos);
+	void storePositionEntry(const Position& pos, const PositionEntry& entry);
 }

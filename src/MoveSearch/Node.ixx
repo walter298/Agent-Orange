@@ -51,6 +51,10 @@ export namespace chess {
 			return m_materialSignSwap > 0_rt ? m_materialExchanged > 0_rt : m_materialExchanged < 0_rt;
 		}
 
+		bool inLosingAttackSequence() const {
+			return m_materialSignSwap > 0_rt ? m_materialExchanged < 0_rt : m_materialExchanged > 0_rt;
+		}
+
 		const Position& getPos() const {
 			return m_pos;
 		}

@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 641236100,
+    "child_percentages": {
+      "calcAllLegalMoves": 33.229086759151585,
+      "getMovePriorities": 26.104862156076365,
+      "getPositionEntry": 9.34276781984046,
+      "staticEvaluation": 7.996539808036385,
+      "storePositionEntry": 3.3560025706600114
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 641236100,
+    "times_run": 1,
+    "unique_data": null
+  },
+  {
+    "average_ns": 73,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 126269300,
+    "times_run": 1713835,
+    "unique_data": null
+  },
+  {
+    "average_ns": 1301,
+    "child_percentages": {
+      "addMoves": 59.25996670685561,
+      "calcEnemyMoves": 4.921087175569008,
+      "getEnPessantMoves": 0.12080145712651161
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 213076900,
+    "times_run": 163718,
+    "unique_data": {
+      "moves_per_second": 18537767.350660726,
+      "total_moves_generated": 3949970
+    }
+  },
+  {
+    "average_ns": 1023,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 167393800,
+    "times_run": 163583,
+    "unique_data": null
+  },
+  {
+    "average_ns": 64,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 10485700,
+    "times_run": 163718,
+    "unique_data": null
+  },
+  {
+    "average_ns": 39,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 51276700,
+    "times_run": 1311957,
+    "unique_data": null
+  },
+  {
+    "average_ns": 131,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 21519900,
+    "times_run": 163583,
+    "unique_data": null
+  },
+  {
+    "average_ns": 24,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 257400,
+    "times_run": 10378,
+    "unique_data": null
+  },
+  {
+    "average_ns": 36,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 59909200,
+    "times_run": 1663014,
+    "unique_data": null
+  }
+]
