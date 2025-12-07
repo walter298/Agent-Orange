@@ -56,20 +56,21 @@ namespace chess {
 	};
 
 	template<bool Maximizing>
-	Rating minimax(const Node& node, AlphaBeta alphaBeta);
+	Rating minimax(const Node& node, const PositionData& positionData, AlphaBeta alphaBeta);
 
 	template<typename Ret, bool Maximizing>
 	Ret bestChildPosition(const Node& node, AlphaBeta alphaBeta) {
-		auto legalMoves = calcAllLegalMoves(node.getPos());
-		if (legalMoves.moves.empty()) {
+		const auto& positionData = node.getPositionData();
+
+		if (positionData.legalMoves.empty()) {
 			if constexpr (std::same_as<Ret, Rating>) {
-				return legalMoves.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
+				return positionData.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
 			} else {
 				return std::nullopt;
 			}
 		}
 
-		auto movePriorities = getMovePriorities(node, legalMoves.moves, Maximizing);
+		auto movePriorities = getMovePriorities(node, positionData.legalMoves, Maximizing);
 		auto bestMove = Move::null();
 		auto bestRating = worstPossibleRating<Maximizing>();
 
@@ -167,7 +168,7 @@ namespace chess {
 		beginCalculation = std::chrono::steady_clock::now();
 
 		auto iterativeDeepening = [&]<bool Maximizing>() {
-			//to slow at the moment!
+			//too slow at the moment!
 			for (auto iterDepth = 1; iterDepth < depth; iterDepth++) {
 				std::println("Iterative deepening at depth {}", iterDepth);
 				bestMoveImpl<Maximizing>(pos, iterDepth);

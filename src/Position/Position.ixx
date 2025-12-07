@@ -7,6 +7,7 @@ export import Chess.Move;
 export import Chess.Square;
 export import Chess.Position.PieceState;
 export import Chess.PositionCommand;
+export import :PositionData;
 
 import Chess.PieceMap;
 import Chess.RankCalculator;

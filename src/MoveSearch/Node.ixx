@@ -3,13 +3,15 @@ export module Chess.MoveSearch:Node;
 export import Chess.Position;
 export import Chess.Rating;
 export import Chess.Evaluation;
-
+export import Chess.LegalMoveGeneration;
 export import :MovePriority;
 
 export namespace chess {
 	class Node {
 	private:
 		Position m_pos;
+		PositionData m_positionData;
+
 		int m_level = 0;
 		int m_levelsToSearch = 0;
 		bool m_inAttackSequence = false;
@@ -21,6 +23,7 @@ export namespace chess {
 		static Node makeRoot(const Position& root, int maxDepth, bool isWhite) {
 			Node ret;
 			ret.m_pos = root;
+			ret.m_positionData = calcAllLegalMoves(ret.m_pos);
 			ret.m_levelsToSearch = maxDepth;
 			if (!isWhite) {
 				ret.m_materialSignSwap *= -1_rt;
@@ -31,6 +34,7 @@ export namespace chess {
 		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
 			Node ret;
 			ret.m_pos = { parent.m_pos, movePriority.getMove() };
+			ret.m_positionData = calcAllLegalMoves(ret.m_pos);
 			ret.m_level = parent.m_level + 1;
 			if (movePriority.inAttackSequence()) {
 				ret.m_inAttackSequence = true;
@@ -58,6 +62,9 @@ export namespace chess {
 		const Position& getPos() const {
 			return m_pos;
 		}
+		const PositionData& getPositionData() const {
+			return m_positionData;
+		}
 
 		int getLevel() const {
 			return m_level;
@@ -72,7 +79,7 @@ export namespace chess {
 		}
 
 		Rating getRating() const {
-			return staticEvaluation(m_pos);
+			return staticEvaluation(m_pos, m_positionData);
 		}
 	};
 }

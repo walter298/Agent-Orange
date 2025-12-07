@@ -5,5 +5,5 @@ export import Chess.Rating;
 
 export namespace chess {
 	Rating getPieceRating(Piece piece);
-	Rating staticEvaluation(const Position& pos);
+	Rating staticEvaluation(const Position& pos, const PositionData& positionData);
 }

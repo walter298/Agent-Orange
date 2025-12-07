@@ -10,13 +10,21 @@ import Chess.RankCalculator;
 import Chess.Rating;
 
 namespace chess {
+	constexpr auto QUEEN_RATING = 90_rt;
+	constexpr auto ROOK_RATING = 50_rt;
+	constexpr auto BISHOP_RATING = 33_rt;
+	constexpr auto KNIGHT_RATING = 30_rt;
+	constexpr auto PAWN_RATING = 10_rt;
+	constexpr auto PAWN_ADVANCEMENT_RATING = 0.001_rt;
+	constexpr auto ATTACKED_PIECE_RATING = 0.01_rt;
+
 	const PieceMap<Rating> pieceRatings{
 		{
-			{ Queen, 90.0 },
-			{ Rook, 50.0 },
-			{ Bishop, 33.3 },
-			{ Knight, 30.0 },
-			{ Pawn, 10.0 }
+			{ Queen, QUEEN_RATING },
+			{ Rook, ROOK_RATING },
+			{ Bishop, BISHOP_RATING },
+			{ Knight, KNIGHT_RATING },
+			{ Pawn, PAWN_RATING }
 		}
 	};
 
@@ -35,15 +43,6 @@ namespace chess {
 		return getPieceRating(white) - getPieceRating(black);
 	}
 
-	/*bool isPassedPawn(Square pawn, Bitboard enemyPawns) {
-		auto rank  = rankOf(pawn);
-		auto left  = std::clamp(rank - 1, 0, 7);
-		auto right = std::clamp(rank + 1, 0, 7);
-
-		Bitboard squaresAbove = 0;
-		
-	}*/
-
 	template<bool MovingDown = false>
 	Rating calcPawnAdvancementRatingImpl(Bitboard pawns) {
 		Rating ret = 0.0;
@@ -54,7 +53,7 @@ namespace chess {
 			if constexpr (MovingDown) {
 				rank = 9.0 - rank;
 			}
-			auto pawnValue = rank * 0.001;
+			auto pawnValue = rank * PAWN_ADVANCEMENT_RATING;
 			ret += pawnValue;
 		}
 
@@ -66,9 +65,20 @@ namespace chess {
 		return calcPawnAdvancementRatingImpl(white[Pawn]) - calcPawnAdvancementRatingImpl<true>(black[Pawn]);
 	}
 
-	Rating staticEvaluation(const Position& pos) {
+	Rating calcAttackRating(const Position& pos, const PositionData& posData) {
+		auto [white, black] = pos.getColorSides();
+
+		auto getAttackedPiecesRating = [&](const PieceState& pieceState) -> Rating {
+			auto attackedPieces = pieceState.calcAllLocations() & posData.attackedPieces;
+			auto attackedPieceCount = std::popcount(attackedPieces);
+			return static_cast<Rating>(attackedPieceCount) * ATTACKED_PIECE_RATING;
+		};
+		return getAttackedPiecesRating(white) - getAttackedPiecesRating(black);
+	}
+
+	Rating staticEvaluation(const Position& pos, const PositionData& posData) {
 		ProfilerLock l{ getStaticEvaluationProfiler() };
-		return calcMaterialRating(pos) + calcPawnAdvancementRating(pos);
+		return calcMaterialRating(pos) + calcPawnAdvancementRating(pos) + calcAttackRating(pos, posData);
 	}
 
 	Rating getPieceRating(Piece piece) {

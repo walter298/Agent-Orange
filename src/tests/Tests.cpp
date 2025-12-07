@@ -123,10 +123,10 @@ namespace chess {
 			testPawnLocation("c2c4", black, A5);
 
 			auto legalMoves = calcAllLegalMoves(pos);
-			auto illegalMoveIt = std::ranges::find_if(legalMoves.moves, [](const Move& move) {
+			auto illegalMoveIt = std::ranges::find_if(legalMoves.legalMoves, [](const Move& move) {
 				return move.from == D5 && move.to == A5;
 			});
-			if (illegalMoveIt != legalMoves.moves.end()) {
+			if (illegalMoveIt != legalMoves.legalMoves.end()) {
 				std::println("Error: found illegal move d5a5 in testPawnLocations!");
 			}
 		}
@@ -136,10 +136,10 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen rn3b2/pp2p2p/4b3/k1pN1p2/P3pB2/1PP4P/5PP1/3R2K1 b KQkq - 0 1"));
 
 			auto legalMoves = calcAllLegalMoves(pos);
-			auto illegalMoveIt = std::ranges::find_if(legalMoves.moves, [](const Move& move) {
+			auto illegalMoveIt = std::ranges::find_if(legalMoves.legalMoves, [](const Move& move) {
 				return move.movedPiece == King && move.to == A4;
 			});
-			if (illegalMoveIt != legalMoves.moves.end()) {
+			if (illegalMoveIt != legalMoves.legalMoves.end()) {
 				std::println("testIllegalSquares failed: found illegal king move to enemy-defended A4 square in testIllegalKingSquares!");
 			}
 		}
@@ -150,7 +150,7 @@ namespace chess {
 			pos.setPos(parsePositionCommand(POSITION_COMMAND));
 
 			auto moves = calcAllLegalMoves(pos);
-			if (moves.moves.empty()) {
+			if (moves.legalMoves.empty()) {
 				std::println("Error: no legal moves found in testThatLegalMovesExist!");
 			}
 		}
@@ -160,7 +160,7 @@ namespace chess {
 			pos.setPos(parsePositionCommand("startpos moves g1f3 a7a5 d2d4 d7d5 c1f4 b7b5 d1d3 c8a6 e2e3 b5b4 d3d2 a6f1 e1f1 f7f6 c2c3 g7g5 f4g3 h7h5 h2h4 a5a4 c3b4 g5g4 f3e1 d8d7 e1d3 e8d8 d2c2 f8h6 b1d2 f6f5 a1c1 b8a6 b4b5 d7b5 g3c7 a6c7 c2c7 d8e8 f1e2 b5a6 c7c3 e8d7 e2e1 d7d8 d3e5 d8e8 f2f3 e7e6 e1f2 g8e7 c1c2 a8c8 c3d3 a6d3 c2c8 e7c8 e5d3 h6g7 d3c5 g7d4 e3d4 c8b6 c5e6 e8e7 e6g5 f5f4 g2g3 h8f8 g3f4 f8f4 f2e3 f4f5 b2b3 a4a3 b3b4 b6c4 d2c4 d5c4 b4b5 f5b5 h1c1 b5b4 d4d5 e7d7 g5e4 g4f3 e3f3 b4b5 d5d6 b5b4 f3e3 d7c6 e3d4 c6b6 d6d7 b6c7 c1d1 c7d8 d4c3 b4b2 c3c4 b2h2 e4f6 h2h4 c4b3 h4h3 b3a4 h5h4 d1e1 d8c7 e1e8 h3d3 a4b4 d3d4 b4c3 d4d1 c3c2 d1d4 c2c3 d4d1 c3c4 d1c1 c4b3 c1b1 b3a3 b1d1 a3b2 d1d2 b2b3 d2d3 b3b4 d3d4 b4c5 d4d7 f6d7 c7d7 e8h8 d7e6 h8h4 e6f5 h4h1 f5e4 a2a4 e4f3 a4a5 f3g2 h1a1 g2f2 a5a6 f2e2 a6a7 e2d2 a7a8q d2c2 a8b8 c2d2 c5b6 d2c2 b6a7 c2d2 a7a8 d2c2 a1b1 c2d2 b8d8 d2c2 b1b4 c2c1 d8c7 c1d2 c7c4 d2e3 b4b3 e3d2 c4c3 d2d1 b3b1"));
 
 			auto legalMoves = calcAllLegalMoves(pos);
-			if (legalMoves.moves.empty()) {
+			if (legalMoves.legalMoves.empty()) {
 				std::println("Error: no legal moves found in testThatLegalMovesExist2!");
 			}
 		}
@@ -170,7 +170,7 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen KQ6/Q7/8/8/8/8/8/4k3 w - - 0 1 moves a7c7 e1d2 b8d8"));
 			
 			auto legalMoves = calcAllLegalMoves(pos);
-			if (legalMoves.moves.empty()) {
+			if (legalMoves.legalMoves.empty()) {
 				std::println("Error: no legal moves found in testThatLegalMovesExist3!");
 			}
 		}
@@ -216,10 +216,10 @@ namespace chess {
 			assert_equality(white.doubleJumpedPawn, D4);
 
 			auto legalMoves = calcAllLegalMoves(pos);
-			auto enPassantMoveIt = std::ranges::find_if(legalMoves.moves, [](const Move& move) {
+			auto enPassantMoveIt = std::ranges::find_if(legalMoves.legalMoves, [](const Move& move) {
 				return move.capturedPawnSquareEnPassant == D4;
 			});
-			if (enPassantMoveIt == legalMoves.moves.end()) {
+			if (enPassantMoveIt == legalMoves.legalMoves.end()) {
 				std::println("testEnPassant2 failed: en passant not among legal moves");
 				return;
 			}
@@ -253,10 +253,10 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen k7/8/8/3r4/8/8/8/rB1BK3 w - - 0 1"));
 
 			auto legalMoveData = calcAllLegalMoves(pos);
-			auto d1BishopMove = std::ranges::find_if(legalMoveData.moves, [](const Move& move) {
+			auto d1BishopMove = std::ranges::find_if(legalMoveData.legalMoves, [](const Move& move) {
 				return move.from == D1;
 			});
-			if (d1BishopMove == legalMoveData.moves.end()) {
+			if (d1BishopMove == legalMoveData.legalMoves.end()) {
 				std::println("testPin failed: d1 bishop is not pinned but it is not moveable");
 			}
 		}
@@ -266,10 +266,10 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen 8/8/1r2knR1/2b5/1p2pBBP/1P1p4/5PP1/6K1 b - - 4 44"));
 
 			auto legalMoveData = calcAllLegalMoves(pos);
-			auto illegalKnightMove = std::ranges::find_if(legalMoveData.moves, [](const Move& move) {
+			auto illegalKnightMove = std::ranges::find_if(legalMoveData.legalMoves, [](const Move& move) {
 				return move.from == F6;
 			});
-			if (illegalKnightMove != legalMoveData.moves.end()) {
+			if (illegalKnightMove != legalMoveData.legalMoves.end()) {
 				std::println("testPinWithCheck failed: illegal knight move: {}", illegalKnightMove->getUCIString());
 			}
 		}
