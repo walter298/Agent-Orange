@@ -1,13 +1,10 @@
-module;
-
-#include <cassert>
-
 module Chess.LegalMoveGeneration;
 
 import nlohmann.json;
 
 import std;
 
+import Chess.Assert;
 import Chess.BitboardImage;
 import Chess.PieceMap;
 import Chess.Profiler;
@@ -15,7 +12,6 @@ import Chess.RankCalculator;
 import :ChainedMoveGenerator;
 import :KingMoveGeneration;
 import :KnightMoveGeneration;
-import :NonPawnMoveGenerator;
 import :PawnMoveGeneration;
 import :PieceLocations;
 import :ReverseAttackGenerator;
@@ -44,6 +40,9 @@ namespace chess {
 		static inline AllyPawnAttackGenerator allyPawnAttackGenerator;
 		static inline EnemyPawnMoveGenerator enemyPawnMoveGenerator;
 		static inline EnemyPawnAttackGenerator enemyPawnAttackGenerator;
+
+		static_assert(PawnMoveGenerator<AllyPawnMoveGenerator>);
+		static_assert(PawnMoveGenerator<EnemyPawnMoveGenerator>);
 
 		static constexpr auto PAWN_ADDER = [](std::vector<Move>& moves, Move move) {
 			if (makeBitboard(move.to) & PromotionRank) {
@@ -93,9 +92,15 @@ namespace chess {
 		static void calcEnemyMovesImpl(EnemyMoveData& moveData, Bitboard movingEnemies, const PieceLocationData& pieceLocations,
 			EnemySquareCalculator enemyMoveCalculator)
 		{
-			auto enemySquares = enemyMoveCalculator(movingEnemies, pieceLocations.empty);;
+			auto enemySquares = [&] {
+				if constexpr (PawnMoveGenerator<EnemySquareCalculator>) {
+					return enemyMoveCalculator(movingEnemies, ALL_SQUARES);
+				} else {
+					return enemyMoveCalculator(movingEnemies, pieceLocations.empty);
+				}
+			}();
 			
-			if (enemySquares.nonEmptyDestSquares & pieceLocations.allyKing) {
+			if (enemySquares.nonEmptyDestSquares & pieceLocations.allyKing) { //if enemy piece is checking the king
 				calcChecklines(moveData.checklines, movingEnemies, pieceLocations, enemyMoveCalculator);
 			}
 			moveData.squares |= enemySquares.all();
@@ -135,7 +140,7 @@ namespace chess {
 				if (enemyMoveData.squares & bit) {
 					return YELLOW; //empty square under attack
 				}
-				return WHITE; //empty square
+				return WHITE; //empty square not under attack
 			};
 			drawBitboardImage(colorGetter, "enemy_layout_bitboard.png");
 		}
@@ -256,7 +261,14 @@ namespace chess {
 
 			auto currPiecePos = Square::None;
 			while (nextSquare(movablePieces, currPiecePos)) {
-				auto destSquares = moveGen(makeBitboard(currPiecePos), pieceLocations.empty);
+				auto destSquares = [&] {
+					if constexpr (PawnMoveGenerator<MoveGenerator>) {
+						return moveGen(makeBitboard(currPiecePos), pieceLocations.empty, pieceLocations.enemies);
+					} else {
+						return moveGen(makeBitboard(currPiecePos), pieceLocations.empty);
+					}
+				}();
+				
 				allSquares |= destSquares.all();
 
 				if (checklines) {

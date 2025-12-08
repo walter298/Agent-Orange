@@ -2,9 +2,9 @@ module Chess.Profiler:ProfilerGuard;
 
 import nlohmann.json;
 
+import Chess.ProgramEnd;
 import :Path;
 import :ProfilerMap;
-import :FinishedProgramFlag;
 import :Tree;
 
 using namespace std::literals;
@@ -53,6 +53,9 @@ namespace chess {
 	}
 
 	ProfilerGuard::~ProfilerGuard() {
+		if (isProgramFinished()) { //program could have ended because of a zAssert
+			return;
+		}
 		markProgramAsFinished();
 
 		auto path = getProfilingSessionFilePath();

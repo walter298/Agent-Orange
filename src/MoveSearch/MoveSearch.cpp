@@ -1,11 +1,8 @@
-module;
-
-#include <cassert>
-
 module Chess.MoveSearch;
 
 import std;
 
+import Chess.Assert;
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
 import Chess.Position;
@@ -99,7 +96,7 @@ namespace chess {
 			}
 		}
 
-		assert(bestMove != Move::null());
+		zAssert(bestMove != Move::null());
 		if (bound == InWindow) {
 			if constexpr (Maximizing) {
 				if (bestRating <= alphaBeta.getAlpha()) {

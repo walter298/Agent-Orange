@@ -1,4 +1,4 @@
-export module Chess.Profiler:FinishedProgramFlag;
+export module Chess.ProgramEnd;
 
 import std;
 

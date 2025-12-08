@@ -115,6 +115,14 @@ export namespace chess {
     constexpr int fileOf(Square square) {
         return static_cast<int>(square) % 8;
     }
+    constexpr Bitboard leftFile(Square square) {
+        auto file = fileOf(square);
+        return file == 0 ? 0 : calcFile(file - 1);
+    }
+    constexpr Bitboard rightFile(Square square) {
+        auto file = fileOf(square);
+        return file == 7 ? 0 : calcFile(file + 1);
+    }
 
     constexpr Bitboard northSquares(Square square) {
         auto file = fileOf(square);

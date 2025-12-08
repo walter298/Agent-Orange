@@ -1,9 +1,6 @@
-module;
-
-#include <cassert>
-
 module Chess.Position;
 
+import Chess.Assert;
 import Chess.RankCalculator;
 import :Parse;
 
@@ -117,20 +114,20 @@ namespace chess {
     }
 
     void Position::move(std::string_view moveStr) { 
-        assert(moveStr.size() == 4 || moveStr.size() == 5);
+        zAssert(moveStr.size() == 4 || moveStr.size() == 5);
 
         auto move = Move::null();
 
     	auto from = parseSquare(moveStr.substr(0, 2));
         auto to   = parseSquare(moveStr.substr(2, 2));
-        assert(from && to);
+        zAssert(from && to);
         move.from = *from;
         move.to   = *to;
 
         auto turnData = getTurnData();
 
         move.movedPiece = turnData.allies.findPiece(*from);
-        assert(move.movedPiece != Piece::None);
+        zAssert(move.movedPiece != Piece::None);
         
         move.capturedPiece = turnData.enemies.findPiece(*to);
 

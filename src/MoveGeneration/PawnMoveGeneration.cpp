@@ -34,28 +34,28 @@ namespace chess {
 	}
 
 	template<dir::Direction LeftDirection, dir::Direction RightDirection>
-	MoveGen generatePawnAttacksImpl(Bitboard pawns, Bitboard empty) {
+	MoveGen generatePawnAttacksImpl(Bitboard pawns, Bitboard enemySquares) {
 		MoveGen ret;
-		auto leftAttacks = LeftDirection::move(pawns) & LeftDirection::NON_BORDERS & ~empty;
-		auto rightAttacks = RightDirection::move(pawns) & RightDirection::NON_BORDERS & ~empty;
-		ret.nonEmptyDestSquares |= leftAttacks;
-		ret.nonEmptyDestSquares |= rightAttacks;
-
+		auto leftAttacks = LeftDirection::move(pawns) & LeftDirection::NON_BORDERS;
+		auto rightAttacks = RightDirection::move(pawns) & RightDirection::NON_BORDERS;
+		ret.nonEmptyDestSquares |= leftAttacks & enemySquares;
+		ret.nonEmptyDestSquares |= rightAttacks & enemySquares;
+		
 		return ret;
 	}
 
-	MoveGen WhitePawnAttackGenerator::operator()(Bitboard pawns, Bitboard empty) const {
+	MoveGen WhitePawnAttackGenerator::operator()(Bitboard pawns, Bitboard enemyPieces) const {
 		using namespace dir::sliding;
-		return generatePawnAttacksImpl<NorthWest, NorthEast>(pawns, empty);
+		return generatePawnAttacksImpl<NorthWest, NorthEast>(pawns, enemyPieces);
 	}
-	MoveGen BlackPawnAttackGenerator::operator()(Bitboard pawns, Bitboard empty) const {
+	MoveGen BlackPawnAttackGenerator::operator()(Bitboard pawns, Bitboard enemyPieces) const {
 		using namespace dir::sliding;
-		return generatePawnAttacksImpl<SouthWest, SouthEast>(pawns, empty);
+		return generatePawnAttacksImpl<SouthWest, SouthEast>(pawns, enemyPieces);
 	}
 
 	template<dir::Direction ForwardDirection, dir::Direction BackwardDirection,
 			 Bitboard JUMP_RANK, typename AttackGenerator>
-	MoveGen generatePawnMovesImpl(Bitboard pawns, Bitboard empty, AttackGenerator attackGenerator) {
+	MoveGen generatePawnMovesImpl(Bitboard pawns, Bitboard empty, Bitboard enemyPieces, AttackGenerator attackGenerator) {
 		MoveGen ret;
 
 		//calculate pawn advancements 1 square forward
@@ -70,17 +70,17 @@ namespace chess {
 		ret.emptyDestSquares |= singleSquareAdvancedPawns; 
 		
 		//calculate pawn attacks!
-		ret |= attackGenerator(pawns, empty);
+		ret |= attackGenerator(pawns, enemyPieces);
 
 		return ret;
 	}
 
-	MoveGen WhitePawnMoveGenerator::operator()(Bitboard pawns, Bitboard empty) const {
+	MoveGen WhitePawnMoveGenerator::operator()(Bitboard pawns, Bitboard empty, Bitboard enemyPieces) const {
 		using namespace dir::sliding;
-		return generatePawnMovesImpl<North, South, calcRank<2>()>(pawns, empty, whitePawnAttackGenerator);
+		return generatePawnMovesImpl<North, South, calcRank<2>()>(pawns, empty, enemyPieces, whitePawnAttackGenerator);
 	}
-	MoveGen BlackPawnMoveGenerator::operator()(Bitboard pawns, Bitboard empty) const {
+	MoveGen BlackPawnMoveGenerator::operator()(Bitboard pawns, Bitboard empty, Bitboard enemyPieces) const {
 		using namespace dir::sliding;
-		return generatePawnMovesImpl<South, North, calcRank<7>()>(pawns, empty, blackPawnAttackGenerator);
+		return generatePawnMovesImpl<South, North, calcRank<7>()>(pawns, empty, enemyPieces, blackPawnAttackGenerator);
 	}
 }

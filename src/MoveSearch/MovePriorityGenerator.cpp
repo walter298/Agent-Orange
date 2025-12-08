@@ -1,10 +1,6 @@
-module;
-
-#undef NDEBUG
-#include <cassert>
-
 module Chess.MoveSearch:MovePriorityGeneration;
 
+import Chess.Assert;
 import Chess.Rating;
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
@@ -145,7 +141,7 @@ namespace chess {
 			}));
 		}
 
-		assert(!priorities.empty());
+		zAssert(!priorities.empty());
 
 		return FixedVector{ std::move(priorities) };
 	}

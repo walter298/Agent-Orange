@@ -1,9 +1,6 @@
-module;
-
-#include <cassert>
-
 module Chess.UCI:GameState;
 
+import Chess.Assert;
 import Chess.MoveSearch;
 import Chess.PositionCommand;
 
@@ -17,7 +14,7 @@ namespace chess {
 		if (m_inNewPos) {
 			m_pos.setPos(command);
 		} else {
-			assert(!command.moves.empty());
+			zAssert(!command.moves.empty());
 			m_pos.move(command.moves.back());
 		}
 		m_inNewPos = false;

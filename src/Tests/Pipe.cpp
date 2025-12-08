@@ -4,9 +4,6 @@ module;
 #include <Windows.h>
 #endif
 
-#undef NDEBUG
-#include <cassert>
-
 module Chess.Tests:Pipe;
 
 namespace chess {

@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 7880300,
+    "child_percentages": {
+      "calcAllLegalMoves": 65.07874065708158,
+      "getMovePriorities": 10.859146648393251,
+      "getPositionEntry": 3.4448773100854875,
+      "staticEvaluation": 3.9486652369410637,
+      "storePositionEntry": 1.628533600666641
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 23640900,
+    "times_run": 3,
+    "unique_data": null
+  },
+  {
+    "average_ns": 56,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 4905700,
+    "times_run": 86481,
+    "unique_data": null
+  },
+  {
+    "average_ns": 800,
+    "child_percentages": {
+      "addMoves": 31.885838338143152,
+      "calcEnemyMoves": 11.272521644177521,
+      "getEnPessantMoves": 0.059147752385409355
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 15385200,
+    "times_run": 19227,
+    "unique_data": {
+      "moves_per_second": 26399331.825390637,
+      "total_moves_generated": 406159
+    }
+  },
+  {
+    "average_ns": 1268,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 2567200,
+    "times_run": 2024,
+    "unique_data": null
+  },
+  {
+    "average_ns": 90,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 1734300,
+    "times_run": 19227,
+    "unique_data": null
+  },
+  {
+    "average_ns": 55,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 933500,
+    "times_run": 16936,
+    "unique_data": null
+  },
+  {
+    "average_ns": 190,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 385000,
+    "times_run": 2024,
+    "unique_data": null
+  },
+  {
+    "average_ns": 29,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 9100,
+    "times_run": 305,
+    "unique_data": null
+  },
+  {
+    "average_ns": 38,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 814400,
+    "times_run": 21239,
+    "unique_data": null
+  }
+]

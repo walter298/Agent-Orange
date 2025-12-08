@@ -3,7 +3,7 @@ export module Chess.Profiler:BasicProfiler;
 import std;
 import nlohmann.json;
 
-import :FinishedProgramFlag;
+import Chess.ProgramEnd;
 
 export namespace chess {
 	namespace chrono = std::chrono;

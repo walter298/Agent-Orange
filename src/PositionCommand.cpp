@@ -1,8 +1,6 @@
-module;
-
-#include <cassert>
-
 module Chess.PositionCommand;
+
+import Chess.Assert;
 
 namespace chess {
 	PositionCommand parsePositionCommand(const std::string& fenStr) {
@@ -14,7 +12,7 @@ namespace chess {
 		iss >> token;
 
 		//"position" token should already have been consumed in UCI command parser 
-		assert(token != "position");
+		zAssert(token != "position");
 
 		auto getFENTokens = [&ret](std::istringstream& iss) {
 			iss >> ret.board;
@@ -27,7 +25,7 @@ namespace chess {
 			std::istringstream newIss{ std::string{ STARTING_FEN_STRING.data(), STARTING_FEN_STRING.size() } };
 			getFENTokens(newIss);
 		} else {
-			assert(token == "fen");
+			zAssert(token == "fen");
 			getFENTokens(iss);
 		}
 
