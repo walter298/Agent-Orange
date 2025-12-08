@@ -3,19 +3,20 @@ export module Chess.MoveSearch:PositionTable;
 export import std;
 export import Chess.Position;
 export import Chess.Rating;
+export import :MovePriority;
 
 export namespace chess {
-	enum WindowBound {
+	enum WindowBound : std::uint8_t {
 		InWindow,
 		LowerBound,
 		UpperBound
 	};
 
 	struct PositionEntry {
-		Rating rating = 0_rt;
-		WindowBound bound = InWindow;
-		int depth = 0;
 		Move bestMove = Move::null();
+		Rating rating = 0_rt;
+		std::uint8_t depth = 0;
+		WindowBound bound = InWindow;
 	};
 	using PositionEntryRef = std::reference_wrapper<const PositionEntry>;
 

@@ -15,15 +15,15 @@ namespace chess {
 		ret.append(std::string{ fromName.data(), fromName.size() });
 		ret.append(std::string{ toName.data(), toName.size() });
 		
-		ret[0] = std::tolower(ret[0]);
-		ret[2] = std::tolower(ret[2]);
+		ret[0] = static_cast<char>(std::tolower(ret[0]));
+		ret[2] = static_cast<char>(std::tolower(ret[2]));
 
 		if (promotionPiece != Piece::None) {
 			if (promotionPiece == Knight) { //Knight doesn't start with n, so we need a special branch
 				ret.push_back('n');
 			} else { 
 				auto promotedPieceName = magic_enum::enum_name(promotionPiece);
-				ret.push_back(std::tolower(promotedPieceName[0]));
+				ret.push_back(static_cast<char>(std::tolower(promotedPieceName[0])));
 			}
 		}
 

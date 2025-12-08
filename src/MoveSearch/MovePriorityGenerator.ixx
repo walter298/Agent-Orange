@@ -6,5 +6,5 @@ export import :MovePriority;
 export import :Node;
 
 export namespace chess {
-	FixedVector<MovePriority> getMovePriorities(const Node& node, const std::vector<Move>& legalMoves, bool maximizing);
+	FixedVector<MovePriority> getMovePriorities(const Node& node, const Move& pvMove);
 }

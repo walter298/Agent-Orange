@@ -3,7 +3,7 @@ export module Chess.Rating;
 import std;
 
 export namespace chess {
-	using Rating = double;
+	using Rating = float;
 
 	constexpr Rating operator"" _rt(unsigned long long rating) {
 		return static_cast<Rating>(rating);
@@ -22,8 +22,16 @@ export namespace chess {
 		}
 	}
 
+	auto nextAfter(Rating r) {
+		if constexpr (std::same_as<Rating, float>) {
+			return std::nextafterf(r, 0_rt);
+		} else {
+			return std::nextafter(r, 0_rt);
+		}
+	}
+
 	template<bool Maximizing>
 	constexpr Rating checkmatedRating() {
-		return std::nextafter(worstPossibleRating<Maximizing>(), 0.0);
+		return nextAfter(worstPossibleRating<Maximizing>());
 	}
 }

@@ -91,9 +91,16 @@ export namespace chess {
 		TurnData<PieceState> getTurnData()  {
 			return getTurnDataImpl<PieceState>();
 		}
+
+		template<bool Maximizing = true>
 		auto getColorSides(this auto&& self) {
-			return std::tie(self.m_whitePieces, self.m_blackPieces);
+			if constexpr (Maximizing) {
+				return std::tie(self.m_whitePieces, self.m_blackPieces);
+			} else {
+				return std::tie(self.m_blackPieces, self.m_whitePieces);
+			}
 		}
+		
 		bool isWhite() const {
 			return m_isWhiteMoving;
 		}

@@ -1,5 +1,6 @@
 import std;
 
+import Chess.ArenaAllocator;
 import Chess.BitboardImage;
 import Chess.UCI;
 import Chess.Move;
@@ -50,7 +51,7 @@ namespace chess {
 			std::println("Error: uci with depth requires 1 argument: [depth]");
 			return;
 		}
-		auto depth = 0;
+		std::uint8_t depth = 0;
 		auto depthStr = argv[2];
 		auto depthStrEnd = depthStr + std::strlen(depthStr);
 		auto depthRes = std::from_chars(depthStr, depthStrEnd, depth, 10);
@@ -78,6 +79,8 @@ namespace chess {
 
 int main(int argc, const char** argv) {
 	chess::MaybeProfilerGuard guard;
+
+	chess::arena::init(5'000'000'000); //max of 5 gigs of ram
 
 	if (argc == 1) {
 		chess::playUCI();

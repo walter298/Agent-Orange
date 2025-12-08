@@ -19,6 +19,7 @@ export namespace chess {
 	constexpr RGB BROWN     = { 150, 75, 0 };
 	constexpr RGB LIGHT_TAN = { 222, 184, 135 };
 	constexpr RGB WHITE     = { 255, 255, 255 };
+	constexpr RGB PINK      = { 255, 192, 204 };
 
 	using ColorGetter = std::move_only_function<RGB(Bitboard)>;
 

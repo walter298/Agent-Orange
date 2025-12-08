@@ -9,7 +9,7 @@ namespace chess {
 		Position m_pos;
 		bool m_inNewPos = true;
 	public:
-		int depth = 6;
+		std::uint8_t depth = 6;
 
 		void reset();
 		void setPos(const std::string& command);

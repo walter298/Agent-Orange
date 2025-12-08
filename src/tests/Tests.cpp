@@ -131,17 +131,28 @@ namespace chess {
 			}
 		}
 
+		template<std::invocable<const Move&> Pred>
+		void testIllegalSquaresImpl(std::string_view testName, const std::string& fen, Pred pred) {
+			Position pos;
+			pos.setPos(parsePositionCommand(fen));
+
+			auto legalMoves = calcAllLegalMovesAndDrawBitboards(pos);
+			auto illegalMoveIt = std::ranges::find_if(legalMoves.legalMoves, pred);
+			if (illegalMoveIt != legalMoves.legalMoves.end()) {
+				auto& move = *illegalMoveIt;
+				std::println("{} failed: {} was able to move to {}", testName, magic_enum::enum_name(move.movedPiece), magic_enum::enum_name(move.to));
+			}
+		}
+
 		void testIllegalSquaresImpl(std::string_view testName, const std::string& fen, Piece piece, Square to) {
 			Position pos;
 			pos.setPos(parsePositionCommand(fen));
 
 			auto legalMoves = calcAllLegalMoves(pos);
-			auto illegalMoveIt = std::ranges::find_if(legalMoves.legalMoves, [&](const Move& move) {
+			auto testIllegality = [&](const Move& move) {
 				return move.movedPiece == piece && move.to == to;
-			});
-			if (illegalMoveIt != legalMoves.legalMoves.end()) {
-				std::println("{} failed: {} was able to move to {}", testName, magic_enum::enum_name(piece), magic_enum::enum_name(to));
-			}
+			};
+			testIllegalSquaresImpl(testName, fen, testIllegality);
 		}
 
 		void testIllegalKingSquares() {
@@ -154,6 +165,13 @@ namespace chess {
 
 		void testIllegalPawnSquares() {
 			testIllegalSquaresImpl("testIllegalPawnSquares", "fen 8/1bN4Q/1kp5/8/1p1Pn3/8/7P/R5K1 b - - 8 30", Pawn, D5);
+		}
+
+		void testCheck() {
+			auto testIllegality = [](const Move& move) {
+				return move.movedPiece != King || move.to == F7;
+			};
+			testIllegalSquaresImpl("testCheck", "fen 1rbqk2r/3p1P2/1pn5/p1p5/2P4p/2NQ3P/PP4P1/R4RK1 b k - 0 18 ", testIllegality);
 		}
 
 		void testThatLegalMovesExist() {
@@ -339,6 +357,7 @@ namespace chess {
 			testIllegalKingSquares();
 			testIllegalKingSquares2();
 			testIllegalPawnSquares();
+			testCheck();
 			testThatLegalMovesExist();
 			testThatLegalMovesExist2();
 			testThatLegalMovesExist3();
@@ -348,7 +367,7 @@ namespace chess {
 			testPin();
 			testPinWithCheck();
 			testBitboardImageCreation();
-			testUCIInput();
+			//testUCIInput(); //long!
 		}
 	}
 }

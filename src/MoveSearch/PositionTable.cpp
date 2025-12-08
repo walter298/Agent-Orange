@@ -5,6 +5,7 @@ module;
 
 module Chess.MoveSearch:PositionTable;
 
+import Chess.ArenaAllocator;
 import Chess.Profiler;
 import :MoveHasher;
 
@@ -19,7 +20,7 @@ namespace chess {
 		}
 	};
 
-	using PositionMap = boost::unordered_node_map<Position, PositionEntry, PositionHasher>;
+	using PositionMap  = boost::unordered_node_map<Position, PositionEntry, PositionHasher>;
 
 	PositionMap positionMap;
 
@@ -31,7 +32,7 @@ namespace chess {
 			return std::nullopt;
 		}
 
-		return std::ref(entry->second);
+		return std::cref(entry->second);
 	}
 
 	void storePositionEntry(const Position& pos, const PositionEntry& entry) {

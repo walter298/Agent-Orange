@@ -14,26 +14,26 @@
     "unique_data": null
   },
   {
-    "average_ns": 197,
+    "average_ns": 37,
     "child_percentages": null,
     "name": "addMoves",
-    "time_spent_ns": 9700,
-    "times_run": 49,
+    "time_spent_ns": 3600,
+    "times_run": 96,
     "unique_data": null
   },
   {
-    "average_ns": 1417449400,
+    "average_ns": 16230,
     "child_percentages": {
-      "addMoves": 9.776111131122464e-05,
-      "calcEnemyMoves": 6.248648351851472e-05,
-      "getEnPessantMoves": 4.031386033452563e-06
+      "addMoves": 1.7061611374407581,
+      "calcEnemyMoves": 1.943127962085308,
+      "getEnPessantMoves": 0.09478672985781991
     },
     "name": "calcAllLegalMoves",
-    "time_spent_ns": 9922145800,
-    "times_run": 7,
+    "time_spent_ns": 211000,
+    "times_run": 13,
     "unique_data": {
-      "moves_per_second": 12.11111111111111,
-      "total_moves_generated": 109
+      "moves_per_second": 753554.5023696682,
+      "total_moves_generated": 159
     }
   },
   {
@@ -45,11 +45,11 @@
     "unique_data": null
   },
   {
-    "average_ns": 885,
+    "average_ns": 315,
     "child_percentages": null,
     "name": "calcEnemyMoves",
-    "time_spent_ns": 6200,
-    "times_run": 7,
+    "time_spent_ns": 4100,
+    "times_run": 13,
     "unique_data": null
   },
   {
@@ -69,11 +69,11 @@
     "unique_data": null
   },
   {
-    "average_ns": 400,
+    "average_ns": 100,
     "child_percentages": null,
     "name": "getEnPessantMoves",
-    "time_spent_ns": 400,
-    "times_run": 1,
+    "time_spent_ns": 200,
+    "times_run": 2,
     "unique_data": null
   },
   {

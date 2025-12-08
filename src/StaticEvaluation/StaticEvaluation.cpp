@@ -49,11 +49,11 @@ namespace chess {
 
 		auto currSquare = Square::None;
 		while (nextSquare(pawns, currSquare)) {
-			auto rank = static_cast<Rating>(rankOf(currSquare)) + 1.0;
+			auto rank = rankOf(currSquare) + 1;
 			if constexpr (MovingDown) {
-				rank = 9.0 - rank;
+				rank = 9 - rank;
 			}
-			auto pawnValue = rank * PAWN_ADVANCEMENT_RATING;
+			auto pawnValue = static_cast<Rating>(rank) * PAWN_ADVANCEMENT_RATING;
 			ret += pawnValue;
 		}
 

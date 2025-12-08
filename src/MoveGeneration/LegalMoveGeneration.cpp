@@ -30,7 +30,7 @@ namespace chess {
 	};
 
 	template<typename T>
-	concept MoveAdder = std::invocable<T, std::vector<Move>&, Move>;
+	concept MoveAdder = std::invocable<T, arena::Vector<Move>&, Move>;
 
 	template<typename AllyPawnMoveGenerator, typename AllyPawnAttackGenerator,
 			 typename EnemyPawnMoveGenerator, typename EnemyPawnAttackGenerator, Bitboard PromotionRank, 
@@ -44,7 +44,7 @@ namespace chess {
 		static_assert(PawnMoveGenerator<AllyPawnMoveGenerator>);
 		static_assert(PawnMoveGenerator<EnemyPawnMoveGenerator>);
 
-		static constexpr auto PAWN_ADDER = [](std::vector<Move>& moves, Move move) {
+		static constexpr auto PAWN_ADDER = [](arena::Vector<Move>& moves, Move move) {
 			if (makeBitboard(move.to) & PromotionRank) {
 				constexpr std::array PROMOTION_PIECES{ Queen, Rook, Bishop, Knight };
 				for (auto piece : PROMOTION_PIECES) {
@@ -56,14 +56,23 @@ namespace chess {
 			}
 		};
 
-		static constexpr auto DEFAULT_MOVE_ADDER = [](std::vector<Move>& moves, const Move& move) {
+		static constexpr auto DEFAULT_MOVE_ADDER = [](arena::Vector<Move>& moves, const Move& move) {
 			moves.push_back(move);
 		};
 
 		template<typename MoveGenerator>
+		static MoveGen invokeAttackGenerator(Bitboard movingEnemies, Bitboard empty, MoveGenerator attackGen) {
+			if constexpr (PawnMoveGenerator<MoveGenerator>) {
+				return attackGen(movingEnemies, ALL_SQUARES);
+			} else {
+				return attackGen(movingEnemies, empty);
+			}
+		}
+
+		template<typename MoveGenerator>
 		static MoveGen calcReverseAttacks(const PieceLocationData& pieceLocations, MoveGenerator) {
 			constexpr auto reverseAttackGenerator = ReverseAttackGenerator<MoveGenerator>::get();
-			return reverseAttackGenerator(pieceLocations.allyKing, pieceLocations.empty);
+			return invokeAttackGenerator(pieceLocations.allyKing, pieceLocations.empty, reverseAttackGenerator);
 		}
 
 		template<typename MoveGenerator>
@@ -92,13 +101,14 @@ namespace chess {
 		static void calcEnemyMovesImpl(EnemyMoveData& moveData, Bitboard movingEnemies, const PieceLocationData& pieceLocations,
 			EnemySquareCalculator enemyMoveCalculator)
 		{
-			auto enemySquares = [&] {
+			/*auto enemySquares = [&] {
 				if constexpr (PawnMoveGenerator<EnemySquareCalculator>) {
 					return enemyMoveCalculator(movingEnemies, ALL_SQUARES);
 				} else {
 					return enemyMoveCalculator(movingEnemies, pieceLocations.empty);
 				}
-			}();
+			}();*/
+			auto enemySquares = invokeAttackGenerator(movingEnemies, pieceLocations.empty, enemyMoveCalculator);
 			
 			if (enemySquares.nonEmptyDestSquares & pieceLocations.allyKing) { //if enemy piece is checking the king
 				calcChecklines(moveData.checklines, movingEnemies, pieceLocations, enemyMoveCalculator);
@@ -124,6 +134,9 @@ namespace chess {
 			const EnemyMoveData& enemyMoveData)
 		{
 			auto colorGetter = [&](Bitboard bit) -> RGB {
+				if (bit & enemyMoveData.checklines.kingAttackers) {
+					return PINK;
+				}
 				if (pieceLocations.allies & bit) {
 					if (bit & enemyMoveData.squares) { 
 						return RED; //ally under attack
@@ -232,11 +245,12 @@ namespace chess {
 
 			ret |= orthogonalMoveGenerator(enemies[Queen] | enemies[Rook], empty).all();
 			ret |= diagonalMoveGenerator(enemies[Queen] | enemies[Bishop], empty).all();
+
 			return ret;
 		}
 
 		template<MoveAdder MoveAdder>
-		static void addMoves(std::vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
+		static void addMoves(arena::Vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveAdder moveAdder)
 		{
 			ProfilerLock l{ getMoveAdderProfiler() };
@@ -254,7 +268,7 @@ namespace chess {
 		}
 
 		template<typename MoveGenerator>
-		static Bitboard addMoves(std::vector<Move>& moves, Bitboard movablePieces, Piece pieceType, const PieceLocationData& pieceLocations,
+		static Bitboard addMoves(arena::Vector<Move>& moves, Bitboard movablePieces, Piece pieceType, const PieceLocationData& pieceLocations,
 			const PieceState& enemies, MoveGenerator moveGen, Bitboard checklines)
 		{
 			Bitboard allSquares = 0;
@@ -283,7 +297,7 @@ namespace chess {
 			return allSquares;
 		}
 
-		static Bitboard addKingMoves(std::vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
+		static Bitboard addKingMoves(arena::Vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
 			const PieceLocationData& pieceLocations, Bitboard enemyMoves)
 		{
 			bool inCheck = (enemyMoves & pieceLocations.allyKing);
@@ -313,7 +327,7 @@ namespace chess {
 			return kingMoves.all();
 		}
 
-		static void addEnPessantMoves(std::vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
+		static void addEnPassantMoves(arena::Vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
 			ProfilerLock l{ getEnPessantProfiler() };
 
 			auto enPessantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
@@ -327,7 +341,7 @@ namespace chess {
 		}
 
 		static PositionData calcAllLegalMoves(const Position::ImmutableTurnData& turnData) {
-			std::vector<Move> moves;
+			arena::Vector<Move> moves;
 
 			constexpr auto AVERAGE_MOVES_PER_POSITION = 40uz;
 			moves.reserve(AVERAGE_MOVES_PER_POSITION); 
@@ -351,7 +365,6 @@ namespace chess {
 			/*Enemy destination squares are blocked by the king, so if the king in check, ensure that we are not moving
 			onto a square that was blocked but is still indirectly checked*/
 			allySquares |= addKingMoves(moves, turnData, pieceLocations, enemyMoveData.squares);
-			
 
 			if (enemyMoveData.checklines.multipleChecks) { //if there are multiple checks, we have to move the king
 				return { moves, moves.empty() };
@@ -371,7 +384,7 @@ namespace chess {
 			addMovesImpl(Pawn, allyPawnMoveGenerator);
 
 			if (enemies.doubleJumpedPawn != Square::None) {
-				addEnPessantMoves(moves, allies[Pawn] & ~pinnedAllies, enemies.doubleJumpedPawn);
+				addEnPassantMoves(moves, allies[Pawn] & ~pinnedAllies, enemies.doubleJumpedPawn);
 			}
 
 			if constexpr (PROFILING) {
@@ -384,7 +397,8 @@ namespace chess {
 			attackedPieces |= allySquares & pieceLocations.enemies;
 			bool inCheck = (enemyMoveData.squares & pieceLocations.allyKing);
 			bool checkmate = inCheck && moves.empty();
-			return { moves, attackedPieces, inCheck, checkmate };
+
+			return { std::move(moves), attackedPieces, inCheck, checkmate };
 		}
 	};
 

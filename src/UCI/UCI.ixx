@@ -1,5 +1,7 @@
 export module Chess.UCI;
 
+import std;
+
 namespace chess {
-	export void playUCI(int depth = 6);
+	export void playUCI(std::uint8_t depth = 6);
 }

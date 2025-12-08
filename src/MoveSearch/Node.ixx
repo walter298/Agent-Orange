@@ -12,15 +12,15 @@ export namespace chess {
 		Position m_pos;
 		PositionData m_positionData;
 
-		int m_level = 0;
-		int m_levelsToSearch = 0;
+		std::uint8_t m_level = 0;
+		std::uint8_t m_levelsToSearch = 0;
 		bool m_inAttackSequence = false;
 		Rating m_materialExchanged = 0_rt;
 		Rating m_materialSignSwap = 1_rt;
 
 		Node() = default;
 	public:
-		static Node makeRoot(const Position& root, int maxDepth, bool isWhite) {
+		static Node makeRoot(const Position& root, std::uint8_t maxDepth, bool isWhite) {
 			Node ret;
 			ret.m_pos = root;
 			ret.m_positionData = calcAllLegalMoves(ret.m_pos);
@@ -66,11 +66,11 @@ export namespace chess {
 			return m_positionData;
 		}
 
-		int getLevel() const {
+		std::uint8_t getLevel() const {
 			return m_level;
 		}
 
-		int getRemainingDepth() const {
+		std::uint8_t getRemainingDepth() const {
 			return m_levelsToSearch;
 		}
 

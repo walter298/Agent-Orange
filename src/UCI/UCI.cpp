@@ -1,16 +1,8 @@
-module;
-
-#include <boost/parser/parser.hpp>
-
 module Chess.UCI;
 
 import std;
 import Chess.Evaluation;
 import :GameState;
-
-//damn macros are defined somewhere (probably windows.h)
-#undef max
-#undef min
 
 namespace chess {
 	GameState gameState;
@@ -21,7 +13,7 @@ namespace chess {
 		return buff.substr(currentPos);
 	}
 
-	void playUCI(int depth) {
+	void playUCI(std::uint8_t depth) {
 		std::println("Running with depth {}", depth);
 
 		std::istringstream iss;
@@ -31,18 +23,14 @@ namespace chess {
 		gameState.depth = depth;
 
 		while (true) {
-			std::println("Waiting for input...");
 			if (!std::getline(std::cin, line)) {
 				std::println("No more input. EOF: {}", std::cin.eof());
 				break;
 			}
-			std::println("Handling new input...");
+			
 			iss.clear();
 			iss.str(line);
 			iss >> token;
-
-			std::println("Line: {}", line);
-			std::println("Token: {}", token);
 
 			if (token == "quit") {
 				break;

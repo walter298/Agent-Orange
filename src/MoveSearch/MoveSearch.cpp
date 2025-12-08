@@ -2,6 +2,7 @@ module Chess.MoveSearch;
 
 import std;
 
+import Chess.ArenaAllocator;
 import Chess.Assert;
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
@@ -15,9 +16,6 @@ import :Node;
 import :PositionTable;
 
 namespace chess {
-	std::chrono::steady_clock::time_point beginCalculation;
-	constexpr std::chrono::seconds MAX_CALCULATION_TIME{ 120 };
-
 	class AlphaBeta {
 	private:
 		//add or subtract 1 so that checkmate ratings are always worse than these bounds
@@ -52,29 +50,76 @@ namespace chess {
 		}
 	};
 
-	template<bool Maximizing>
-	Rating minimax(const Node& node, const PositionData& positionData, AlphaBeta alphaBeta);
+	template<typename Ret, bool Maximizing>
+	Ret minimaxImpl(const Node& node, const Move& pvMove, AlphaBeta alphaBeta);
 
 	template<typename Ret, bool Maximizing>
-	Ret bestChildPosition(const Node& node, AlphaBeta alphaBeta) {
-		const auto& positionData = node.getPositionData();
-
-		if (positionData.legalMoves.empty()) {
+	Ret minimax(const Node& node, AlphaBeta alphaBeta) {
+		auto returnImpl = [](const PositionEntry& entry) {
 			if constexpr (std::same_as<Ret, Rating>) {
-				return positionData.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
+				return entry.rating;
+			} else {
+				return entry.bestMove;
+			}
+		};
+
+		auto entryRes = getPositionEntry(node.getPos());
+		if (entryRes) {
+			const auto& entry = entryRes->get();
+			if (entry.depth >= node.getRemainingDepth()) {
+				switch (entry.bound) {
+				case InWindow:
+					return returnImpl(entry);
+					break;
+				case LowerBound:
+					if (entry.rating >= alphaBeta.getBeta()) {
+						return returnImpl(entry);
+					} else {
+						alphaBeta.updateAlpha(entry.rating);
+					}
+					break;
+				case UpperBound:
+					if (entry.rating <= alphaBeta.getAlpha()) {
+						return returnImpl(entry);
+					} else {
+						alphaBeta.updateBeta(entry.rating);
+					}
+					break;
+				}
+				return minimaxImpl<Ret, Maximizing>(node, entry.bestMove, alphaBeta);
+			}
+		}
+
+		return minimaxImpl<Ret, Maximizing>(node, Move::null(), alphaBeta);
+	}
+
+	template<typename Ret, bool Maximizing>
+	Ret minimaxImpl(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
+		if constexpr (std::same_as<Ret, Rating>) {
+			if (node.isDone()) {
+				return node.getRating();
+			}
+		}
+
+		const auto& posData = node.getPositionData();
+
+		if (posData.legalMoves.empty()) {
+			if constexpr (std::same_as<Ret, Rating>) {
+				return posData.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
 			} else {
 				return std::nullopt;
 			}
 		}
 
-		auto movePriorities = getMovePriorities(node, positionData.legalMoves, Maximizing);
+		auto movePriorities = getMovePriorities(node, pvMove);
 		auto bestMove = Move::null();
 		auto bestRating = worstPossibleRating<Maximizing>();
 
 		auto bound = InWindow;
 		for (const auto& movePriority : movePriorities) {
 			auto child = Node::makeChild(node, movePriority);
-			auto childRating = minimax<!Maximizing>(child, alphaBeta);
+
+			auto childRating = minimax<Rating, !Maximizing>(child, alphaBeta);
 
 			if constexpr (Maximizing) {
 				if (childRating > bestRating) {
@@ -109,7 +154,8 @@ namespace chess {
 			}
 		}
 
-		storePositionEntry(node.getPos(), { bestRating, bound, node.getRemainingDepth(), bestMove });
+		PositionEntry newEntry{ bestMove, bestRating, node.getRemainingDepth(), bound };
+		storePositionEntry(node.getPos(), newEntry);
 
 		if constexpr (std::same_as<Ret, std::optional<Move>>) {
 			return bestMove;
@@ -119,55 +165,19 @@ namespace chess {
 	}
 
 	template<bool Maximizing>
-	Rating minimax(const Node& node, AlphaBeta alphaBeta) {
-		auto cachedEntryRes = getPositionEntry(node.getPos());
-		if (cachedEntryRes) {
-			const auto& cachedEntry = cachedEntryRes->get();
-			if (cachedEntry.depth >= node.getRemainingDepth()) {
-				switch (cachedEntry.bound) {
-				case InWindow:
-					return cachedEntry.rating;
-					break;
-				case LowerBound:
-					if (cachedEntry.rating >= alphaBeta.getBeta()) { 
-						return cachedEntry.rating;
-					}
-					alphaBeta.updateAlpha(cachedEntry.rating);
-					break;
-				case UpperBound:
-					if (cachedEntry.rating <= alphaBeta.getAlpha()) {
-						return cachedEntry.rating;
-					}
-					alphaBeta.updateBeta(cachedEntry.rating);
-					break;
-				}
-			}
-		}
-
-		auto timeCalculated = std::chrono::steady_clock::now() - beginCalculation;
-		if (timeCalculated > MAX_CALCULATION_TIME || node.isDone()) {
-			return node.getRating();
-		}
-		
-		return bestChildPosition<Rating, Maximizing>(node, alphaBeta);
-	}
-
-	template<bool Maximizing>
-	std::optional<Move> bestMoveImpl(const Position& rootPos, int depth) {
+	std::optional<Move> bestMoveImpl(const Position& rootPos, std::uint8_t depth) {
 		AlphaBeta alphaBeta;
 		auto root = Node::makeRoot(rootPos, depth, rootPos.isWhite());
-		return bestChildPosition<std::optional<Move>, Maximizing>(root, alphaBeta);
+		return minimax<std::optional<Move>, Maximizing>(root, alphaBeta);
 	}
 
-	std::optional<Move> findBestMove(const Position& pos, int depth) {
+	std::optional<Move> findBestMove(const Position& pos, std::uint8_t depth) {
 		ProfilerLock l{ getBestMoveProfiler() };
 
-		beginCalculation = std::chrono::steady_clock::now();
+		arena::reset();
 
 		auto iterativeDeepening = [&]<bool Maximizing>() {
-			//too slow at the moment!
-			for (auto iterDepth = 1; iterDepth < depth; iterDepth++) {
-				std::println("Iterative deepening at depth {}", iterDepth);
+			for (std::uint8_t iterDepth = 1; iterDepth < depth; iterDepth++) {
 				bestMoveImpl<Maximizing>(pos, iterDepth);
 			}
 			return bestMoveImpl<Maximizing>(pos, depth);

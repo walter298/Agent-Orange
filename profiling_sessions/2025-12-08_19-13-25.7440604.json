@@ -14,26 +14,25 @@
     "unique_data": null
   },
   {
-    "average_ns": 202,
+    "average_ns": 72,
     "child_percentages": null,
     "name": "addMoves",
-    "time_spent_ns": 9900,
-    "times_run": 49,
+    "time_spent_ns": 800,
+    "times_run": 11,
     "unique_data": null
   },
   {
-    "average_ns": 1430708414,
+    "average_ns": 4643500,
     "child_percentages": {
-      "addMoves": 9.88521280901113e-05,
-      "calcEnemyMoves": 7.888200120322012e-05,
-      "getEnPessantMoves": 5.991038066067351e-06
+      "addMoves": 0.017228383762248303,
+      "calcEnemyMoves": 0.053838699257025946
     },
     "name": "calcAllLegalMoves",
-    "time_spent_ns": 10014958900,
-    "times_run": 7,
+    "time_spent_ns": 4643500,
+    "times_run": 1,
     "unique_data": {
-      "moves_per_second": 10.9,
-      "total_moves_generated": 109
+      "moves_per_second": 5168.515128674491,
+      "total_moves_generated": 24
     }
   },
   {
@@ -45,11 +44,11 @@
     "unique_data": null
   },
   {
-    "average_ns": 1128,
+    "average_ns": 2500,
     "child_percentages": null,
     "name": "calcEnemyMoves",
-    "time_spent_ns": 7900,
-    "times_run": 7,
+    "time_spent_ns": 2500,
+    "times_run": 1,
     "unique_data": null
   },
   {
@@ -66,14 +65,6 @@
     "name": "storePositionEntry",
     "time_spent_ns": 0,
     "times_run": 0,
-    "unique_data": null
-  },
-  {
-    "average_ns": 600,
-    "child_percentages": null,
-    "name": "getEnPessantMoves",
-    "time_spent_ns": 600,
-    "times_run": 1,
     "unique_data": null
   },
   {
