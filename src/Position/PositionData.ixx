@@ -1,9 +1,11 @@
 export module Chess.Position:PositionData;
 
 export import std;
+
 export import Chess.ArenaAllocator;
 export import Chess.Bitboard;
 export import Chess.Move;
+export import Chess.Rating;
 
 export namespace chess {
 	struct PositionData {

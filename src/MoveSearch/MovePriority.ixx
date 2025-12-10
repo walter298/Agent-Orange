@@ -25,5 +25,9 @@ export namespace chess {
 		bool inAttackSequence() const {
 			return m_inAttackSequence;
 		}
+
+		std::string getString() const {
+			return std::format("[{}, {}]", m_move.getUCIString(), static_cast<int>(m_recommendedDepth));
+		}
 	};
 }

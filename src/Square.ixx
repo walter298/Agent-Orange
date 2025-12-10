@@ -92,8 +92,9 @@ export namespace chess {
         return currSquare;
     }
 
-	constexpr bool containsSquare(Bitboard bitboard, Square square) {
-        return (bitboard & makeBitboard(square)) != 0;
+    template<std::same_as<Square>... Squares>
+	constexpr bool containsSquare(Bitboard bitboard, Squares... squares) requires(sizeof...(Squares) > 0) {
+        return (((bitboard & makeBitboard(squares)) != 0) && ...);
     }
 
     constexpr void removeSquare(Bitboard& bitboard, Square square) {
@@ -142,4 +143,17 @@ export namespace chess {
     }
 
     std::optional<Square> parseSquare(std::string_view square);
+
+    template<typename T>
+    class SquareMap {
+    private:
+        std::array<T, 64> m_entries;
+    public:
+        constexpr SquareMap() {
+            std::ranges::fill(m_entries, T{});
+        }
+        decltype(auto) operator[](this auto&& self, Square square) {
+            return std::forward_like<decltype(self)>(self.m_entries[static_cast<size_t>(square)]);
+        }
+    };
 }

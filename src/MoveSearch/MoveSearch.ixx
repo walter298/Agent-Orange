@@ -1,6 +1,8 @@
 export module Chess.MoveSearch;
 
 export import std;
+
+export import :MoveSearchTests;
 import Chess.Position;
 
 namespace chess {

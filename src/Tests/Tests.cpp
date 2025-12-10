@@ -350,6 +350,20 @@ namespace chess {
 			std::println("{}", pipe.read("bestmove"));
 		}
 
+		void testEnemySquareOutput() {
+			Position pos;
+			pos.setPos(parsePositionCommand("fen rnb1kbnr/pp1pppp1/2p5/q6p/2PPP3/8/PP1B1PPP/RN1QKBNR b KQkq - 1 1"));
+
+			auto legalMoves = calcAllLegalMoves(pos);
+			if (!containsSquare(legalMoves.whiteSquares, A3, C3, B4, A5)) {
+				std::println("testEnemySquareOutput failed: either D3, D4, or D5 are not contained in the white squares");
+				auto currSquare = Square::None;
+				while (nextSquare(legalMoves.whiteSquares, currSquare)) {
+					std::println("{}", magic_enum::enum_name(currSquare));
+				}
+			}
+		}
+
 		void runAllTests() {
 			std::println("Running tests...");
 
@@ -368,7 +382,9 @@ namespace chess {
 			testPin();
 			testPinWithCheck();
 			testBitboardImageCreation();
+			testEnemySquareOutput();
 			runInternalEvaluationTests();
+			runInternalMoveSearchTests();
 			//testUCIInput(); //long!
 		}
 	}

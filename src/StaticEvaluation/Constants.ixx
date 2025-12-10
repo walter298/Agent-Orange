@@ -17,6 +17,7 @@ namespace chess {
 
 	const PieceMap<Rating> pieceRatings{
 		{
+
 			{ Queen, QUEEN_RATING },
 			{ Rook, ROOK_RATING },
 			{ Bishop, BISHOP_RATING },

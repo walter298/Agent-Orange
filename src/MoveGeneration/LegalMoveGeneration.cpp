@@ -101,13 +101,6 @@ namespace chess {
 		static void calcEnemyMovesImpl(EnemyMoveData& moveData, Bitboard movingEnemies, const PieceLocationData& pieceLocations,
 			EnemySquareCalculator enemyMoveCalculator)
 		{
-			/*auto enemySquares = [&] {
-				if constexpr (PawnMoveGenerator<EnemySquareCalculator>) {
-					return enemyMoveCalculator(movingEnemies, ALL_SQUARES);
-				} else {
-					return enemyMoveCalculator(movingEnemies, pieceLocations.empty);
-				}
-			}();*/
 			auto enemySquares = invokeAttackGenerator(movingEnemies, pieceLocations.empty, enemyMoveCalculator);
 			
 			if (enemySquares.nonEmptyDestSquares & pieceLocations.allyKing) { //if enemy piece is checking the king
@@ -354,7 +347,7 @@ namespace chess {
 				drawPieceLocations(pieceLocations,"normal_piece_locations.png");
 			}
 
-			auto enemyMoveData = calcEnemyMoves(enemies, pieceLocations);
+			const auto enemyMoveData = calcEnemyMoves(enemies, pieceLocations);
 			if constexpr (DrawingBitboards) {
 				drawEnemyAttackBitboard(pieceLocations, enemyMoveData);
 				drawEnemyLayoutBitboard(pieceLocations, enemyMoveData);
@@ -400,10 +393,10 @@ namespace chess {
 
 			if constexpr (White) {
 				whiteSquares = allySquares;
-				blackSquares = enemyMoveData.squares & ~pieceLocations.enemies;
+				blackSquares = enemyMoveData.squares;
 			} else {
 				blackSquares = allySquares;
-				whiteSquares = enemyMoveData.squares & ~pieceLocations.enemies;
+				whiteSquares = enemyMoveData.squares;
 			}
 			return { std::move(moves), whiteSquares, blackSquares, inCheck, checkmate };
 		}

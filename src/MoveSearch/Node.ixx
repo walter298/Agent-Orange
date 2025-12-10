@@ -81,5 +81,9 @@ export namespace chess {
 		Rating getRating() const {
 			return staticEvaluation(m_pos, m_positionData);
 		}
+
+		Bitboard getEnemySquares() const {
+			return m_pos.isWhite() ? m_positionData.blackSquares : m_positionData.whiteSquares;
+		}
 	};
 }
