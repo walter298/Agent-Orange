@@ -8,7 +8,8 @@ export import Chess.Move;
 export namespace chess {
 	struct PositionData {
 		arena::Vector<Move> legalMoves;
-		Bitboard attackedPieces = 0;
+		Bitboard whiteSquares = 0;
+		Bitboard blackSquares = 0;
 		bool isCheck = false;
 		bool isCheckmate = false;
 	};

@@ -1,5 +1,5 @@
 module Chess.LegalMoveGeneration:PawnMoveGeneration;
-import :Direction;
+import Chess.Direction;
 import Chess.RankCalculator;
 
 namespace chess {

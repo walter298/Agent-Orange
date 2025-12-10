@@ -1,5 +1,5 @@
 module Chess.LegalMoveGeneration:KnightMoveGeneration;
-import :Direction;
+import Chess.Direction;
 
 namespace chess {
 	template<dir::Direction Direction>

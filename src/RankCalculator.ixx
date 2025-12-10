@@ -14,10 +14,10 @@ export namespace chess {
 
 	template<int File>
 	consteval Bitboard calcFile() {
-		return 0x0101010101010101ULL << File;
+		return 0x0101010101010101ull << File;
 	}
 
 	constexpr Bitboard calcFile(int fileIndex) {
-		return 0x0101010101010101ULL << fileIndex;
+		return 0x0101010101010101ull << fileIndex;
 	}
 }

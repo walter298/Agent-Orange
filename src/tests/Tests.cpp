@@ -31,6 +31,7 @@ module Chess.Tests;
 import std;
 
 import Chess.BitboardImage;
+import Chess.Evaluation;
 import Chess.Position;
 import Chess.PositionCommand;
 import Chess.LegalMoveGeneration;
@@ -367,6 +368,7 @@ namespace chess {
 			testPin();
 			testPinWithCheck();
 			testBitboardImageCreation();
+			runInternalEvaluationTests();
 			//testUCIInput(); //long!
 		}
 	}

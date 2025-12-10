@@ -5,7 +5,7 @@ import std;
 import Chess.Bitboard;
 import Chess.Square;
 import :ChainedMoveGenerator;
-import :Direction;
+import Chess.Direction;
 export import :MoveGen;
 
 export namespace chess {

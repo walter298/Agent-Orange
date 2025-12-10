@@ -37,7 +37,7 @@ namespace chess {
                 squareIndex += squareChr - '0';
                 continue;
             }
-            auto piece = parsePiece(std::tolower(static_cast<unsigned char>(squareChr)));
+            auto piece = parsePiece(static_cast<char>(std::tolower(static_cast<unsigned char>(squareChr))));
             if (std::islower(static_cast<unsigned char>(squareChr))) {
                 addSquare(blackPieces[piece], squareRow[squareIndex]);
             } else {

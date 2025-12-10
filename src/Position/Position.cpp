@@ -143,12 +143,6 @@ namespace chess {
         this->move(move);
 	}
 
-    size_t Position::hash() const {
-        auto white = m_whitePieces.calcAllLocations();
-        auto black = m_blackPieces.calcAllLocations();
-        return 0;
-    }
-
     bool operator==(const Position& a, const Position& b) {
         auto aTurnData = a.getTurnData();
         auto bTurnData = b.getTurnData();

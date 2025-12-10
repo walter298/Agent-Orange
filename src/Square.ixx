@@ -115,6 +115,14 @@ export namespace chess {
     constexpr int fileOf(Square square) {
         return static_cast<int>(square) % 8;
     }
+    struct FileRank {
+        int file = 0;
+        int rank = 0;
+    };
+    constexpr FileRank fileRankOf(Square square) {
+        return { fileOf(square), rankOf(square) };
+    }
+
     constexpr Bitboard leftFile(Square square) {
         auto file = fileOf(square);
         return file == 0 ? 0 : calcFile(file - 1);

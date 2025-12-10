@@ -1,0 +1,87 @@
+[
+  {
+    "average_ns": 58628700,
+    "child_percentages": {
+      "calcAllLegalMoves": 70.72194529787824,
+      "getMovePriorities": 4.49986829950909,
+      "getPositionEntry": 2.6774551420330703,
+      "staticEvaluation": 12.673802615929935,
+      "storePositionEntry": 1.5541876248322066
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 410400900,
+    "times_run": 7,
+    "unique_data": null
+  },
+  {
+    "average_ns": 30,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 127252000,
+    "times_run": 4193171,
+    "unique_data": null
+  },
+  {
+    "average_ns": 979,
+    "child_percentages": {
+      "addMoves": 43.843186841393525,
+      "calcEnemyMoves": 6.53182586345603,
+      "getEnPessantMoves": 0.3448483773107753
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 290243500,
+    "times_run": 296347,
+    "unique_data": {
+      "moves_per_second": 35217467.402370766,
+      "total_moves_generated": 10221641
+    }
+  },
+  {
+    "average_ns": 673,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 18467500,
+    "times_run": 27439,
+    "unique_data": null
+  },
+  {
+    "average_ns": 63,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 18958200,
+    "times_run": 296347,
+    "unique_data": null
+  },
+  {
+    "average_ns": 195,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 52013400,
+    "times_run": 265936,
+    "unique_data": null
+  },
+  {
+    "average_ns": 232,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 6378400,
+    "times_run": 27439,
+    "unique_data": null
+  },
+  {
+    "average_ns": 20,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 1000900,
+    "times_run": 48119,
+    "unique_data": null
+  },
+  {
+    "average_ns": 37,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 10988300,
+    "times_run": 296347,
+    "unique_data": null
+  }
+]

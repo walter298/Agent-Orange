@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:Direction;
+export module Chess.Direction;
 
 import std;
 import Chess.Bitboard;

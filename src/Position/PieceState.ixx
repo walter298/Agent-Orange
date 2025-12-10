@@ -32,7 +32,7 @@ namespace chess {
 			m_canCastleQueenside = false;
 		}
 		void clear() {
-			std::ranges::transform(m_data, m_data.begin(), [](auto& bitboard) {
+			std::ranges::transform(m_data, m_data.begin(), [](auto&) {
 				return 0;
 			});
 			m_canCastleKingside = true;

@@ -32,7 +32,7 @@ namespace chess {
 	template<typename T>
 	concept MoveAdder = std::invocable<T, arena::Vector<Move>&, Move>;
 
-	template<typename AllyPawnMoveGenerator, typename AllyPawnAttackGenerator,
+	template<bool White, typename AllyPawnMoveGenerator, typename AllyPawnAttackGenerator,
 			 typename EnemyPawnMoveGenerator, typename EnemyPawnAttackGenerator, Bitboard PromotionRank, 
 			 bool DrawingBitboards>
 	struct MoveGeneratorImpl {
@@ -392,13 +392,20 @@ namespace chess {
 				profiler.legalMovesGenerated += moves.size();
 			}
 
-			Bitboard attackedPieces = 0;
-			attackedPieces |= enemyMoveData.squares & pieceLocations.allies;
-			attackedPieces |= allySquares & pieceLocations.enemies;
 			bool inCheck = (enemyMoveData.squares & pieceLocations.allyKing);
 			bool checkmate = inCheck && moves.empty();
 
-			return { std::move(moves), attackedPieces, inCheck, checkmate };
+			Bitboard whiteSquares = 0;
+			Bitboard blackSquares = 0;
+
+			if constexpr (White) {
+				whiteSquares = allySquares;
+				blackSquares = enemyMoveData.squares & ~pieceLocations.enemies;
+			} else {
+				blackSquares = allySquares;
+				whiteSquares = enemyMoveData.squares & ~pieceLocations.enemies;
+			}
+			return { std::move(moves), whiteSquares, blackSquares, inCheck, checkmate };
 		}
 	};
 
@@ -409,11 +416,11 @@ namespace chess {
 		auto turnData = pos.getTurnData();
 
 		if (turnData.isWhite) {
-			using MoveGenerator = MoveGeneratorImpl<WhitePawnMoveGenerator, WhitePawnAttackGenerator,
+			using MoveGenerator = MoveGeneratorImpl<true, WhitePawnMoveGenerator, WhitePawnAttackGenerator,
 				BlackPawnMoveGenerator, BlackPawnAttackGenerator, calcRank<8>(), DrawingBitboards>;
 			return MoveGenerator::calcAllLegalMoves(turnData);
 		} else {
-			using MoveGenerator = MoveGeneratorImpl<BlackPawnMoveGenerator, BlackPawnAttackGenerator,
+			using MoveGenerator = MoveGeneratorImpl<false, BlackPawnMoveGenerator, BlackPawnAttackGenerator,
 				WhitePawnMoveGenerator, WhitePawnAttackGenerator, calcRank<1>(), DrawingBitboards>;
 			return MoveGenerator::calcAllLegalMoves(turnData);
 		}

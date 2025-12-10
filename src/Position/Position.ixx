@@ -83,8 +83,6 @@ export namespace chess {
 		void move(const Move& move);
 		void move(std::string_view moveStr);
 
-		size_t hash() const;
-
 		TurnData<const PieceState> getTurnData() const {
 			return getTurnDataImpl<const PieceState>();
 		}
