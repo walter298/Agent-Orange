@@ -5,11 +5,11 @@ import std;
 export namespace chess {
 	using Rating = float;
 
-	constexpr Rating operator"" _rt(unsigned long long rating) {
+	constexpr Rating operator""_rt(unsigned long long rating) {
 		return static_cast<Rating>(rating);
 	}
 
-	constexpr Rating operator"" _rt(long double rating) {
+	constexpr Rating operator""_rt(long double rating) {
 		return static_cast<Rating>(rating);
 	}
 

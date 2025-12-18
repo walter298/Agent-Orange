@@ -84,9 +84,9 @@ export namespace chess {
         return true;
     }
 
-    constexpr Square getSquare(Bitboard board, int n) {
+    constexpr Square getNthSetSquare(Bitboard board, int n) {
         auto currSquare = None;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             nextSquare(board, currSquare);
         }
         return currSquare;
@@ -146,14 +146,20 @@ export namespace chess {
 
     template<typename T>
     class SquareMap {
+    public:
+        using Buffer = std::array<T, 64>;
     private:
-        std::array<T, 64> m_entries;
+        Buffer m_entries;
     public:
         constexpr SquareMap() {
             std::ranges::fill(m_entries, T{});
         }
+        constexpr SquareMap(const Buffer& buffer) : m_entries{ buffer } {}
         decltype(auto) operator[](this auto&& self, Square square) {
             return std::forward_like<decltype(self)>(self.m_entries[static_cast<size_t>(square)]);
+        }
+        const Buffer& get() const {
+            return m_entries;
         }
     };
 }

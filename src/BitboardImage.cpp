@@ -56,7 +56,6 @@ namespace chess {
 			};
 		};
 
-	
 		for (auto [file, rank] : SQUARE_COORDS) {
 			auto cell = makeCell(file, rank);
 
@@ -86,7 +85,7 @@ namespace chess {
 			std::println("Error reading pixels: {}", SDL_GetError());
 			return;
 		}
-		auto path = getBitboardImageDirectoryPath() / filename;
+		auto path = getAssetDirectoryPath() / "bitboard_images"/ filename;
 		auto pathStr = path.string();
 		if (!SDL_SaveBMP(surface, pathStr.c_str())) {
 			std::println("Error saving image: {}", SDL_GetError());

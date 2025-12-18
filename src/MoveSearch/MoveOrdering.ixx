@@ -1,4 +1,4 @@
-export module Chess.MoveSearch:MovePriorityGeneration;
+export module Chess.MoveSearch:MoveOrdering;
 
 export import Chess.Move;
 export import :FixedVector;

@@ -26,7 +26,7 @@ def load_stats_file(file_path) -> list[Stats]:
         return stats
     
 def load_stats_map() -> dict[(str, list[Stats])]:
-    dir_path = os.environ.get("CHESS_PROFILING_SESSIONS")
+    dir_path = os.environ.get("CHESS_ASSET_DIR") + "/profiling_sessions"
     all_stats = {}
     for file_name in os.listdir(dir_path):
         if file_name.endswith('.json'):

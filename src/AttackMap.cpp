@@ -3,6 +3,18 @@ module Chess.AttackMap;
 import Chess.Evaluation;
 
 namespace chess {
+    AttackMap::AttackMap(Bitboard attackedSquares, const PieceState& allies)
+	    : m_attackedSquares{ attackedSquares }
+	{
+        for (const auto& pieceType : ALL_PIECE_TYPES | std::views::drop(1)) {
+            auto locations = allies[pieceType];
+            auto attackedAllies = locations & attackedSquares;
+            m_threatenedMaterial -= std::popcount(attackedAllies) * getPieceRating(pieceType);
+        }
+
+        std::println("Threatened Material: {}", m_threatenedMaterial);
+    }
+
 	Rating AttackMap::materialChange(const Move& move) const {
         auto fromBoard = makeBitboard(move.from);
         auto toBoard = makeBitboard(move.to);
@@ -24,6 +36,6 @@ namespace chess {
             captureSave += getPieceRating(move.capturedPiece);
         }
 
-        return evacuationSave + captureSave;
+        return m_threatenedMaterial + (evacuationSave + captureSave);
     }
 }

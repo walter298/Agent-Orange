@@ -14,7 +14,7 @@ namespace chess {
 	int makeRandomNum(int aInc, int bInc) {
 		return makeRandomNumberImpl(aInc, bInc);
 	}
-	size_t makeRandomNum(size_t aInc, size_t bInc) {
+	Bitboard makeRandomNum(Bitboard aInc, Bitboard bInc) {
 		return makeRandomNumberImpl(aInc, bInc);
 	}
 }

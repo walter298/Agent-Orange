@@ -1,15 +1,14 @@
 export module Chess.MoveSearch:FixedVector;
 
 export import std;
-export import Chess.ArenaAllocator;
 
 export namespace chess {
 	template<typename T>
 	class FixedVector {
 	private:
-		arena::Vector<T> m_data;
+		std::vector<T> m_data;
 	public:
-		explicit FixedVector(arena::Vector<T>&& data) : m_data{ std::move(data) } {}
+		explicit FixedVector(std::vector<T>&& data) : m_data{ std::move(data) } {}
 
 		auto begin() const {
 			return m_data.begin();

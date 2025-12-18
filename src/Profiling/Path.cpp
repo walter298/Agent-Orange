@@ -5,7 +5,7 @@ import Chess.EnvironmentVariable;
 
 namespace chess {
 	std::filesystem::path getProfilingSessionFilePath() {
-		auto dir = getProfilingSessionsDirectoryPath();
+		auto dir = getAssetDirectoryPath() / "profiling_sessions";
 		zAssert(std::filesystem::exists(dir));
 
 		auto now = std::chrono::system_clock::now();

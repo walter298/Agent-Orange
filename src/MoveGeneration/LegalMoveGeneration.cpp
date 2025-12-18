@@ -12,10 +12,10 @@ import Chess.RankCalculator;
 import :ChainedMoveGenerator;
 import :KingMoveGeneration;
 import :KnightMoveGeneration;
+import :Magic;
 import :PawnMoveGeneration;
 import :PieceLocations;
 import :ReverseAttackGenerator;
-import :SlidingMoveGeneration;
 
 namespace chess {
 	struct Checklines {
@@ -30,7 +30,7 @@ namespace chess {
 	};
 
 	template<typename T>
-	concept MoveAdder = std::invocable<T, arena::Vector<Move>&, Move>;
+	concept MoveAdder = std::invocable<T, std::vector<Move>&, Move>;
 
 	template<bool White, typename AllyPawnMoveGenerator, typename AllyPawnAttackGenerator,
 			 typename EnemyPawnMoveGenerator, typename EnemyPawnAttackGenerator, Bitboard PromotionRank, 
@@ -44,7 +44,7 @@ namespace chess {
 		static_assert(PawnMoveGenerator<AllyPawnMoveGenerator>);
 		static_assert(PawnMoveGenerator<EnemyPawnMoveGenerator>);
 
-		static constexpr auto PAWN_ADDER = [](arena::Vector<Move>& moves, Move move) {
+		static constexpr auto PAWN_ADDER = [](std::vector<Move>& moves, Move move) {
 			if (makeBitboard(move.to) & PromotionRank) {
 				constexpr std::array PROMOTION_PIECES{ Queen, Rook, Bishop, Knight };
 				for (auto piece : PROMOTION_PIECES) {
@@ -56,7 +56,7 @@ namespace chess {
 			}
 		};
 
-		static constexpr auto DEFAULT_MOVE_ADDER = [](arena::Vector<Move>& moves, const Move& move) {
+		static constexpr auto DEFAULT_MOVE_ADDER = [](std::vector<Move>& moves, const Move& move) {
 			moves.push_back(move);
 		};
 
@@ -115,8 +115,8 @@ namespace chess {
 			EnemyMoveData ret;
 			ret.squares |= kingMoveGenerator(enemies[King], pieceLocations.empty).all();
 
-			calcEnemyMovesImpl(ret, enemies[Queen] | enemies[Bishop], pieceLocations, diagonalMoveGenerator);
-			calcEnemyMovesImpl(ret, enemies[Queen] | enemies[Rook], pieceLocations, orthogonalMoveGenerator);
+			calcEnemyMovesImpl(ret, enemies[Queen] | enemies[Bishop], pieceLocations, bishopMoveGenerator);
+			calcEnemyMovesImpl(ret, enemies[Queen] | enemies[Rook], pieceLocations, rookMoveGenerator);
 			calcEnemyMovesImpl(ret, enemies[Knight], pieceLocations, knightMoveGenerator);
 			calcEnemyMovesImpl(ret, enemies[Pawn], pieceLocations, enemyPawnAttackGenerator);
 
@@ -127,9 +127,9 @@ namespace chess {
 			const EnemyMoveData& enemyMoveData)
 		{
 			auto colorGetter = [&](Bitboard bit) -> RGB {
-				if (bit & enemyMoveData.checklines.kingAttackers) {
-					return PINK;
-				}
+//				if (bit & enemyMoveData.checklines.kingAttackers) {
+//					return PINK;
+//				}
 				if (pieceLocations.allies & bit) {
 					if (bit & enemyMoveData.squares) { 
 						return RED; //ally under attack
@@ -186,43 +186,27 @@ namespace chess {
 			drawBitboardImage(colorGetter, filename);
 		}
 
-		static Bitboard getPinnedAllies(const PieceState& enemies, Bitboard actualChecklines, const PieceLocationData& pieceLocations)
+		static Bitboard getPinnedAllies(const PieceState& enemies, const EnemyMoveData& originalEnemyMoveData, 
+			const PieceLocationData& pieceLocations)
 		{
-			Bitboard pinnedAllies = 0;
-			
-			auto getPinnedAlliesImpl = [&](Bitboard movingEnemies, const auto& moveGenerator) {
-				EnemyMoveData directionalAttackData;
-				calcEnemyMovesImpl(directionalAttackData, movingEnemies, pieceLocations, moveGenerator);
-				auto attackedAllies = directionalAttackData.squares & pieceLocations.allies;
-				if (attackedAllies == 0) { //there can be no pins if there are no attacked allies
-					return;
-				}
+			ProfilerLock l{ getCalcPinnedAlliesProfiler() };
 
-				//pretend that the attacked allies are not on the board to reveal any checklines running through them
-				PieceLocationData pieceLocationsWithAttackedAllies{
-					pieceLocations.allyKing,
-					(pieceLocations.allies & ~attackedAllies) | pieceLocations.allyKing, //OR in case of check
-					pieceLocations.enemies
+			auto isPinned = [&](Square allySquare) {
+				PieceLocationData pieceLocationsWithoutAlly{
+					pieceLocations.allyKing, pieceLocations.allies & ~makeBitboard(allySquare), pieceLocations.enemies
 				};
-				EnemyMoveData directionalTransparentAttackData;
-				calcEnemyMovesImpl(directionalTransparentAttackData, movingEnemies, pieceLocationsWithAttackedAllies,
-									moveGenerator);
-				auto newChecklines = directionalTransparentAttackData.checklines.squares & ~actualChecklines; //remove original checklines
-				pinnedAllies |= (newChecklines & attackedAllies & ~pieceLocations.allyKing);
+				auto enemyMoveData = calcEnemyMoves(enemies, pieceLocationsWithoutAlly);
+				return enemyMoveData.checklines.squares & ~originalEnemyMoveData.checklines.squares;
 			};
 
-			//calculate diagonal pins
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Bishop], northEastSlidingMoveGenerator);
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Bishop], northWestSlidingMoveGenerator);
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Bishop], southEastSlidingMoveGenerator);
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Bishop], southWestSlidingMoveGenerator);
-
-			//calculate orthogonal pins
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Rook], northSlidingMoveGenerator);
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Rook], eastSlidingMoveGenerator);
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Rook], southSlidingMoveGenerator);
-			getPinnedAlliesImpl(enemies[Queen] | enemies[Rook], westSlidingMoveGenerator);
-
+			Bitboard pinnedAllies = 0;
+			auto attackedAllies = originalEnemyMoveData.squares & pieceLocations.allies;
+			auto currSquare = Square::None;
+			while (nextSquare(attackedAllies, currSquare)) {
+				if (isPinned(currSquare)) {
+					pinnedAllies |= makeBitboard(currSquare);
+				}
+			}
 			return pinnedAllies;
 		}
 
@@ -236,14 +220,14 @@ namespace chess {
 			Bitboard ret = 0;
 			auto empty = pieceLocations.empty | pieceLocations.allyKing; //pretend that the ally king is not on the board
 
-			ret |= orthogonalMoveGenerator(enemies[Queen] | enemies[Rook], empty).all();
-			ret |= diagonalMoveGenerator(enemies[Queen] | enemies[Bishop], empty).all();
+			ret |= rookMoveGenerator(enemies[Queen] | enemies[Rook], empty).all();
+			ret |= bishopMoveGenerator(enemies[Queen] | enemies[Bishop], empty).all();
 
 			return ret;
 		}
 
 		template<MoveAdder MoveAdder>
-		static void addMoves(arena::Vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
+		static void addMoves(std::vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveAdder moveAdder)
 		{
 			ProfilerLock l{ getMoveAdderProfiler() };
@@ -261,7 +245,7 @@ namespace chess {
 		}
 
 		template<typename MoveGenerator>
-		static Bitboard addMoves(arena::Vector<Move>& moves, Bitboard movablePieces, Piece pieceType, const PieceLocationData& pieceLocations,
+		static Bitboard addMoves(std::vector<Move>& moves, Bitboard movablePieces, Piece pieceType, const PieceLocationData& pieceLocations,
 			const PieceState& enemies, MoveGenerator moveGen, Bitboard checklines)
 		{
 			Bitboard allSquares = 0;
@@ -290,7 +274,7 @@ namespace chess {
 			return allSquares;
 		}
 
-		static Bitboard addKingMoves(arena::Vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
+		static Bitboard addKingMoves(std::vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
 			const PieceLocationData& pieceLocations, Bitboard enemyMoves)
 		{
 			bool inCheck = (enemyMoves & pieceLocations.allyKing);
@@ -320,7 +304,7 @@ namespace chess {
 			return kingMoves.all();
 		}
 
-		static void addEnPassantMoves(arena::Vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
+		static void addEnPassantMoves(std::vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
 			ProfilerLock l{ getEnPessantProfiler() };
 
 			auto enPessantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
@@ -334,7 +318,7 @@ namespace chess {
 		}
 
 		static PositionData calcAllLegalMoves(const Position::ImmutableTurnData& turnData) {
-			arena::Vector<Move> moves;
+			std::vector<Move> moves;
 
 			constexpr auto AVERAGE_MOVES_PER_POSITION = 40uz;
 			moves.reserve(AVERAGE_MOVES_PER_POSITION); 
@@ -363,16 +347,16 @@ namespace chess {
 				return { moves, moves.empty() };
 			}
 
-			auto pinnedAllies = getPinnedAllies(enemies, enemyMoveData.checklines.squares, pieceLocations);
+			auto pinnedAllies = getPinnedAllies(enemies, enemyMoveData, pieceLocations);
 			auto checklines = enemyMoveData.checklines.squares;
 
 			auto addMovesImpl = [&](Piece piece, auto moveGenerator) {
 				auto movablePieces = allies[piece] & ~pinnedAllies;
 				allySquares |= addMoves(moves, movablePieces, piece, pieceLocations, enemies, moveGenerator, checklines);
 			};
-			addMovesImpl(Queen, diagonalMoveGenerator | orthogonalMoveGenerator);
-			addMovesImpl(Rook, orthogonalMoveGenerator);
-			addMovesImpl(Bishop, diagonalMoveGenerator);
+			addMovesImpl(Queen, queenMoveGenerator);
+			addMovesImpl(Rook, rookMoveGenerator);
+			addMovesImpl(Bishop, bishopMoveGenerator);
 			addMovesImpl(Knight, knightMoveGenerator);
 			addMovesImpl(Pawn, allyPawnMoveGenerator);
 
@@ -419,10 +403,10 @@ namespace chess {
 		}
 	}
 
-	PositionData calcAllLegalMoves(const Position& pos) {
+	PositionData calcPositionData(const Position& pos) {
 		return calcAllLegalMovesImpl<false>(pos);
 	}
-	PositionData calcAllLegalMovesAndDrawBitboards(const Position& pos) {
+	PositionData calcPositionDataAndDrawBitboards(const Position& pos) {
 		return calcAllLegalMovesImpl<true>(pos);
 	}
 }

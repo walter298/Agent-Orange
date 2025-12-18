@@ -1,7 +1,7 @@
 module Chess.MoveSearch:MoveSearchTests;
 
 import Chess.Position;
-import :MovePriorityGeneration;
+import :MoveOrdering;
 
 namespace chess {
 	namespace tests {

@@ -5,7 +5,6 @@ module;
 
 module Chess.MoveSearch:PositionTable;
 
-import Chess.ArenaAllocator;
 import Chess.Profiler;
 import :MoveHasher;
 

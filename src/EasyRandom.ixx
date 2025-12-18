@@ -1,6 +1,8 @@
 export module Chess.EasyRandom;
 
+import Chess.Bitboard;
+
 export namespace chess {
 	int makeRandomNum(int aInc, int bInc);
-	size_t makeRandomNum(size_t aInc, size_t bInc);
+	Bitboard makeRandomNum(Bitboard aInc, Bitboard bInc);
 }

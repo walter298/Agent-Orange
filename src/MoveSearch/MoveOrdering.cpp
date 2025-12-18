@@ -1,4 +1,4 @@
-module Chess.MoveSearch:MovePriorityGeneration;
+module Chess.MoveSearch:MoveOrdering;
 
 import Chess.Assert;
 import Chess.AttackMap;
@@ -12,13 +12,13 @@ import :PositionTable;
 namespace chess {
 	template<std::ranges::viewable_range Range>
 	auto makePriorityRange(Range moves, std::uint8_t depth) {
-		return moves | std::views::transform([&](const Move& move) {
+		return std::views::transform(moves, [&](const Move& move) {
 			return MovePriority{ move, depth };
 		});
 	}
 
 	template<std::ranges::viewable_range Moves>
-	void discardSacrifices(const Node& node, Moves& moves, arena::Vector<MovePriority>& movePriorities) {
+	void discardSacrifices(const Node& node, Moves& moves, std::vector<MovePriority>& movePriorities) {
 		auto enemySquares = node.getEnemySquares();
 		auto [partitionPoint, end] = std::ranges::partition(moves, [&](const Move& move) {
 			return !(makeBitboard(move.to) & enemySquares);
@@ -36,7 +36,7 @@ namespace chess {
 	}
 
 //	template<std::ranges::viewable_range Moves>
-//	auto addKillerMoves(const Node& node, Moves& moves, arena::Vector<MovePriority>& movePriorities)
+//	auto addKillerMoves(const Node& node, Moves& moves, std::vector<MovePriority>& movePriorities)
 //	{
 //		auto [partitionPoint, end] = std::ranges::partition(moves, [&](const Move& move) {
 //			auto historyRating = getHistoryRating(move);
@@ -76,24 +76,23 @@ namespace chess {
 	}
 
 	template<std::ranges::viewable_range Moves>
-	auto addNonSacrifices(const Node& node, Moves& moves, arena::Vector<MovePriority>& priorities) {
-		AttackMap attackMap{ node.getEnemySquares() };
-
-		auto materialChangeComp = [&](const Move& a, const Move& b) {
-			return attackMap.materialChange(a) > attackMap.materialChange(b);
-		};
-		std::ranges::sort(moves, materialChangeComp);
-
-		auto sacrificeIt = std::ranges::upper_bound(moves, 0_rt, std::greater{}, [&](const Move& move) {
-			return attackMap.materialChange(move);
+	auto addCaptures(const Node& node, Moves& moves, std::vector<MovePriority>& priorities) {
+		auto [pp, end] = std::ranges::partition(moves, [](const Move& move) {
+			return move.capturedPiece != Piece::None;
 		});
-		auto nonSacrifices = std::ranges::subrange(moves.begin(), sacrificeIt);
-		priorities.append_range(makePriorityRange(nonSacrifices, node.getRemainingDepth() - 1));
+		auto captures = std::ranges::subrange(moves.begin(), pp);
+		std::ranges::sort(captures, [](const Move& a, const Move& b) {
+			auto diff1 = getPieceRating(a.capturedPiece) - getPieceRating(a.movedPiece);
+			auto diff2 = getPieceRating(b.capturedPiece) - getPieceRating(b.movedPiece);
+			return diff1 > diff2;
+		});
 
-		return std::ranges::subrange(sacrificeIt, moves.end());
+		priorities.append_range(makePriorityRange(captures, node.getRemainingDepth()));
+
+		return std::ranges::subrange(pp, end);
 	}
 
-	auto getPVEntry(const Node& node, arena::Vector<Move>& moves, const Move& pvMove, arena::Vector<MovePriority>& priorities) {
+	auto getPVEntry(const Node& node, std::vector<Move>& moves, const Move& pvMove, std::vector<MovePriority>& priorities) {
 		std::uint8_t depth = node.getRemainingDepth() - std::uint8_t{ 1 };
 		if (pvMove != Move::null()) {
 			auto it = std::ranges::find(moves, pvMove);
@@ -111,16 +110,17 @@ namespace chess {
 
 		const auto& posData = node.getPositionData();
 
-		arena::Vector<MovePriority> priorities;
+		std::vector<MovePriority> priorities;
 		priorities.reserve(posData.legalMoves.size());
 		auto temp = posData.legalMoves;
 
 		auto nonPVMoves = getPVEntry(node, temp, pvMove, priorities);
-		auto sacrifices = addNonSacrifices(node, nonPVMoves, priorities);
+		auto nonCaptures = addCaptures(node, nonPVMoves, priorities);
 
-		if (priorities.empty()) {
-			priorities.append_range(makePriorityRange(sacrifices, node.getRemainingDepth() - 1));
-		}
+		std::ranges::partition(nonCaptures, [&](const Move& move) {
+			return containsSquare(node.getEnemySquares(), move.from) || !containsSquare(node.getEnemySquares(), move.to);
+		});
+		priorities.append_range(makePriorityRange(nonCaptures, node.getRemainingDepth() - 1));
 
 		zAssert(!priorities.empty());
 

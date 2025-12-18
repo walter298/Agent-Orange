@@ -18,10 +18,7 @@ namespace chess {
 		return std::filesystem::path{ std::string_view{ buff.data(), envLen - 1 } }; //subtract 1 for null terminator
 	}
 
-	std::filesystem::path getProfilingSessionsDirectoryPath() {
-		return getEnvironmentVariableImpl("CHESS_PROFILING_SESSIONS");
-	}
-	std::filesystem::path getBitboardImageDirectoryPath() {
-		return getEnvironmentVariableImpl("CHESS_BITBOARD_IMAGES");
+	std::filesystem::path getAssetDirectoryPath() {
+		return getEnvironmentVariableImpl("CHESS_ASSET_DIR");
 	}
 }

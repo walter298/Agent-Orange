@@ -2,7 +2,6 @@ module Chess.MoveSearch;
 
 import std;
 
-import Chess.ArenaAllocator;
 import Chess.Assert;
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
@@ -11,7 +10,7 @@ import Chess.Profiler;
 import Chess.Rating;
 
 import :KillerMoveHistory;
-import :MovePriorityGeneration;
+import :MoveOrdering;
 import :Node;
 import :PositionTable;
 
@@ -111,11 +110,13 @@ namespace chess {
 			}
 		}
 
+		auto originalAlphaBeta = alphaBeta;
 		auto movePriorities = getMovePriorities(node, pvMove);
 		auto bestMove = Move::null();
 		auto bestRating = worstPossibleRating<Maximizing>();
 
 		auto bound = InWindow;
+		bool didNotPrune = true;
 		for (const auto& movePriority : movePriorities) {
 			auto child = Node::makeChild(node, movePriority);
 
@@ -137,18 +138,19 @@ namespace chess {
 			if (alphaBeta.canPrune()) {
 				updateHistoryScore(movePriority.getMove(), node.getRemainingDepth());
 				bound = Maximizing ? LowerBound : UpperBound;
+				didNotPrune = false;
 				break;
 			}
 		}
 
 		zAssert(bestMove != Move::null());
-		if (bound == InWindow) {
+		if (didNotPrune) {
 			if constexpr (Maximizing) {
-				if (bestRating <= alphaBeta.getAlpha()) {
+				if (bestRating <= originalAlphaBeta.getAlpha()) {
 					bound = UpperBound;
 				}
 			} else {
-				if (bestRating >= alphaBeta.getBeta()) {
+				if (bestRating >= originalAlphaBeta.getBeta()) {
 					bound = LowerBound;
 				}
 			}
@@ -174,10 +176,9 @@ namespace chess {
 	std::optional<Move> findBestMove(const Position& pos, std::uint8_t depth) {
 		ProfilerLock l{ getBestMoveProfiler() };
 
-		arena::reset();
-
 		auto iterativeDeepening = [&]<bool Maximizing>() {
 			for (std::uint8_t iterDepth = 1; iterDepth < depth; iterDepth++) {
+				//arena::reset();
 				bestMoveImpl<Maximizing>(pos, iterDepth);
 			}
 			return bestMoveImpl<Maximizing>(pos, depth);

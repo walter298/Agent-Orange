@@ -1,7 +1,7 @@
 import std;
 
-import Chess.ArenaAllocator;
 import Chess.BitboardImage;
+import Chess.LegalMoveGeneration;
 import Chess.UCI;
 import Chess.Move;
 import Chess.Profiler;
@@ -74,13 +74,12 @@ namespace chess {
 		std::println("uci [depth]\t\t\t\t\t- Start the engine in UCI mode with specified depth");
 		std::println("test\t\t\t\t\t\t- Run all tests");
 		std::println("draw_bitboard [bitboard, base, filename]\t- Draw a bitboard image");
+		std::println("magic");
 	}
 }
 
 int main(int argc, const char** argv) {
 	chess::MaybeProfilerGuard guard;
-
-	chess::arena::init(5'000'000'000); //max of 5 gigs of ram
 
 	if (argc == 1) {
 		chess::playUCI();
@@ -92,6 +91,8 @@ int main(int argc, const char** argv) {
 		chess::handleBitboardInput(argv, argc);
 	} else if (std::strcmp(argv[1], "help") == 0) {
 		chess::printCommandLineArgumentOptions();
+	} else if (std::strcmp(argv[1], "magic") == 0) {
+		chess::generateMagicBitboardTable();
 	} else {
 		std::print("Invalid command line arguments. ");
 		chess::printCommandLineArgumentOptions();

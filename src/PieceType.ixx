@@ -13,5 +13,5 @@ namespace chess {
 		None
 	};
 
-	export constexpr std::array<Piece, 6> ALL_PIECE_TYPES = { King, Queen, Rook, Bishop, Knight, Pawn };
+	export constexpr std::array ALL_PIECE_TYPES = { King, Queen, Rook, Bishop, Knight, Pawn };
 }

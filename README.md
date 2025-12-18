@@ -1,7 +1,7 @@
 # Agent B
 
 <p align="center">
-  <img src="assets/images/logo.png" alt="Logo" width="250">
+  <img src="assets/repo_images/logo.png" alt="Logo" width="250">
 </p>
 
 ## Overview
@@ -41,5 +41,5 @@ Agent B uses the following three heuristics: piece material, pawn advancement, a
 Agent B uses a custom profiling app built off Python's Tkinter library. You can look at individual function benchmarks in a bar graph visualization, or at how much relative time they are taking in the engine's evaluation. 
 
 <p align="center">
-  <img src="assets/images/profiling.png" alt="Logo" width="1250">
+  <img src="assets/repo_images/profiling.png" alt="Logo" width="1250">
 </p>

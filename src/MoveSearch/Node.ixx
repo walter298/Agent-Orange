@@ -23,7 +23,7 @@ export namespace chess {
 		static Node makeRoot(const Position& root, std::uint8_t maxDepth, bool isWhite) {
 			Node ret;
 			ret.m_pos = root;
-			ret.m_positionData = calcAllLegalMoves(ret.m_pos);
+			ret.m_positionData = calcPositionData(ret.m_pos);
 			ret.m_levelsToSearch = maxDepth;
 			if (!isWhite) {
 				ret.m_materialSignSwap *= -1_rt;
@@ -34,7 +34,7 @@ export namespace chess {
 		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
 			Node ret;
 			ret.m_pos = { parent.m_pos, movePriority.getMove() };
-			ret.m_positionData = calcAllLegalMoves(ret.m_pos);
+			ret.m_positionData = calcPositionData(ret.m_pos);
 			ret.m_level = parent.m_level + 1;
 			if (movePriority.inAttackSequence()) {
 				ret.m_inAttackSequence = true;
@@ -84,6 +84,11 @@ export namespace chess {
 
 		Bitboard getEnemySquares() const {
 			return m_pos.isWhite() ? m_positionData.blackSquares : m_positionData.whiteSquares;
+		}
+
+		const PieceState& getAllies() const {
+			auto [white, black] = m_pos.getColorSides();
+			return m_pos.isWhite() ? white : black;
 		}
 	};
 }
