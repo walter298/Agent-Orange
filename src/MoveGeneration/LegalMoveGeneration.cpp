@@ -9,13 +9,14 @@ import Chess.BitboardImage;
 import Chess.PieceMap;
 import Chess.Profiler;
 import Chess.RankCalculator;
+
 import :ChainedMoveGenerator;
 import :KingMoveGeneration;
 import :KnightMoveGeneration;
-import :Magic;
 import :PawnMoveGeneration;
 import :PieceLocations;
 import :ReverseAttackGenerator;
+import :SlidingMoveGenerators;
 
 namespace chess {
 	struct Checklines {

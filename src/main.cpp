@@ -91,8 +91,8 @@ int main(int argc, const char** argv) {
 		chess::handleBitboardInput(argv, argc);
 	} else if (std::strcmp(argv[1], "help") == 0) {
 		chess::printCommandLineArgumentOptions();
-	} else if (std::strcmp(argv[1], "magic") == 0) {
-		chess::generateMagicBitboardTable();
+	} else if (std::strcmp(argv[1], "generate_bmi_table") == 0) {
+		chess::storeBMITable();
 	} else {
 		std::print("Invalid command line arguments. ");
 		chess::printCommandLineArgumentOptions();

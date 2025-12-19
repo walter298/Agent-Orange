@@ -21,7 +21,7 @@ export module Chess.LegalMoveGeneration:ReverseAttackGenerator;
 import std;
 export import :KnightMoveGeneration;
 export import :PawnMoveGeneration;
-export import :Magic;
+export import :SlidingMoveGenerators;
 
 export namespace chess {
 	template<typename T>
