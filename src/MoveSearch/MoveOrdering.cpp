@@ -35,12 +35,15 @@ namespace chess {
 		const auto& posData = node.getPositionData();
 		auto enemySquares = node.getEnemySquares();
 
+		auto turnData = node.getPos().getTurnData();
+		zAssert(!(enemySquares & turnData.enemies.calcAllLocations())); //enemy squares should not contain enemy piece locations
+
 		std::vector priorities{ std::from_range, posData.legalMoves | std::views::transform([&](const Move& move) {
 			return MovePriority{ move, enemySquares, node.getRemainingDepth() - 1_su8 };
 		}) };
 
 		auto [nonPVMoves, insertedPVMove] = addPVEntry(pvMove, priorities);
-		
+
 		std::ranges::sort(nonPVMoves, [](const MovePriority& a, const MovePriority& b) {
 			return a.getExchangeRating() > b.getExchangeRating();
 		});
@@ -55,7 +58,7 @@ namespace chess {
 				priorities.erase(priorities.begin() + sacrificeIndex, priorities.end());
 			}
 		}
-		
+
 		return FixedVector{ std::move(priorities) };
 	}
 

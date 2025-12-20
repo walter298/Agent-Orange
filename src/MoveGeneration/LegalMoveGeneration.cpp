@@ -375,10 +375,10 @@ namespace chess {
 
 			if constexpr (White) {
 				whiteSquares = allySquares;
-				blackSquares = enemyMoveData.squares;
+				blackSquares = enemyMoveData.squares & ~pieceLocations.enemies;
 			} else {
 				blackSquares = allySquares;
-				whiteSquares = enemyMoveData.squares;
+				whiteSquares = enemyMoveData.squares & ~pieceLocations.enemies;
 			}
 			return { std::move(moves), whiteSquares, blackSquares, inCheck, checkmate };
 		}
