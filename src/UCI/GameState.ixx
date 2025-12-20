@@ -1,7 +1,9 @@
 export module Chess.UCI:GameState;
 
 export import std;
+
 import Chess.Position;
+import Chess.SafeInt;
 
 namespace chess {
 	class GameState {
@@ -9,7 +11,7 @@ namespace chess {
 		Position m_pos;
 		bool m_inNewPos = true;
 	public:
-		std::uint8_t depth = 6;
+		SafeUnsigned<std::uint8_t> depth{ 6 };
 
 		void reset();
 		void setPos(const std::string& command);

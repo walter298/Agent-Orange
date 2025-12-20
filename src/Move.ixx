@@ -6,12 +6,14 @@ export import Chess.PieceType;
 
 namespace chess {
 	export struct Move {
-		Square from;
-		Square to;
-		Square capturedPawnSquareEnPassant;
-		Piece movedPiece;
-		Piece capturedPiece;
-		Piece promotionPiece;
+		Square from = Square::None;
+		Square to = Square::None;
+		Square capturedPawnSquareEnPassant = Square::None;
+		Piece movedPiece = Piece::None;
+		Piece capturedPiece = Piece::None;
+		Piece promotionPiece = Piece::None;
+
+		constexpr Move() = default;
 
 		constexpr Move(Square from, Square to, Square enPessantSquare, Piece movedPiece, Piece capturedPiece, Piece promotedPiece)
 			: from{ from }, to{ to }, capturedPawnSquareEnPassant{ enPessantSquare }, movedPiece { movedPiece }, capturedPiece{ capturedPiece },

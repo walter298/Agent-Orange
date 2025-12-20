@@ -220,7 +220,7 @@ namespace chess {
 			std::string moves;
 
 			for (int i = 0; i < 20; i++) {
-				auto bestMove = findBestMove(pos, 6);
+				auto bestMove = findBestMove(pos, 6_su8 );
 				if (!bestMove) {
 					std::println("POTENTIAL Error: no best move found in testThatLegalMovesExist4 at ply {}!", i + 1);
 					std::println("Moves: {}", moves);

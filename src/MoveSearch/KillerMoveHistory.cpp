@@ -4,15 +4,19 @@ module;
 
 module Chess.MoveSearch:KillerMoveHistory;
 
+import Chess.Assert;
 import Chess.Evaluation;
 import Chess.LegalMoveGeneration;
+
 import :MoveHasher;
 
 namespace chess {
 	boost::unordered_flat_map<Move, Rating, MoveHasher> historyTable;
 
-	void updateHistoryScore(const Move& move, int remainingDepth) {
-		auto delta = static_cast<Rating>(remainingDepth * remainingDepth);
+	void updateHistoryScore(const Move& move, SafeUnsigned<std::uint8_t> remainingDepth) {
+		auto delta = static_cast<Rating>((remainingDepth * remainingDepth).get());
+		zAssert(delta >= 0);
+
 		auto& rating = historyTable[move];
 		if (std::numeric_limits<Rating>::max() - rating > delta) {
 			rating += delta;

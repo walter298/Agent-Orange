@@ -13,8 +13,8 @@ namespace chess {
 		return buff.substr(currentPos);
 	}
 
-	void playUCI(std::uint8_t depth) {
-		std::println("Running with depth {}", depth);
+	void playUCI(SafeUnsigned<std::uint8_t> depth) {
+		std::println("Running with depth {}", depth.get());
 
 		std::istringstream iss;
 		std::string line;

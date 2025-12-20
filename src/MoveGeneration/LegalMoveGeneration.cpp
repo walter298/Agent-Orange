@@ -31,7 +31,7 @@ namespace chess {
 	};
 
 	template<typename T>
-	concept MoveAdder = std::invocable<T, std::vector<Move>&, Move>;
+	concept MoveAdder = std::invocable<T, MoveVector&, Move>;
 
 	template<bool White, typename AllyPawnMoveGenerator, typename AllyPawnAttackGenerator,
 			 typename EnemyPawnMoveGenerator, typename EnemyPawnAttackGenerator, Bitboard PromotionRank, 
@@ -45,7 +45,7 @@ namespace chess {
 		static_assert(PawnMoveGenerator<AllyPawnMoveGenerator>);
 		static_assert(PawnMoveGenerator<EnemyPawnMoveGenerator>);
 
-		static constexpr auto PAWN_ADDER = [](std::vector<Move>& moves, Move move) {
+		static constexpr auto PAWN_ADDER = [](MoveVector& moves, Move move) {
 			if (makeBitboard(move.to) & PromotionRank) {
 				constexpr std::array PROMOTION_PIECES{ Queen, Rook, Bishop, Knight };
 				for (auto piece : PROMOTION_PIECES) {
@@ -57,7 +57,7 @@ namespace chess {
 			}
 		};
 
-		static constexpr auto DEFAULT_MOVE_ADDER = [](std::vector<Move>& moves, const Move& move) {
+		static constexpr auto DEFAULT_MOVE_ADDER = [](MoveVector& moves, const Move& move) {
 			moves.push_back(move);
 		};
 
@@ -228,7 +228,7 @@ namespace chess {
 		}
 
 		template<MoveAdder MoveAdder>
-		static void addMoves(std::vector<Move>& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
+		static void addMoves(MoveVector& moves, Square piecePos, MoveGen destSquares, Piece pieceType,
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveAdder moveAdder)
 		{
 			ProfilerLock l{ getMoveAdderProfiler() };
@@ -246,7 +246,7 @@ namespace chess {
 		}
 
 		template<typename MoveGenerator>
-		static Bitboard addMoves(std::vector<Move>& moves, Bitboard movablePieces, Piece pieceType, const PieceLocationData& pieceLocations,
+		static Bitboard addMoves(MoveVector& moves, Bitboard movablePieces, Piece pieceType, const PieceLocationData& pieceLocations,
 			const PieceState& enemies, MoveGenerator moveGen, Bitboard checklines)
 		{
 			Bitboard allSquares = 0;
@@ -275,7 +275,7 @@ namespace chess {
 			return allSquares;
 		}
 
-		static Bitboard addKingMoves(std::vector<Move>& moves, const Position::ImmutableTurnData& turnData, 
+		static Bitboard addKingMoves(MoveVector& moves, const Position::ImmutableTurnData& turnData, 
 			const PieceLocationData& pieceLocations, Bitboard enemyMoves)
 		{
 			bool inCheck = (enemyMoves & pieceLocations.allyKing);
@@ -305,7 +305,7 @@ namespace chess {
 			return kingMoves.all();
 		}
 
-		static void addEnPassantMoves(std::vector<Move>& moves, Bitboard pawns, Square jumpedEnemyPawn) {
+		static void addEnPassantMoves(MoveVector& moves, Bitboard pawns, Square jumpedEnemyPawn) {
 			ProfilerLock l{ getEnPessantProfiler() };
 
 			auto enPessantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
@@ -319,10 +319,7 @@ namespace chess {
 		}
 
 		static PositionData calcAllLegalMoves(const Position::ImmutableTurnData& turnData) {
-			std::vector<Move> moves;
-
-			constexpr auto AVERAGE_MOVES_PER_POSITION = 40uz;
-			moves.reserve(AVERAGE_MOVES_PER_POSITION); 
+			MoveVector moves;
 
 			auto& allies = turnData.allies;
 			auto& enemies = turnData.enemies;

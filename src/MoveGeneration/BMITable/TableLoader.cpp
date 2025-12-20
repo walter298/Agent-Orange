@@ -13,7 +13,7 @@ namespace chess {
 		static inline size_t m_index = 0;
 	public:
 		static void init(size_t n) {
-			m_allPositions.resize(n);
+			m_allPositions.resize(n, 0);
 		}
 		static const Bitboard* addPositions(const std::vector<Bitboard>& positions) {
 			auto ret = m_allPositions.data() + m_index;

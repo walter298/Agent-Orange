@@ -5,6 +5,7 @@ import Chess.LegalMoveGeneration;
 import Chess.UCI;
 import Chess.Move;
 import Chess.Profiler;
+import Chess.SafeInt;
 import Chess.Tests;
 
 namespace chess {
@@ -51,17 +52,17 @@ namespace chess {
 			std::println("Error: uci with depth requires 1 argument: [depth]");
 			return;
 		}
-		std::uint8_t depth = 0;
+		SafeUnsigned<std::uint8_t> depth{ 0 };
 		auto depthStr = argv[2];
 		auto depthStrEnd = depthStr + std::strlen(depthStr);
-		auto depthRes = std::from_chars(depthStr, depthStrEnd, depth, 10);
+		auto depthRes = std::from_chars(depthStr, depthStrEnd, depth.get(), 10);
 		if (depthRes.ec != std::errc{}) {
 			std::println("Error: could not parse depth argument");
 			return;
 		}
 
-		if (depth < 2) {
-			std::println("Error: depth must be at least 2");
+		if (depth < 1_su8) {
+			std::println("Error: depth must be at least 1");
 			return;
 		}
 
@@ -74,7 +75,8 @@ namespace chess {
 		std::println("uci [depth]\t\t\t\t\t- Start the engine in UCI mode with specified depth");
 		std::println("test\t\t\t\t\t\t- Run all tests");
 		std::println("draw_bitboard [bitboard, base, filename]\t- Draw a bitboard image");
-		std::println("magic");
+		std::println("generate_bmi_table");
+		std::println("see_move_priorities [fen]");
 	}
 }
 
@@ -82,7 +84,8 @@ int main(int argc, const char** argv) {
 	chess::MaybeProfilerGuard guard;
 
 	if (argc == 1) {
-		chess::playUCI();
+		constexpr chess::SafeUnsigned<std::uint8_t> DEFAULT_DEPTH{ 6 };
+		chess::playUCI(DEFAULT_DEPTH);
 	} else if (std::strcmp(argv[1], "uci") == 0) {
 		chess::playUCIWithDepth(argv, argc);
 	} else if (std::strcmp(argv[1], "test") == 0) {
@@ -93,6 +96,8 @@ int main(int argc, const char** argv) {
 		chess::printCommandLineArgumentOptions();
 	} else if (std::strcmp(argv[1], "generate_bmi_table") == 0) {
 		chess::storeBMITable();
+	} else if (std::strcmp(argv[1], "see_move_priorities") == 0) {
+
 	} else {
 		std::print("Invalid command line arguments. ");
 		chess::printCommandLineArgumentOptions();

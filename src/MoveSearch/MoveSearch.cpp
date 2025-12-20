@@ -88,7 +88,7 @@ namespace chess {
 				return minimaxImpl<Ret, Maximizing>(node, entry.bestMove, alphaBeta);
 			}
 		}
-
+		//std::println("Did not find anything in lookup table. Searching each child position");
 		return minimaxImpl<Ret, Maximizing>(node, Move::null(), alphaBeta);
 	}
 
@@ -117,7 +117,12 @@ namespace chess {
 
 		auto bound = InWindow;
 		bool didNotPrune = true;
+
+		//std::println("Looking at new node with {} move priorities", movePriorities.size());
+		
 		for (const auto& movePriority : movePriorities) {
+			//std::println("Looking at([{}, {})]", movePriority.getMove().getUCIString(), movePriority.getDepth().get());
+
 			auto child = Node::makeChild(node, movePriority);
 
 			auto childRating = minimax<Rating, !Maximizing>(child, alphaBeta);
@@ -167,20 +172,20 @@ namespace chess {
 	}
 
 	template<bool Maximizing>
-	std::optional<Move> bestMoveImpl(const Position& rootPos, std::uint8_t depth) {
+	std::optional<Move> bestMoveImpl(const Position& rootPos, SafeUnsigned<std::uint8_t> depth) {
 		AlphaBeta alphaBeta;
 		auto root = Node::makeRoot(rootPos, depth, rootPos.isWhite());
 		return minimax<std::optional<Move>, Maximizing>(root, alphaBeta);
 	}
 
-	std::optional<Move> findBestMove(const Position& pos, std::uint8_t depth) {
+	std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth) {
 		ProfilerLock l{ getBestMoveProfiler() };
 
 		auto iterativeDeepening = [&]<bool Maximizing>() {
-			for (std::uint8_t iterDepth = 1; iterDepth < depth; iterDepth++) {
-				//arena::reset();
+			for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
 				bestMoveImpl<Maximizing>(pos, iterDepth);
 			}
+			std::println("Searching at depth {}", static_cast<unsigned int>(depth.get()));
 			return bestMoveImpl<Maximizing>(pos, depth);
 		};
 		if (pos.getTurnData().isWhite) {

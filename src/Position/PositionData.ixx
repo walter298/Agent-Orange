@@ -7,8 +7,10 @@ export import Chess.Move;
 export import Chess.Rating;
 
 export namespace chess {
+	using MoveVector = std::vector<Move>;
+
 	struct PositionData {
-		std::vector<Move> legalMoves;
+		MoveVector legalMoves;
 		Bitboard whiteSquares = 0;
 		Bitboard blackSquares = 0;
 		bool isCheck = false;

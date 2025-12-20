@@ -3,6 +3,8 @@ export module Chess.MoveSearch:PositionTable;
 export import std;
 export import Chess.Position;
 export import Chess.Rating;
+export import Chess.SafeInt;
+
 export import :MovePriority;
 
 export namespace chess {
@@ -15,7 +17,7 @@ export namespace chess {
 	struct PositionEntry {
 		Move bestMove = Move::null();
 		Rating rating = 0_rt;
-		std::uint8_t depth = 0;
+		SafeUnsigned<std::uint8_t> depth{ 0 };
 		WindowBound bound = InWindow;
 	};
 	using PositionEntryRef = std::reference_wrapper<const PositionEntry>;

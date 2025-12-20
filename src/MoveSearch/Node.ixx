@@ -4,6 +4,8 @@ export import Chess.Position;
 export import Chess.Rating;
 export import Chess.Evaluation;
 export import Chess.LegalMoveGeneration;
+export import Chess.SafeInt;
+
 export import :MovePriority;
 
 export namespace chess {
@@ -12,15 +14,15 @@ export namespace chess {
 		Position m_pos;
 		PositionData m_positionData;
 
-		std::uint8_t m_level = 0;
-		std::uint8_t m_levelsToSearch = 0;
+		SafeUnsigned<std::uint8_t> m_level{ 0 };
+		SafeUnsigned<std::uint8_t> m_levelsToSearch{ 0 };
 		bool m_inAttackSequence = false;
 		Rating m_materialExchanged = 0_rt;
 		Rating m_materialSignSwap = 1_rt;
 
 		Node() = default;
 	public:
-		static Node makeRoot(const Position& root, std::uint8_t maxDepth, bool isWhite) {
+		static Node makeRoot(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, bool isWhite) {
 			Node ret;
 			ret.m_pos = root;
 			ret.m_positionData = calcPositionData(ret.m_pos);
@@ -35,13 +37,7 @@ export namespace chess {
 			Node ret;
 			ret.m_pos = { parent.m_pos, movePriority.getMove() };
 			ret.m_positionData = calcPositionData(ret.m_pos);
-			ret.m_level = parent.m_level + 1;
-			if (movePriority.inAttackSequence()) {
-				ret.m_inAttackSequence = true;
-				if (movePriority.getMove().capturedPiece != Piece::None) {
-					ret.m_materialExchanged += (getPieceRating(movePriority.getMove().capturedPiece) * parent.m_materialSignSwap);
-				}
-			}
+			ret.m_level = parent.m_level + 1_su8;
 			ret.m_materialSignSwap *= -1_rt;
 			ret.m_levelsToSearch = movePriority.getDepth();
 			return ret;
@@ -66,16 +62,16 @@ export namespace chess {
 			return m_positionData;
 		}
 
-		std::uint8_t getLevel() const {
+		SafeUnsigned<std::uint8_t> getLevel() const {
 			return m_level;
 		}
 
-		std::uint8_t getRemainingDepth() const {
+		SafeUnsigned<std::uint8_t>getRemainingDepth() const {
 			return m_levelsToSearch;
 		}
 
 		bool isDone() const {
-			return m_levelsToSearch == 0;
+			return m_levelsToSearch == 0_su8;
 		}
 
 		Rating getRating() const {

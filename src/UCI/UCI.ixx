@@ -2,6 +2,8 @@ export module Chess.UCI;
 
 import std;
 
+export import Chess.SafeInt;
+
 namespace chess {
-	export void playUCI(std::uint8_t depth = 6);
+	export void playUCI(SafeUnsigned<std::uint8_t> depth);
 }
