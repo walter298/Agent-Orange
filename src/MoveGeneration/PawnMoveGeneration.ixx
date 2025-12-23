@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:PawnMoveGeneration;
+export module Chess.MoveGeneration:PawnMoveGeneration;
 
 export import std;
 export import Chess.Square;
@@ -40,4 +40,13 @@ namespace chess {
 	static_assert(PawnMoveGenerator<WhitePawnAttackGenerator>);
 	static_assert(PawnMoveGenerator<BlackPawnMoveGenerator>);
 	static_assert(PawnMoveGenerator<BlackPawnAttackGenerator>);
+
+//	template<typename MoveGenerator>
+//	static MoveGen invokeAttackGenerator(Bitboard movingEnemies, Bitboard empty, MoveGenerator attackGen) {
+//		if constexpr (PawnMoveGenerator<MoveGenerator>) {
+//			return attackGen(movingEnemies, ALL_SQUARES);
+//		} else {
+//			return attackGen(movingEnemies, empty);
+//		}
+//	}
 }

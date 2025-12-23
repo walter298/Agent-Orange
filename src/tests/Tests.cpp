@@ -34,9 +34,10 @@ import Chess.BitboardImage;
 import Chess.Evaluation;
 import Chess.Position;
 import Chess.PositionCommand;
-import Chess.LegalMoveGeneration;
+import Chess.MoveGeneration;
 import Chess.MoveSearch;
 import Chess.Profiler;
+import Chess.SafeInt;
 
 import :Pipe;
 
@@ -179,7 +180,17 @@ namespace chess {
 			auto testIllegality = [](const Move& move) {
 				return move.movedPiece != King || move.to == F7;
 			};
-			testMovesImpl("testCheck", "fen 1rbqk2r/3p1P2/1pn5/p1p5/2P4p/2NQ3P/PP4P1/R4RK1 b k - 0 18 ", testIllegality);
+			testMovesImpl("testCheck", "fen 1rbqk2r/3p1P2/1pn5/p1p5/2P4p/2NQ3P/PP4P1/R4RK1 b k - 0 18", testIllegality);
+		}
+
+		void testCheck2() {
+			testMovesImpl("testCheck2", "fen r1b1kb2/pp3pp1/n7/1NpPp3/6n1/2Q5/PP1PP3/R1BK1q2 w q - 0 15", [](const Move& move) {
+				return move.from != D1 && move.to != D2;
+			});
+		}
+
+		void testCheck3() {
+			testMovesImpl("testCheck3", "fen 1b2n3/5N1p/1p1pBk1R/p1p1p3/P3P3/R2P4/1PP2P2/4K3 b - - 25 45", King, E6);
 		}
 
 		void testThatLegalMovesExist() {
@@ -229,6 +240,11 @@ namespace chess {
 				pos.move(*bestMove);
 				moves += bestMove->getUCIString() + " ";
 			}
+		}
+
+		void testThatLegalMovesExist5() {
+			Position pos;
+			testMovesImpl<false>("testThatLegalMovesExist5", "fen rnbq1k1r/3p1ppp/1p1b1n1Q/pBp1p3/4P2P/N2P3R/PPP2PP1/R1B1K1N1 b Q - 2 8", Pawn, H6);
 		}
 
 		void testEnPassant() {
@@ -299,6 +315,12 @@ namespace chess {
 			}
 		}
 
+		void testPin2() {
+			testMovesImpl("testPin2", "fen 1nb2k1r/2b4p/1p1p1q1N/p1pBp2P/P3P1P1/3P1R2/1PP2P2/R3K1N1 b Q - 2 26", [](const Move& move) {
+				return move.movedPiece == Queen && move.to != F3;
+			});
+		}
+
 		void testPinWithCheck() {
 			Position pos;
 			pos.setPos(parsePositionCommand("fen 8/8/1r2knR1/2b5/1p2pBBP/1P1p4/5PP1/6K1 b - - 4 44"));
@@ -310,6 +332,10 @@ namespace chess {
 			if (illegalKnightMove != legalMoveData.legalMoves.end()) {
 				std::println("testPinWithCheck failed: illegal knight move: {}", illegalKnightMove->getUCIString());
 			}
+		}
+
+		void testPinWithCheck2() {
+			testMovesImpl("testPinWithCheck2", "fen 1n4kr/1bqp1ppp/r4b1N/ppp1p3/4P1Q1/P1PP2PB/1P1N1P1P/R4RK1 b - - 5 18", Pawn, H6);
 		}
 
 		void testBitboardImageCreation() {
@@ -386,18 +412,23 @@ namespace chess {
 			testIllegalKingSquares2();
 			testIllegalPawnSquares();
 			testCheck();
+			testCheck2();
+			testCheck3();
 			testThatLegalMovesExist();
 			testThatLegalMovesExist2();
 			testThatLegalMovesExist3();
 			//testThatLegalMovesExist4(); //really really long!
+			testThatLegalMovesExist5();
 			testEnPassant();
 			testEnPassant2();
 			testPin();
+			testPin2();
 			testPinWithCheck();
+			testPinWithCheck2();
 			testBitboardImageCreation();
 			testEnemySquareOutput();
 			runInternalEvaluationTests();
-			//runInternalMoveSearchTests();
+			runInternalMoveSearchTests();
 			//testUCIInput(); //long!
 		}
 	}

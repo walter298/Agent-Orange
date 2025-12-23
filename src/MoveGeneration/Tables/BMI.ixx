@@ -2,7 +2,7 @@ module;
 
 #include <immintrin.h>
 
-export module Chess.LegalMoveGeneration:BMI;
+export module Chess.MoveGeneration:BMI;
 
 export import Chess.Square;
 export import Chess.Bitboard;

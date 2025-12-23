@@ -1,4 +1,4 @@
-module Chess.LegalMoveGeneration:TableLoader;
+module Chess.MoveGeneration:TableLoader;
 
 import std;
 import nlohmann.json;
@@ -39,8 +39,8 @@ namespace chess {
 		auto positionCount = json[TOTAL_POSITION_COUNT_KEY].get<size_t>();
 		AllPositions::init(positionCount);
 
-		ret.orthogonalMoveMap = json[ORTHOGONAL_MOVE_MAP_KEY].get<SquareMap<StaticBMI>::Buffer>();
-		ret.diagonalMoveMap   = json[DIAGONAL_MOVE_MAP_KEY].get<SquareMap<StaticBMI>::Buffer>();
+		ret.orthogonalMoveMap = SquareMap{ json[ORTHOGONAL_MOVE_MAP_KEY].get<SquareMap<StaticBMI>::Buffer>() };
+		ret.diagonalMoveMap = SquareMap{ json[DIAGONAL_MOVE_MAP_KEY].get<SquareMap<StaticBMI>::Buffer>() };
 		return ret;
 	}
 }

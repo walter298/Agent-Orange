@@ -4,29 +4,53 @@ import Chess.Assert;
 import Chess.AttackMap;
 import Chess.Rating;
 import Chess.Evaluation;
-import Chess.LegalMoveGeneration;
+import Chess.MoveGeneration;
+
 import Chess.Profiler;
 import :KillerMoveHistory;
 import :PositionTable;
 
 namespace chess {
-	struct PVMoveInsertionResult {
-		std::span<MovePriority> nonPVMoves;
-		bool insertedPVMove = false;
+	struct PieceData {
+		Piece piece = Piece::None;
+		Square square = Square::None;
 	};
 
-	PVMoveInsertionResult addPVEntry(const Move& pvMove, std::vector<MovePriority>& priorities) {
-		if (pvMove != Move::null()) {
-			auto it = std::ranges::find_if(priorities, [&](const MovePriority& p) {
-				return p.getMove() == pvMove;
-			});
-			if (it != priorities.end()) { //if pv move is not found, then there was an incorrect hash made in the position table
-				std::iter_swap(it, priorities.begin());
-				std::span nonPVMoves{ priorities.data() + 1, priorities.size() - 1 };
-				return { nonPVMoves, true };
+	void filterNonEvasionMoves(const PieceData& attackedPiece, const Position::ImmutableTurnData& turnData,
+		Bitboard empty, std::vector<MovePriority>& priorities)
+	{
+		auto attackerData = calcAttackers(turnData.isWhite, turnData.enemies, empty, makeBitboard(attackedPiece.square));
+		auto attackers = attackerData.attackers.calcAllLocations();
+
+		auto pieceRating = getPieceRating(attackedPiece.piece);
+		
+		std::ranges::stable_partition(priorities, [&](const MovePriority& p) {
+			if (p.getExchangeRating() >= pieceRating) { //if we have a better capture, do it
+				return true;
 			}
+			auto toBoard = makeBitboard(p.getMove().to);
+			return static_cast<bool>(toBoard & attackers) || static_cast<bool>(toBoard & attackerData.allRays());
+		});
+	}
+
+	std::generator<PieceData> getTargets(const PieceState& allies, Bitboard enemyDestSquares) {
+		constexpr std::array MOST_VALUABLE_PIECES{ Queen, Rook, Bishop, Knight, Pawn };
+		for (auto piece : MOST_VALUABLE_PIECES) {
+			auto attackedAllies = allies[piece] & enemyDestSquares;
+			if (!attackedAllies) {
+				continue;
+			}
+			co_yield{ piece, nextSquare(attackedAllies) };
 		}
-		return { std::span{ priorities.data(), priorities.size() }, false };
+	}
+
+	void filterNonEvasionMoves(const Node& node, std::vector<MovePriority>& movePriorities) {
+		auto turnData = node.getPos().getTurnData();
+		
+		auto empty = ~(turnData.enemies.calcAllLocations() | turnData.allies.calcAllLocations());
+		for (auto attackedPiece : getTargets(turnData.allies, node.getEnemySquares())) {
+			filterNonEvasionMoves(attackedPiece, turnData, empty, movePriorities);
+		}
 	}
 
 	FixedVector<MovePriority> getMovePrioritiesImpl(const Node& node, const Move& pvMove) {
@@ -35,29 +59,36 @@ namespace chess {
 		const auto& posData = node.getPositionData();
 		auto enemySquares = node.getEnemySquares();
 
-		auto turnData = node.getPos().getTurnData();
-		zAssert(!(enemySquares & turnData.enemies.calcAllLocations())); //enemy squares should not contain enemy piece locations
-
 		std::vector priorities{ std::from_range, posData.legalMoves | std::views::transform([&](const Move& move) {
 			return MovePriority{ move, enemySquares, node.getRemainingDepth() - 1_su8 };
 		}) };
 
-		auto [nonPVMoves, insertedPVMove] = addPVEntry(pvMove, priorities);
-
-		std::ranges::sort(nonPVMoves, [](const MovePriority& a, const MovePriority& b) {
+		std::ranges::sort(priorities, [](const MovePriority& a, const MovePriority& b) {
 			return a.getExchangeRating() > b.getExchangeRating();
 		});
 
-		auto sacrificeIt = std::ranges::upper_bound(nonPVMoves, 0_rt, std::greater{}, &MovePriority::getExchangeRating);
-		if (sacrificeIt != nonPVMoves.end()) {
-			auto sacrificeIndex = std::ranges::distance(nonPVMoves.begin(), sacrificeIt);
-			if (insertedPVMove) {
-				sacrificeIndex++; //make the sacrifice index not relative
-			}
+		auto sacrificeIt = std::ranges::upper_bound(priorities, 0_rt, std::greater{}, &MovePriority::getExchangeRating);
+		if (sacrificeIt != priorities.end()) {
+			auto sacrificeIndex = std::ranges::distance(priorities.begin(), sacrificeIt);
 			if (sacrificeIndex != 0) { //disallow pruning of all legal moves
 				priorities.erase(priorities.begin() + sacrificeIndex, priorities.end());
 			}
 		}
+
+		filterNonEvasionMoves(node, priorities);
+
+		if (pvMove != Move::null() && std::ranges::contains(posData.legalMoves, pvMove)) {
+			auto pvMoveIt = std::ranges::find_if(priorities, [&](const MovePriority& p) {
+				return p.getMove() == pvMove;
+			});
+			if (pvMoveIt == priorities.end()) {
+				priorities.insert(priorities.begin(), MovePriority{ pvMove, enemySquares, node.getRemainingDepth() - 1_su8 });
+			} else {
+				std::iter_swap(priorities.begin(), pvMoveIt);
+			}
+		}
+
+		zAssert(!priorities.empty());
 
 		return FixedVector{ std::move(priorities) };
 	}

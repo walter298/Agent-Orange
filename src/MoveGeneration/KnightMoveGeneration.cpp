@@ -1,4 +1,5 @@
-module Chess.LegalMoveGeneration:KnightMoveGeneration;
+module Chess.MoveGeneration:KnightMoveGeneration;
+
 import Chess.Direction;
 
 namespace chess {

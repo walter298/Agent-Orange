@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:PieceLocations;
+export module Chess.MoveGeneration:PieceLocations;
 
 export import Chess.Bitboard;
 

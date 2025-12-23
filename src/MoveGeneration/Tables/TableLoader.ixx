@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:TableLoader;
+export module Chess.MoveGeneration:TableLoader;
 
 export import :BMI;
 

@@ -1,4 +1,4 @@
-module Chess.LegalMoveGeneration:PawnMoveGeneration;
+module Chess.MoveGeneration:PawnMoveGeneration;
 import Chess.Direction;
 import Chess.RankCalculator;
 

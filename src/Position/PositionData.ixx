@@ -4,6 +4,7 @@ export import std;
 
 export import Chess.Bitboard;
 export import Chess.Move;
+export import Chess.PieceMap;
 export import Chess.Rating;
 
 export namespace chess {

@@ -4,7 +4,7 @@ import std;
 
 import Chess.Assert;
 import Chess.Evaluation;
-import Chess.LegalMoveGeneration;
+import Chess.MoveGeneration;
 import Chess.Position;
 import Chess.Profiler;
 import Chess.Rating;

@@ -6,7 +6,7 @@ module Chess.MoveSearch:KillerMoveHistory;
 
 import Chess.Assert;
 import Chess.Evaluation;
-import Chess.LegalMoveGeneration;
+import Chess.MoveGeneration;
 
 import :MoveHasher;
 

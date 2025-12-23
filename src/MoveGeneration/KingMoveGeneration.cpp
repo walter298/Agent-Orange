@@ -1,4 +1,4 @@
-module Chess.LegalMoveGeneration:KingMoveGeneration;
+module Chess.MoveGeneration:KingMoveGeneration;
 
 import Chess.SquareZone;
 

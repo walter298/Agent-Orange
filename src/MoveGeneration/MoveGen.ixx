@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:MoveGen;
+export module Chess.MoveGeneration:MoveGen;
 
 export import Chess.Bitboard;
 

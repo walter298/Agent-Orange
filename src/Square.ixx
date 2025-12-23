@@ -1,6 +1,8 @@
 export module Chess.Square;
 
 import std;
+import nlohmann.json;
+
 import Chess.Bitboard;
 import Chess.RankCalculator;
 
@@ -159,7 +161,7 @@ export namespace chess {
         constexpr SquareMap() {
             std::ranges::fill(m_entries, T{});
         }
-        constexpr SquareMap(const Buffer& buffer) : m_entries{ buffer } {}
+        constexpr explicit SquareMap(const Buffer& buffer) : m_entries{ buffer } {}
         decltype(auto) operator[](this auto&& self, Square square) {
             return std::forward_like<decltype(self)>(self.m_entries[static_cast<size_t>(square)]);
         }
@@ -167,4 +169,13 @@ export namespace chess {
             return m_entries;
         }
     };
+
+    template<typename T>
+    void from_json(const nlohmann::json& j, SquareMap<T>& map) {
+        map = SquareMap{ j.get<typename SquareMap<T>::Buffer>() };
+    }
+    template<typename T>
+    void to_json(nlohmann::json& j, const SquareMap<T>& map) {
+        j = map.get();
+    }
 }

@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:ChainedMoveGenerator;
+export module Chess.MoveGeneration:ChainedMoveGenerator;
 
 import std;
 

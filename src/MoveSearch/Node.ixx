@@ -3,7 +3,7 @@ export module Chess.MoveSearch:Node;
 export import Chess.Position;
 export import Chess.Rating;
 export import Chess.Evaluation;
-export import Chess.LegalMoveGeneration;
+export import Chess.MoveGeneration;
 export import Chess.SafeInt;
 
 export import :MovePriority;

@@ -1,7 +1,7 @@
 import std;
 
 import Chess.BitboardImage;
-import Chess.LegalMoveGeneration;
+import Chess.MoveGeneration;
 import Chess.UCI;
 import Chess.Move;
 import Chess.Profiler;
@@ -96,9 +96,7 @@ int main(int argc, const char** argv) {
 		chess::printCommandLineArgumentOptions();
 	} else if (std::strcmp(argv[1], "generate_bmi_table") == 0) {
 		chess::storeBMITable();
-	} else if (std::strcmp(argv[1], "see_move_priorities") == 0) {
-
-	} else {
+	}else {
 		std::print("Invalid command line arguments. ");
 		chess::printCommandLineArgumentOptions();
 	}

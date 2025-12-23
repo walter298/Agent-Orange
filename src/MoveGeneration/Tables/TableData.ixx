@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:TableData;
+export module Chess.MoveGeneration:TableData;
 
 import std;
 import Chess.EnvironmentVariable;

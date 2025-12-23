@@ -16,7 +16,7 @@ module;
 		static consteval auto get() { return dir; }\
 	}; \
 
-export module Chess.LegalMoveGeneration:ReverseAttackGenerator;
+export module Chess.MoveGeneration:ReverseAttackGenerator;
 
 import std;
 export import :KnightMoveGeneration;

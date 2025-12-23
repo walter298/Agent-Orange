@@ -1,4 +1,4 @@
-export module Chess.LegalMoveGeneration:SlidingMoveGenerators;
+export module Chess.MoveGeneration:SlidingMoveGenerators;
 
 import :ChainedMoveGenerator;
 import :MoveGen;
@@ -37,4 +37,9 @@ namespace chess {
 	export constexpr RookAttackGenerator rookMoveGenerator;
 
 	export constexpr ChainedMoveGenerator queenMoveGenerator{ bishopMoveGenerator, rookMoveGenerator };
+
+	template<typename MoveGenerator>
+	concept SlidingMoveGenerator = std::same_as<BishopAttackGenerator, MoveGenerator> ||
+								   std::same_as<RookAttackGenerator, MoveGenerator> ||
+							       std::same_as<std::remove_cvref_t<decltype(queenMoveGenerator)>, MoveGenerator>;
 }
