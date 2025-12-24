@@ -42,10 +42,14 @@ export namespace chess {
 			ret.m_level = parent.m_level + 1_su8;
 			ret.m_materialSignSwap *= -1_rt;
 			ret.m_levelsToSearch = movePriority.getDepth();
+
+			repetition::push(ret.m_pos);
+
 			return ret;
 		}
 		~Node() {
 			if (m_isChild) {
+				//std::println("Popping position!");
 				repetition::pop();
 			}
 		}

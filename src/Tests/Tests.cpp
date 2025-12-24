@@ -21,8 +21,8 @@ module;
 			} \
 		};\
 		if ((value != expected)) { \
-			std::print("Test failed: {} != {}.", #value, #expected); \
-			std::println(" Expected value: {}", getPrintableValue(expected)); \
+			std::print("Test failed on line {}: {} != {}.", std::stacktrace::current()[0].source_line(), #value, #expected); \
+			std::println(" Expected value: {}; Actual value: {}", getPrintableValue(expected), getPrintableValue(value)); \
 		} \
 	} \
 
@@ -37,6 +37,7 @@ import Chess.PositionCommand;
 import Chess.MoveGeneration;
 import Chess.MoveSearch;
 import Chess.Profiler;
+import Chess.Position.RepetitionMap;
 import Chess.SafeInt;
 
 import :Pipe;
@@ -397,6 +398,51 @@ namespace chess {
 			testMovesImpl<false>("testCastling", "fen 3k4/3r4/8/8/8/8/4PPPP/4K2R w K - 0 1", King, G1);
 		}
 
+		void testRepetition() {
+			Position startPos;
+			startPos.setPos(parsePositionCommand("startpos"));
+			repetition::push(startPos);
+
+			assert_equality(repetition::getPositionCount(startPos), 1);
+
+			Move whiteTo{ B1, C3, Knight, Piece::None };
+			Move whiteBack{ C3, B1, Knight, Piece::None };
+
+			Move blackTo{ B8, C6, Knight, Piece::None };
+			Move blackBack{ C6, B8, Knight, Piece::None };
+
+			Position p1{ startPos, whiteTo };
+			repetition::push(p1);
+			assert_equality(repetition::getPositionCount(p1), 1);
+
+			Position p2{ p1, blackTo };
+			repetition::push(p2);
+			assert_equality(repetition::getPositionCount(p2), 1);
+			
+			Position p3{ p2, whiteBack };
+			repetition::push(p3);
+			assert_equality(repetition::getPositionCount(p3), 1);
+
+			Position p4{ p3, blackBack };
+			repetition::push(p4);
+			assert_equality(repetition::getPositionCount(p4), 2);
+
+			if (p4 != startPos) {
+				std::println("testRepetitionFailed: p4 is not equal to startPos");
+			}
+
+			repetition::clear();
+		}
+
+		void testRepetition2() {
+			Position pos;
+			pos.setPos(parsePositionCommand("startpos"));
+			repetition::push(pos);
+
+			auto bestMove = findBestMove(pos, 6_su8);
+			assert_equality(repetition::getTotalPositionCount(), 1);
+		}
+
 		void runAllTests() {
 			std::println("Running tests...");
 
@@ -424,6 +470,8 @@ namespace chess {
 			testCastling();
 			runInternalEvaluationTests();
 			runInternalMoveSearchTests();
+			testRepetition();
+			testRepetition2();
 			//testUCIInput(); //long!
 		}
 	}

@@ -15,9 +15,11 @@ namespace chess {
 		auto command = parsePositionCommand(commandStr);
 		if (m_inNewPos) {
 			m_pos.setPos(command);
+			repetition::push(m_pos);
 		} else {
 			zAssert(!command.moves.empty());
 			m_pos.move(command.moves.back());
+			repetition::push(m_pos);
 		}
 		m_inNewPos = false;
 	}
@@ -28,6 +30,7 @@ namespace chess {
 			return "";
 		} else {
 			m_pos.move(*move);
+			repetition::push(m_pos);
 			return move->getUCIString();
 		}
 	}

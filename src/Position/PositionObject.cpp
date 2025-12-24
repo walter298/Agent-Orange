@@ -110,8 +110,6 @@ namespace chess {
             normalMove(turnData, move);
         }
         m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
-
-        repetition::push(*this);
     }
 
     bool isEnPessant(const Move& move) {

@@ -8,5 +8,6 @@ export namespace chess {
 		void pop();
 		int getPositionCount(const Position& pos);
 		void clear();
+		int getTotalPositionCount();
 	}
 }
