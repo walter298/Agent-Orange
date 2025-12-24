@@ -233,14 +233,16 @@ namespace chess {
 
 			bool inCheck = (enemyDestSquares & pieceLocations.allyKing);
 			auto isCastlingClear = [&](const auto& castleMove) {
-				return (!inCheck && castleMove.squaresBetweenRookAndKing == 0 && (castleMove.squaresBetweenRookAndKing & enemyDestSquares));
+				auto squaresClear = (castleMove.squaresBetweenRookAndKing & ~pieceLocations.empty) == 0;
+				auto squaresNotChecked = (castleMove.squaresBetweenRookAndKing & enemyDestSquares) == 0;
+				return (!inCheck && squaresClear && squaresNotChecked);
 			};
 			if (!inCheck) {
 				if (turnData.allies.canCastleKingside() && isCastlingClear(turnData.allyKingside)) {
-					kingMoves.emptyDestSquares |= turnData.allyKingside.kingTo;
+					kingMoves.emptyDestSquares |= makeBitboard(turnData.allyKingside.kingTo);
 				}
 				if (turnData.allies.canCastleQueenside() && isCastlingClear(turnData.allyQueenside)) {
-					kingMoves.emptyDestSquares |= turnData.allyQueenside.kingTo;
+					kingMoves.emptyDestSquares |= makeBitboard(turnData.allyQueenside.kingTo);
 				}
 			} else {
 				kingMoves &= ~attackerData.indirectRays;

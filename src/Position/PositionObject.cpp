@@ -1,5 +1,7 @@
 module Chess.Position:PositionObject;
 
+import Chess.Position.RepetitionMap;
+
 import Chess.Assert;
 import :Parse;
 
@@ -19,10 +21,12 @@ namespace chess {
     }
 
     bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
+        //if we can't castle eitherway or we're just not moving the king, don't try to castle
         if ((!turnData.allies.canCastleKingside() && !turnData.allies.canCastleQueenside()) || move.movedPiece != King) {
             return false;
         }
 
+        //as soon as we move the king, we can't castle anymore
         turnData.allies.disallowQueensideCastling();
         turnData.allies.disallowKingsideCastling();
 
@@ -98,8 +102,7 @@ namespace chess {
         if (move.movedPiece == Rook) {
             if (move.from == turnData.allyKingside.rookFrom) {
                 turnData.allies.disallowKingsideCastling();
-            }
-            else if (move.from == turnData.allyQueenside.rookFrom) {
+            } else if (move.from == turnData.allyQueenside.rookFrom) {
                 turnData.allies.disallowQueensideCastling();
             }
         }
@@ -107,6 +110,8 @@ namespace chess {
             normalMove(turnData, move);
         }
         m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
+
+        repetition::push(*this);
     }
 
     bool isEnPessant(const Move& move) {
@@ -153,8 +158,20 @@ namespace chess {
         auto bTurnData = b.getTurnData();
         auto sidesEqual = std::ranges::equal(aTurnData.allies, bTurnData.allies) &&
             std::ranges::equal(aTurnData.enemies, bTurnData.enemies);
-        auto jumpedPawnsEqual = (aTurnData.allies.doubleJumpedPawn == bTurnData.allies.doubleJumpedPawn) &&
+
+        auto checkCastlingPrivileges = [](const PieceState& allies, const PieceState& otherAllies) {
+           return allies.canCastleKingside() == otherAllies.canCastleKingside()
+                && allies.hasCastledQueenside() == otherAllies.hasCastledQueenside()
+                && allies.canCastleKingside() == otherAllies.canCastleKingside()
+                && allies.hasCastledQueenside() == otherAllies.hasCastledQueenside();
+        };
+        auto areCastlingPrivilegesEqual = checkCastlingPrivileges(aTurnData.allies, bTurnData.allies) &&
+            checkCastlingPrivileges(aTurnData.enemies, bTurnData.enemies);
+
+        auto jumpedPawnsEqual = 
+            (aTurnData.allies.doubleJumpedPawn == bTurnData.allies.doubleJumpedPawn) &&
             (aTurnData.enemies.doubleJumpedPawn == bTurnData.enemies.doubleJumpedPawn);
-        return sidesEqual && jumpedPawnsEqual;
+
+        return areCastlingPrivilegesEqual && sidesEqual && jumpedPawnsEqual;
     }
 }

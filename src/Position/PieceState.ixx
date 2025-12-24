@@ -10,7 +10,9 @@ namespace chess {
 	export struct PieceState : public PieceMap<Bitboard> {
 	private:
 		bool m_canCastleKingside = true;
+		bool m_hasCastledKingside = false;
 		bool m_canCastleQueenside = true;
+		bool m_hasCastledQueenside = false;
 	public:
 		Square doubleJumpedPawn = Square::None;
 
@@ -22,14 +24,26 @@ namespace chess {
 		constexpr bool canCastleKingside() const {
 			return m_canCastleKingside;
 		}
+		constexpr bool hasCastledKingside() const {
+			return m_hasCastledKingside;
+		}
 		constexpr void disallowKingsideCastling() {
 			m_canCastleKingside = false;
 		}
 		constexpr bool canCastleQueenside() const {
 			return m_canCastleQueenside;
 		}
+		constexpr bool hasCastledQueenside() const {
+			return m_hasCastledQueenside;
+		}
 		constexpr void disallowQueensideCastling() {
 			m_canCastleQueenside = false;
+		}
+		void castleKingside() {
+			m_hasCastledKingside = true;
+		}
+		void castleQueenside() {
+			m_hasCastledQueenside = true;
 		}
 		void clear() {
 			std::ranges::transform(m_data, m_data.begin(), [](auto&) {

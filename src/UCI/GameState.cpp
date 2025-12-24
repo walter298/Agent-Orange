@@ -3,10 +3,12 @@ module Chess.UCI:GameState;
 import Chess.Assert;
 import Chess.MoveSearch;
 import Chess.PositionCommand;
+import Chess.Position.RepetitionMap;
 
 namespace chess {
 	void GameState::reset() {
 		m_inNewPos = true;
+		repetition::clear();
 	}
 
 	void GameState::setPos(const std::string& commandStr) {

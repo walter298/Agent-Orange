@@ -1,7 +1,10 @@
 module Chess.UCI;
 
 import std;
+
 import Chess.Evaluation;
+import Chess.Position.RepetitionMap;
+
 import :GameState;
 
 namespace chess {

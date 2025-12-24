@@ -5,7 +5,7 @@ import std;
 import Chess.Assert;
 import Chess.Evaluation;
 import Chess.MoveGeneration;
-import Chess.Position;
+import Chess.Position.RepetitionMap;
 import Chess.Profiler;
 import Chess.Rating;
 
@@ -54,6 +54,13 @@ namespace chess {
 
 	template<typename Ret, bool Maximizing>
 	Ret minimax(const Node& node, AlphaBeta alphaBeta) {
+		if constexpr (std::same_as<Ret, Rating>) {
+			auto repetitionCount = repetition::getPositionCount(node.getPos());
+			if (repetitionCount == 3) {
+				return 0_rt;
+			}
+		}
+
 		auto returnImpl = [](const PositionEntry& entry) {
 			if constexpr (std::same_as<Ret, Rating>) {
 				return entry.rating;
@@ -88,7 +95,6 @@ namespace chess {
 				return minimaxImpl<Ret, Maximizing>(node, entry.bestMove, alphaBeta);
 			}
 		}
-		//std::println("Did not find anything in lookup table. Searching each child position");
 		return minimaxImpl<Ret, Maximizing>(node, Move::null(), alphaBeta);
 	}
 
@@ -118,11 +124,7 @@ namespace chess {
 		auto bound = InWindow;
 		bool didNotPrune = true;
 
-		//std::println("Looking at new node with {} move priorities", movePriorities.size());
-		
 		for (const auto& movePriority : movePriorities) {
-			//std::println("Looking at([{}, {})]", movePriority.getMove().getUCIString(), movePriority.getDepth().get());
-
 			auto child = Node::makeChild(node, movePriority);
 
 			auto childRating = minimax<Rating, !Maximizing>(child, alphaBeta);

@@ -11,10 +11,10 @@ export namespace chess {
 	class Position {
 	private:
 		struct CastleMove {
-			Square kingTo;
-			Square rookFrom;
-			Square rookTo;
-			Bitboard squaresBetweenRookAndKing;
+			Square kingTo = Square::None;
+			Square rookFrom = Square::None;
+			Square rookTo = Square::None;
+			Bitboard squaresBetweenRookAndKing = 0_bb;
 		};
 		static constexpr CastleMove WHITE_KINGSIDE = { G1, H1, F1, makeBitboard(F1, G1) };
 		static constexpr CastleMove WHITE_QUEENSIDE = { C1, A1, D1, makeBitboard(B1, C1, D1) };

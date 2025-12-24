@@ -29,11 +29,11 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen rnbqkbnr/1ppp1ppp/4p3/p7/3P3B/2P2N2/PP2BPPP/R2QR1K1 b kq - 9 16"));
 			auto node = Node::makeRoot(pos, 1_su8, false);
 			const auto& legalMoves = node.getPositionData().legalMoves;
-			for (const auto& move : legalMoves) {
-				std::println("{}", move.getUCIString());
-			}
-			auto priorities = getMovePriorities(node, Move::null());
-			printPriorities(priorities);
+//			for (const auto& move : legalMoves) {
+//				std::println("{}", move.getUCIString());
+//			}
+//			auto priorities = getMovePriorities(node, Move::null());
+//			printPriorities(priorities);
 		}
 
 		void runInternalMoveSearchTests() {

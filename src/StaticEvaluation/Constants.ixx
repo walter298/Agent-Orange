@@ -14,6 +14,7 @@ namespace chess {
 	constexpr auto PAWN_ISLAND_PENALTY = -0.02_rt;
 	constexpr auto PIECE_PROXIMITY_FACTOR = -0.0006_rt;
 	constexpr auto DESTINATION_SQUARE_PROXIMITY_FACTOR = -0.0002_rt;
+	constexpr auto CASTLE_RATING = 1_rt;
 
 	const PieceMap<Rating> pieceRatings{
 		{

@@ -154,10 +154,6 @@ namespace chess {
 
 		template<bool Illegal = true>
 		void testMovesImpl(std::string_view testName, const std::string& fen, Piece piece, Square to) {
-			Position pos;
-			pos.setPos(parsePositionCommand(fen));
-
-			auto legalMoves = calcPositionData(pos);
 			auto testIllegality = [&](const Move& move) {
 				return move.movedPiece == piece && move.to == to;
 			};
@@ -398,9 +394,7 @@ namespace chess {
 		}
 
 		void testCastling() {
-			Position pos;
-			pos.setPos(parsePositionCommand("fen 4k2r/4p1p1/4PpPp/5P1P/8/3Q4/3K4/8 b k - 0 1"));
-			auto legalMoves = calcPositionData(pos);
+			testMovesImpl<false>("testCastling", "fen 3k4/3r4/8/8/8/8/4PPPP/4K2R w K - 0 1", King, G1);
 		}
 
 		void runAllTests() {
@@ -427,6 +421,7 @@ namespace chess {
 			testPinWithCheck2();
 			testBitboardImageCreation();
 			testEnemySquareOutput();
+			testCastling();
 			runInternalEvaluationTests();
 			runInternalMoveSearchTests();
 			//testUCIInput(); //long!

@@ -3,6 +3,7 @@ module Chess.Evaluation;
 import std;
 
 import Chess.Profiler;
+import Chess.Position.PieceState;
 
 import :Constants;
 import :Material;
@@ -21,9 +22,19 @@ namespace chess {
 		return getAttackedPiecesRating(white, posData.blackSquares) - getAttackedPiecesRating(black, posData.whiteSquares);
 	}
 
+	Rating calcCastleRating(const Position& pos) {
+		auto [white, black] = pos.getColorSides();
+
+		auto getCastleRating = [](const auto& pieceState) {
+			return pieceState.hasCastledKingside() || pieceState.hasCastledQueenside() ? CASTLE_RATING : 0_rt;
+		};
+		return getCastleRating(white) - getCastleRating(black);
+	}
+
 	Rating staticEvaluation(const Position& pos, const PositionData& posData) {
 		ProfilerLock l{ getStaticEvaluationProfiler() };
-		return calcMaterialRating(pos) + calcPawnStructureRating(pos) + calcAttackRating(pos, posData) + calcKingSafetyRating(pos, posData);
+		return calcCastleRating(pos) + calcMaterialRating(pos) + calcPawnStructureRating(pos) + calcAttackRating(pos, posData) + 
+			   calcKingSafetyRating(pos, posData);
 	}
 
 	Rating getPieceRating(Piece piece) {

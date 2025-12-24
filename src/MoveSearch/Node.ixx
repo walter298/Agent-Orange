@@ -1,11 +1,11 @@
 export module Chess.MoveSearch:Node;
 
 export import Chess.Position;
+export import Chess.Position.RepetitionMap;
 export import Chess.Rating;
 export import Chess.Evaluation;
 export import Chess.MoveGeneration;
 export import Chess.SafeInt;
-
 export import :MovePriority;
 
 export namespace chess {
@@ -19,6 +19,7 @@ export namespace chess {
 		bool m_inAttackSequence = false;
 		Rating m_materialExchanged = 0_rt;
 		Rating m_materialSignSwap = 1_rt;
+		bool m_isChild = true;
 
 		Node() = default;
 	public:
@@ -27,6 +28,7 @@ export namespace chess {
 			ret.m_pos = root;
 			ret.m_positionData = calcPositionData(ret.m_pos);
 			ret.m_levelsToSearch = maxDepth;
+			ret.m_isChild = false;
 			if (!isWhite) {
 				ret.m_materialSignSwap *= -1_rt;
 			}
@@ -41,6 +43,11 @@ export namespace chess {
 			ret.m_materialSignSwap *= -1_rt;
 			ret.m_levelsToSearch = movePriority.getDepth();
 			return ret;
+		}
+		~Node() {
+			if (m_isChild) {
+				repetition::pop();
+			}
 		}
 
 		bool inAttackSequence() const {
