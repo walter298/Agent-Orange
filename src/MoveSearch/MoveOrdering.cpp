@@ -1,7 +1,6 @@
 module Chess.MoveSearch:MoveOrdering;
 
 import Chess.Assert;
-import Chess.AttackMap;
 import Chess.Rating;
 import Chess.Evaluation;
 import Chess.MoveGeneration;
@@ -16,7 +15,7 @@ namespace chess {
 		Square square = Square::None;
 	};
 
-	void filterNonEvasionMoves(const PieceData& attackedPiece, const Position::ImmutableTurnData& turnData,
+	void deprioritizeNonEvasionMoves(const PieceData& attackedPiece, const Position::ImmutableTurnData& turnData,
 		Bitboard empty, std::vector<MovePriority>& priorities)
 	{
 		auto attackerData = calcAttackers(turnData.isWhite, turnData.enemies, empty, makeBitboard(attackedPiece.square));
@@ -44,12 +43,12 @@ namespace chess {
 		}
 	}
 
-	void filterNonEvasionMoves(const Node& node, std::vector<MovePriority>& movePriorities) {
+	void deprioritizeNonEvasionMoves(const Node& node, std::vector<MovePriority>& movePriorities) {
 		auto turnData = node.getPos().getTurnData();
 		
 		auto empty = ~(turnData.enemies.calcAllLocations() | turnData.allies.calcAllLocations());
 		for (auto attackedPiece : getTargets(turnData.allies, node.getEnemySquares())) {
-			filterNonEvasionMoves(attackedPiece, turnData, empty, movePriorities);
+			deprioritizeNonEvasionMoves(attackedPiece, turnData, empty, movePriorities);
 		}
 	}
 
@@ -67,15 +66,7 @@ namespace chess {
 			return a.getExchangeRating() > b.getExchangeRating();
 		});
 
-		auto sacrificeIt = std::ranges::upper_bound(priorities, 0_rt, std::greater{}, &MovePriority::getExchangeRating);
-		if (sacrificeIt != priorities.end()) {
-			auto sacrificeIndex = std::ranges::distance(priorities.begin(), sacrificeIt);
-			if (sacrificeIndex != 0) { //disallow pruning of all legal moves
-				priorities.erase(priorities.begin() + sacrificeIndex, priorities.end());
-			}
-		}
-
-		filterNonEvasionMoves(node, priorities);
+		deprioritizeNonEvasionMoves(node, priorities);
 
 		if (pvMove != Move::null() && std::ranges::contains(posData.legalMoves, pvMove)) {
 			auto pvMoveIt = std::ranges::find_if(priorities, [&](const MovePriority& p) {

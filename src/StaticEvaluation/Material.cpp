@@ -1,5 +1,7 @@
 module Chess.Evaluation:Material;
 
+import Chess.Position.PieceState;
+
 import :Constants;
 
 namespace chess {

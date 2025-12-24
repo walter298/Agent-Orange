@@ -1,7 +1,6 @@
-module Chess.Position;
+module Chess.Position:PositionObject;
 
 import Chess.Assert;
-import Chess.RankCalculator;
 import :Parse;
 
 namespace chess {
@@ -13,17 +12,17 @@ namespace chess {
         m_isWhiteMoving = (positionCommand.color == 'w');
         parseCastlingPrivileges(positionCommand.castlingPrivileges, m_whitePieces, m_blackPieces);
         parseEnPessantSquare(positionCommand.enPessantSquare, m_isWhiteMoving, m_isWhiteMoving ? m_blackPieces : m_whitePieces);
-        
+
         for (const auto& moveStr : positionCommand.moves) {
             move(moveStr);
-		}
+        }
     }
 
     bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
         if ((!turnData.allies.canCastleKingside() && !turnData.allies.canCastleQueenside()) || move.movedPiece != King) {
             return false;
         }
-        
+
         turnData.allies.disallowQueensideCastling();
         turnData.allies.disallowKingsideCastling();
 
@@ -31,7 +30,8 @@ namespace chess {
             moveSquare(turnData.allies[King], move.from, turnData.allyKingside.kingTo);
             moveSquare(turnData.allies[Rook], turnData.allyKingside.rookFrom, turnData.allyKingside.rookTo);
             return true;
-        } else if (turnData.allyQueenside.kingTo == move.to) {
+        }
+        else if (turnData.allyQueenside.kingTo == move.to) {
             moveSquare(turnData.allies[King], move.from, turnData.allyQueenside.kingTo);
             moveSquare(turnData.allies[Rook], turnData.allyQueenside.rookFrom, turnData.allyQueenside.rookTo);
             return true;
@@ -44,12 +44,13 @@ namespace chess {
     }
 
     void movePawn(const Position::MutableTurnData& turnData, const Move& move, Bitboard& pawns) {
-		if (isPawnDoubleJump(turnData, move)) {
+        if (isPawnDoubleJump(turnData, move)) {
             turnData.allies.doubleJumpedPawn = move.to;
-		}
-    	if (move.promotionPiece != Piece::None) {
+        }
+        if (move.promotionPiece != Piece::None) {
             addSquare(turnData.allies[move.promotionPiece], move.to);
-        } else {
+        }
+        else {
             addSquare(pawns, move.to);
         }
     }
@@ -58,15 +59,17 @@ namespace chess {
         if (move.capturedPiece == Rook) {
             if (move.to == turnData.enemyKingside.rookFrom) {
                 turnData.enemies.disallowKingsideCastling();
-            } else if (move.to == turnData.enemyQueenside.rookFrom) {
+            }
+            else if (move.to == turnData.enemyQueenside.rookFrom) {
                 turnData.enemies.disallowQueensideCastling();
             }
         }
-		if (move.capturedPawnSquareEnPassant == Square::None) {
+        if (move.capturedPawnSquareEnPassant == Square::None) {
             removeSquare(turnData.enemies[move.capturedPiece], move.to);
-		} else {
+        }
+        else {
             removeSquare(turnData.enemies[move.capturedPiece], move.capturedPawnSquareEnPassant);
-		}
+        }
     }
 
     void normalMove(const Position::MutableTurnData& turnData, const Move& move) {
@@ -84,54 +87,56 @@ namespace chess {
 
         if (move.movedPiece == Pawn) {
             movePawn(turnData, move, turnData.allies[Pawn]);
-        } else {
+        }
+        else {
             addSquare(movedPiecePos, move.to);
         }
     }
 
-	void Position::move(const Move& move) {
+    void Position::move(const Move& move) {
         auto turnData = getTurnData();
         if (move.movedPiece == Rook) {
-	        if (move.from == turnData.allyKingside.rookFrom) {
+            if (move.from == turnData.allyKingside.rookFrom) {
                 turnData.allies.disallowKingsideCastling();
-	        } else if (move.from == turnData.allyQueenside.rookFrom) {
+            }
+            else if (move.from == turnData.allyQueenside.rookFrom) {
                 turnData.allies.disallowQueensideCastling();
-	        }
+            }
         }
-		if (!tryCastle(turnData, move)) {
+        if (!tryCastle(turnData, move)) {
             normalMove(turnData, move);
-		}
+        }
         m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
-	}
+    }
 
     bool isEnPessant(const Move& move) {
-	    if (move.movedPiece != Pawn || move.capturedPiece != Piece::None) {
+        if (move.movedPiece != Pawn || move.capturedPiece != Piece::None) {
             return false;
-	    }
-		auto fromFile = calcFile(fileOf(move.from));
+        }
+        auto fromFile = calcFile(fileOf(move.from));
         auto destFile = calcFile(fileOf(move.to));
         return fromFile != destFile;
     }
 
-    void Position::move(std::string_view moveStr) { 
+    void Position::move(std::string_view moveStr) {
         zAssert(moveStr.size() == 4 || moveStr.size() == 5);
 
         auto move = Move::null();
 
-    	auto from = parseSquare(moveStr.substr(0, 2));
-        auto to   = parseSquare(moveStr.substr(2, 2));
+        auto from = parseSquare(moveStr.substr(0, 2));
+        auto to = parseSquare(moveStr.substr(2, 2));
         zAssert(from && to);
         move.from = *from;
-        move.to   = *to;
+        move.to = *to;
 
         auto turnData = getTurnData();
 
         move.movedPiece = turnData.allies.findPiece(*from);
         zAssert(move.movedPiece != Piece::None);
-        
+
         move.capturedPiece = turnData.enemies.findPiece(*to);
 
-		//detect en passant capture
+        //detect en passant capture
         if (isEnPessant(move)) {
             move.capturedPawnSquareEnPassant = turnData.enemies.doubleJumpedPawn;
             move.capturedPiece = Pawn;
@@ -141,13 +146,13 @@ namespace chess {
             move.promotionPiece = parsePiece(moveStr[4]);
         }
         this->move(move);
-	}
+    }
 
     bool operator==(const Position& a, const Position& b) {
         auto aTurnData = a.getTurnData();
         auto bTurnData = b.getTurnData();
         auto sidesEqual = std::ranges::equal(aTurnData.allies, bTurnData.allies) &&
-        	              std::ranges::equal(aTurnData.enemies, bTurnData.enemies);
+            std::ranges::equal(aTurnData.enemies, bTurnData.enemies);
         auto jumpedPawnsEqual = (aTurnData.allies.doubleJumpedPawn == bTurnData.allies.doubleJumpedPawn) &&
             (aTurnData.enemies.doubleJumpedPawn == bTurnData.enemies.doubleJumpedPawn);
         return sidesEqual && jumpedPawnsEqual;
