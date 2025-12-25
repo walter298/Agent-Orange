@@ -1,0 +1,96 @@
+[
+  {
+    "average_ns": 1012387312,
+    "child_percentages": {
+      "calcAllLegalMoves": 64.75269290773534,
+      "getMovePriorities": 4.60104269629515,
+      "getPositionEntry": 5.401649084771595,
+      "staticEvaluation": 7.828952567992598,
+      "storePositionEntry": 1.2396112974795899
+    },
+    "name": "findBestMove",
+    "time_spent_ns": 40495492500,
+    "times_run": 40,
+    "unique_data": null
+  },
+  {
+    "average_ns": 46,
+    "child_percentages": null,
+    "name": "addMoves",
+    "time_spent_ns": 14808409100,
+    "times_run": 315510022,
+    "unique_data": null
+  },
+  {
+    "average_ns": 992,
+    "child_percentages": {
+      "addMoves": 56.47339335565636,
+      "calcEnemyMoves": 0.0,
+      "calcPinnedAllies": 7.44273591936829,
+      "getEnPessantMoves": 0.24060631497800322
+    },
+    "name": "calcAllLegalMoves",
+    "time_spent_ns": 26221921900,
+    "times_run": 26416059,
+    "unique_data": {
+      "moves_per_second": 30042699.5,
+      "total_moves_generated": 781110187
+    }
+  },
+  {
+    "average_ns": 515,
+    "child_percentages": null,
+    "name": "getMovePriorities",
+    "time_spent_ns": 1863214900,
+    "times_run": 3613236,
+    "unique_data": null
+  },
+  {
+    "average_ns": 0,
+    "child_percentages": null,
+    "name": "calcEnemyMoves",
+    "time_spent_ns": 0,
+    "times_run": 0,
+    "unique_data": null
+  },
+  {
+    "average_ns": 158,
+    "child_percentages": null,
+    "name": "staticEvaluation",
+    "time_spent_ns": 3170372900,
+    "times_run": 19941578,
+    "unique_data": null
+  },
+  {
+    "average_ns": 138,
+    "child_percentages": null,
+    "name": "storePositionEntry",
+    "time_spent_ns": 501986700,
+    "times_run": 3613236,
+    "unique_data": null
+  },
+  {
+    "average_ns": 20,
+    "child_percentages": null,
+    "name": "getEnPessantMoves",
+    "time_spent_ns": 63091600,
+    "times_run": 3083564,
+    "unique_data": null
+  },
+  {
+    "average_ns": 88,
+    "child_percentages": null,
+    "name": "getPositionEntry",
+    "time_spent_ns": 2187424400,
+    "times_run": 24808707,
+    "unique_data": null
+  },
+  {
+    "average_ns": 73,
+    "child_percentages": null,
+    "name": "calcPinnedAllies",
+    "time_spent_ns": 1951628400,
+    "times_run": 26415590,
+    "unique_data": null
+  }
+]

@@ -29,6 +29,8 @@ namespace chess {
 		SafeUnsigned<std::uint8_t> m_recommendedDepth{ 0 };
 		Rating m_exchangeRating = 0_rt;
 	public:
+		MovePriority() = default;
+
 		MovePriority(const Move& move, Bitboard enemySquares, SafeUnsigned<std::uint8_t> recommendedDepth) :
 			m_move{ move }, m_recommendedDepth{ recommendedDepth },
 			m_exchangeRating{ calcExchangeRating(move, enemySquares) }

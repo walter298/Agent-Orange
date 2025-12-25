@@ -49,50 +49,51 @@ namespace chess {
 		}
 	};
 
+	bool wouldMakeRepetition(const Node& node, const Move& pvMove) {
+		auto child = Node::makeChild(node, MovePriority{ pvMove, 0, 1_su8 });
+		return repetition::getPositionCount(child.getPos()) == 3;
+	}
+
 	template<typename Ret, bool Maximizing>
 	Ret minimaxImpl(const Node& node, const Move& pvMove, AlphaBeta alphaBeta);
 
 	template<typename Ret, bool Maximizing>
 	Ret minimax(const Node& node, AlphaBeta alphaBeta) {
-		if constexpr (std::same_as<Ret, Rating>) {
-			auto repetitionCount = repetition::getPositionCount(node.getPos());
-			if (repetitionCount == 3) {
-				return 0_rt;
-			}
-		}
-
-		auto returnImpl = [](const PositionEntry& entry) {
+		auto returnImpl = [&](const PositionEntry& entry) {
 			if constexpr (std::same_as<Ret, Rating>) {
 				return entry.rating;
 			} else {
 				return entry.bestMove;
 			}
 		};
-
 		auto entryRes = getPositionEntry(node.getPos());
 		if (entryRes) {
 			const auto& entry = entryRes->get();
-			if (entry.depth >= node.getRemainingDepth()) {
-				switch (entry.bound) {
-				case InWindow:
-					return returnImpl(entry);
-					break;
-				case LowerBound:
-					if (entry.rating >= alphaBeta.getBeta()) {
+			
+			if (!wouldMakeRepetition(node, entry.bestMove)) {
+				if (entry.depth >= node.getRemainingDepth()) {
+					switch (entry.bound) {
+					case InWindow:
 						return returnImpl(entry);
-					} else {
-						alphaBeta.updateAlpha(entry.rating);
+						break;
+					case LowerBound:
+						if (entry.rating >= alphaBeta.getBeta()) {
+							return returnImpl(entry);
+						}
+						else {
+							alphaBeta.updateAlpha(entry.rating);
+						}
+						break;
+					case UpperBound:
+						if (entry.rating <= alphaBeta.getAlpha()) {
+							return returnImpl(entry);
+						} else {
+							alphaBeta.updateBeta(entry.rating);
+						}
+						break;
 					}
-					break;
-				case UpperBound:
-					if (entry.rating <= alphaBeta.getAlpha()) {
-						return returnImpl(entry);
-					} else {
-						alphaBeta.updateBeta(entry.rating);
-					}
-					break;
+					return minimaxImpl<Ret, Maximizing>(node, entry.bestMove, alphaBeta);
 				}
-				return minimaxImpl<Ret, Maximizing>(node, entry.bestMove, alphaBeta);
 			}
 		}
 		return minimaxImpl<Ret, Maximizing>(node, Move::null(), alphaBeta);
@@ -101,6 +102,10 @@ namespace chess {
 	template<typename Ret, bool Maximizing>
 	Ret minimaxImpl(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
 		if constexpr (std::same_as<Ret, Rating>) {
+			if (repetition::getPositionCount(node.getPos()) == 3) {
+				return 0_rt;
+			}
+
 			if (node.isDone()) {
 				return node.getRating();
 			}
@@ -167,6 +172,7 @@ namespace chess {
 		storePositionEntry(node.getPos(), newEntry);
 
 		if constexpr (std::same_as<Ret, std::optional<Move>>) {
+			std::println("Returning ({}) with evaluation {}", bestMove.getUCIString(), bestRating);
 			return bestMove;
 		} else {
 			return bestRating;
