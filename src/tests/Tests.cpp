@@ -440,7 +440,23 @@ namespace chess {
 			repetition::push(pos);
 
 			auto bestMove = findBestMove(pos, 6_su8);
+			std::println("Best Move: {}", bestMove->getUCIString());
 			assert_equality(repetition::getTotalPositionCount(), 1);
+
+			repetition::clear();
+		}
+
+		void testCheckmate() {
+			Position pos;
+			pos.setPos(parsePositionCommand("fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1"));
+			repetition::push(pos);
+
+			auto legalMoves = calcPositionData(pos);
+			testMovesImpl<false>("testCheckmate", "fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1", Queen, G2);
+
+			auto bestMove = findBestMove(pos, 6_su8);
+			assert_equality(bestMove->from, F3);
+			assert_equality(bestMove->to, G2);
 		}
 
 		void runAllTests() {
@@ -472,6 +488,7 @@ namespace chess {
 			runInternalMoveSearchTests();
 			testRepetition();
 			testRepetition2();
+			testCheckmate();
 			//testUCIInput(); //long!
 		}
 	}

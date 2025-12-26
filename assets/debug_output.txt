@@ -1,0 +1,23 @@
+Thread [4052]: 
+After (bestmove d7d5), this position has repeated 1 times
+After e4d5, this position has repeated 1 times
+After (bestmove d8d5), this position has repeated 1 times
+After b1c3, this position has repeated 1 times
+After (bestmove d5e5), this position has repeated 1 times
+After c3e2, this position has repeated 1 times
+After (bestmove b7b5), this position has repeated 1 times
+After f2f4, this position has repeated 1 times
+At the root, we are returning (bestmove e5h5)
+At the root, we are returning (bestmove e5h5)
+At the root, we are returning (bestmove e5h5)
+At the root, we are returning (bestmove e5h5)
+After (bestmove e5h5), this position has repeated 1 times
+After e2c3, this position has repeated 1 times
+At the root, we are returning (bestmove h5d1)
+At the root, we are returning (bestmove h5d1)
+At the root, we are returning (bestmove h5d1)
+At the root, we are returning (bestmove h5d1)
+After (bestmove h5d1), this position has repeated 1 times
+After e1d1, this position has repeated 1 times
+After (bestmove c7c6), this position has repeated 1 times
+

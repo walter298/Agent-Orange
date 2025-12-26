@@ -22,6 +22,7 @@ export namespace chess {
 		bool m_isChild = true;
 
 		Node() = default;
+		Node(const Node&) = default;
 	public:
 		static Node makeRoot(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, bool isWhite) {
 			Node ret;
@@ -32,7 +33,6 @@ export namespace chess {
 			if (!isWhite) {
 				ret.m_materialSignSwap *= -1_rt;
 			}
-
 			return ret;
 		}
 		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
@@ -49,7 +49,6 @@ export namespace chess {
 		}
 		~Node() {
 			if (m_isChild) {
-				//std::println("Popping position!");
 				repetition::pop();
 			}
 		}

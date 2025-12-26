@@ -3,6 +3,7 @@ module Chess.MoveSearch;
 import std;
 
 import Chess.Assert;
+import Chess.DebugPrint;
 import Chess.Evaluation;
 import Chess.MoveGeneration;
 import Chess.Position.RepetitionMap;
@@ -49,104 +50,111 @@ namespace chess {
 		}
 	};
 
-	bool wouldMakeRepetition(const Node& node, const Move& pvMove) {
-		auto child = Node::makeChild(node, MovePriority{ pvMove, 0, 1_su8 });
-		return repetition::getPositionCount(child.getPos()) == 3;
+	struct PositionRating {
+		Rating rating = 0_rt;
+		bool isRepetition = false;
+	};
+
+	bool wouldMakeRepetition(const Position& pos, Move pvMove) {
+		Position child{ pos, pvMove };
+		auto repetitionCount = repetition::getPositionCount(child) + 1; //add 1 since we haven't actually pushed this position yet
+		return repetitionCount >= 2; //return 2 (not 3) because the opposing player could then make a threefold repetition after this
 	}
 
 	template<typename Ret, bool Maximizing>
-	Ret minimaxImpl(const Node& node, const Move& pvMove, AlphaBeta alphaBeta);
+	Ret bestChildPosition(const Node& node, const Move& pvMove, AlphaBeta alphaBeta);
 
 	template<typename Ret, bool Maximizing>
 	Ret minimax(const Node& node, AlphaBeta alphaBeta) {
-		auto returnImpl = [&](const PositionEntry& entry) {
-			if constexpr (std::same_as<Ret, Rating>) {
-				return entry.rating;
+		if (node.getPositionData().legalMoves.empty()) {
+			if constexpr (std::same_as<Ret, PositionRating>) {
+				auto rating = node.getPositionData().isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
+				return PositionRating{ rating, false };
 			} else {
+				return std::nullopt;
+			}
+		}
+
+		if (repetition::getPositionCount(node.getPos()) >= 3) {
+			if constexpr (std::same_as<Ret, PositionRating>) {
+				debugPrint("Returning draw");
+				return { 0_rt, true };
+			} 
+		}
+
+		auto pvMove = Move::null();
+
+		auto returnImpl = [&](const PositionEntry& entry) {
+			if constexpr (std::same_as<Ret, PositionRating>) {
+				return PositionRating{ entry.rating, false };
+			} else {
+				debugPrint(std::format("At the root, we are returning ({})", entry.bestMove.getUCIString()));
 				return entry.bestMove;
 			}
 		};
 		auto entryRes = getPositionEntry(node.getPos());
 		if (entryRes) {
 			const auto& entry = entryRes->get();
-			
-			if (!wouldMakeRepetition(node, entry.bestMove)) {
-				if (entry.depth >= node.getRemainingDepth()) {
-					switch (entry.bound) {
-					case InWindow:
+
+			if (!wouldMakeRepetition(node.getPos(), entry.bestMove) && entry.depth >= node.getRemainingDepth()) {
+				switch (entry.bound) {
+				case InWindow:
+					return returnImpl(entry);
+					break;
+				case LowerBound:
+					if (entry.rating >= alphaBeta.getBeta()) {
 						return returnImpl(entry);
-						break;
-					case LowerBound:
-						if (entry.rating >= alphaBeta.getBeta()) {
-							return returnImpl(entry);
-						}
-						else {
-							alphaBeta.updateAlpha(entry.rating);
-						}
-						break;
-					case UpperBound:
-						if (entry.rating <= alphaBeta.getAlpha()) {
-							return returnImpl(entry);
-						} else {
-							alphaBeta.updateBeta(entry.rating);
-						}
-						break;
+					} else {
+						alphaBeta.updateAlpha(entry.rating);
 					}
-					return minimaxImpl<Ret, Maximizing>(node, entry.bestMove, alphaBeta);
+					break;
+				case UpperBound:
+					if (entry.rating <= alphaBeta.getAlpha()) {
+						return returnImpl(entry);
+					} else {
+						alphaBeta.updateBeta(entry.rating);
+					}
+					break;
 				}
 			}
+			pvMove = entry.bestMove;
 		}
-		return minimaxImpl<Ret, Maximizing>(node, Move::null(), alphaBeta);
+		if constexpr (std::same_as<Ret, PositionRating>) { //node will not be done if we are at the root, so it is safe to have this check only for ratings
+			if (node.isDone()) {
+				return { node.getRating(), false }; //already checked whether position is a repetition
+			}
+		}
+		
+		return bestChildPosition<Ret, Maximizing>(node, pvMove, alphaBeta);
 	}
 
 	template<typename Ret, bool Maximizing>
-	Ret minimaxImpl(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
-		if constexpr (std::same_as<Ret, Rating>) {
-			if (repetition::getPositionCount(node.getPos()) == 3) {
-				return 0_rt;
-			}
-
-			if (node.isDone()) {
-				return node.getRating();
-			}
-		}
-
-		const auto& posData = node.getPositionData();
-
-		if (posData.legalMoves.empty()) {
-			if constexpr (std::same_as<Ret, Rating>) {
-				return posData.isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
-			} else {
-				return std::nullopt;
-			}
-		}
-
+	Ret bestChildPosition(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
 		auto originalAlphaBeta = alphaBeta;
 		auto movePriorities = getMovePriorities(node, pvMove);
 		auto bestMove = Move::null();
-		auto bestRating = worstPossibleRating<Maximizing>();
+		PositionRating bestRating{ worstPossibleRating<Maximizing>(), false };
 
 		auto bound = InWindow;
 		bool didNotPrune = true;
 
 		for (const auto& movePriority : movePriorities) {
 			auto child = Node::makeChild(node, movePriority);
-
-			auto childRating = minimax<Rating, !Maximizing>(child, alphaBeta);
+			auto childRating = minimax<PositionRating, !Maximizing>(child, alphaBeta);
 
 			if constexpr (Maximizing) {
-				if (childRating > bestRating) {
+				if (childRating.rating > bestRating.rating) {
 					bestRating = childRating;
 					bestMove = movePriority.getMove();
 				}
 			} else {
-				if (childRating < bestRating) {
+				if (childRating.rating < bestRating.rating) {
 					bestRating = childRating;
 					bestMove = movePriority.getMove();
 				}
 			}
 
-			alphaBeta.update<Maximizing>(bestRating);
+			alphaBeta.update<Maximizing>(bestRating.rating);
 			if (alphaBeta.canPrune()) {
 				updateHistoryScore(movePriority.getMove(), node.getRemainingDepth());
 				bound = Maximizing ? LowerBound : UpperBound;
@@ -158,21 +166,24 @@ namespace chess {
 		zAssert(bestMove != Move::null());
 		if (didNotPrune) {
 			if constexpr (Maximizing) {
-				if (bestRating <= originalAlphaBeta.getAlpha()) {
+				if (bestRating.rating <= originalAlphaBeta.getAlpha()) {
 					bound = UpperBound;
 				}
 			} else {
-				if (bestRating >= originalAlphaBeta.getBeta()) {
+				if (bestRating.rating >= originalAlphaBeta.getBeta()) {
 					bound = LowerBound;
 				}
 			}
 		}
 
-		PositionEntry newEntry{ bestMove, bestRating, node.getRemainingDepth(), bound };
-		storePositionEntry(node.getPos(), newEntry);
+		if (!bestRating.isRepetition) {
+			PositionEntry newEntry{ bestMove, bestRating.rating, node.getRemainingDepth(), bound };
+			storePositionEntry(node.getPos(), newEntry);
+		}
 
+		bestRating.isRepetition = false; //don't propagate repetition flag up the tree
+		
 		if constexpr (std::same_as<Ret, std::optional<Move>>) {
-			std::println("Returning ({}) with evaluation {}", bestMove.getUCIString(), bestRating);
 			return bestMove;
 		} else {
 			return bestRating;
@@ -182,6 +193,7 @@ namespace chess {
 	template<bool Maximizing>
 	std::optional<Move> bestMoveImpl(const Position& rootPos, SafeUnsigned<std::uint8_t> depth) {
 		AlphaBeta alphaBeta;
+		zAssert(repetition::getPositionCount(rootPos) > 0);
 		auto root = Node::makeRoot(rootPos, depth, rootPos.isWhite());
 		return minimax<std::optional<Move>, Maximizing>(root, alphaBeta);
 	}
@@ -193,7 +205,6 @@ namespace chess {
 			for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
 				bestMoveImpl<Maximizing>(pos, iterDepth);
 			}
-			std::println("Searching at depth {}", static_cast<unsigned int>(depth.get()));
 			return bestMoveImpl<Maximizing>(pos, depth);
 		};
 		if (pos.getTurnData().isWhite) {

@@ -1,28 +1,24 @@
 # Agent Smith
 
-<p align="center">
-  <img src="assets/repo_images/logo.png" alt="Logo" width="250">
-</p>
-
 ## Overview
-Agent Smith is a chess engine. It uses the UCI protocol, meaning that it can analyze moves from any given position and can be installed in almost any modern Chess GUI. (Chess Arena is so far the only tested GUI, however). Chess "states" (i.e. piece locations, attacked squares, etc) are all represented in unsigned 64 bit integers, or "bitboards." This allows for extremely fast move generation, as most algorithms consist entirely of integer operations. Agent Smith can calculate over two million moves per second.
+Agent Smith is a chess engine whose ELO is about 1400. It uses the UCI protocol, meaning that it can analyze moves from any given position and can be installed in almost any modern Chess GUI. (Chess Arena is so far the only tested GUI, however). Chess "states" (i.e. piece locations, attacked squares, etc) are all represented in unsigned 64 bit integers, or "bitboards." This allows for extremely fast move generation, as most algorithms consist entirely of integer operations. Agent Smith can calculate over two million moves per second.
 
 
 ## 30 Second Installation 
 
 1. Go to releases and download the latest version of Agent Smith. 
-2. Extract the zip folder to any location. The directory should contain agent_b.exe and agent_b_profiling.exe. Note that to use the profiler app, you must have python installed. 
+2. Extract the zip folder to any location. The directory should contain agent_smith.exe and agent_smith_profiling.exe. Note that to use the profiler app, you must have python installed. 
 
 ## Usage 
 
 ### Installing Agent Smith in a Chess GUI
-1. Open your Chess GUI of choice (Chess Arena is recommended). 
+1. Open your Chess GUI of choice. 
 2. Go to the engine management section and add a new UCI engine.
-3. Select either the agent_b.exe or agent_b_profiling.exe file from the extracted folder.
+3. Select either the agent_smith.exe or agent_smith_profiling.exe file from the extracted folder.
 
 ### Command Line Usage
 
-Run ./agent_b help to see a list of all available commands. Note that to create a bitboard image, you must set the CHESS_BITBOARD_IMAGES environment variable, which will specify the directory in which the images are stored.
+Run ./agent_smith help to see a list of all available commands. Note that to create a bitboard image, you must set the CHESS_BITBOARD_IMAGES environment variable, which will specify the directory in which the images are stored.
 
 ### Profiling
 
