@@ -1,7 +1,12 @@
+module;
+
+#include <cstdio>
+
 module Chess.UCI;
 
 import std;
 
+import Chess.DebugPrint;
 import Chess.Evaluation;
 import Chess.Position.RepetitionMap;
 
@@ -17,8 +22,6 @@ namespace chess {
 	}
 
 	void playUCI(SafeUnsigned<std::uint8_t> depth) {
-		std::println("Running with depth {}", depth.get());
-
 		std::istringstream iss;
 		std::string line;
 		std::string token;
@@ -30,28 +33,38 @@ namespace chess {
 				std::println("No more input. EOF: {}", std::cin.eof());
 				break;
 			}
+
+			debugPrint(std::format("{}", line)); //DOES NOT SEND TO stdout
 			
 			iss.clear();
 			iss.str(line);
-			iss >> token;
-
+			if (!(iss >> token)) {
+				continue;
+			}
+			
 			if (token == "quit") {
 				break;
 			} else if (token == "position") {
-				std::println("Handling Position: {}", iss.str());
 				gameState.setPos(getRemainingTokens(iss));
-				std::println("Set the position!");
 			} else if (token == "ucinewgame") {
 				gameState.reset();
 			} else if (token == "isready") {
-				std::println("readyok");
+				debugPrint("readyok");
+				std::printf("readyok\n");
+				std::fflush(stdout);
 			} else if (token == "uci") {
-				constexpr auto ENGINE_INFO = "id name Agent B\n"
+				constexpr auto ENGINE_INFO = "id name Agent Smith\n"
 											 "id author Walter Stein-Smith\n"
-											 "uciok";
-				std::println("{}", ENGINE_INFO);
+											 "uciok\n";
+				debugPrint(ENGINE_INFO);
+				std::printf(ENGINE_INFO);
+				std::fflush(stdout);
 			} else if (token == "go") {
-				std::println("{}", gameState.calcBestMove());
+				auto move = gameState.calcBestMove();
+				debugPrint(move);
+				
+				std::printf("%s\n", move.c_str());
+				std::fflush(stdout);
 			}
 		}
 	}

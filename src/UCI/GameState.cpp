@@ -21,7 +21,6 @@ namespace chess {
 			zAssert(!command.moves.empty());
 			m_pos.move(command.moves.back());
 			repetition::push(m_pos);
-			debugPrint(std::format("After {}, this position has repeated {} times", command.moves.back(), repetition::getPositionCount(m_pos)));
 		}
 		m_inNewPos = false;
 	}
@@ -33,7 +32,6 @@ namespace chess {
 		} else {
 			m_pos.move(*move);
 			repetition::push(m_pos);
-			debugPrint(std::format("After ({}), this position has repeated {} times", move->getUCIString(), repetition::getPositionCount(m_pos)));
 			return move->getUCIString();
 		}
 	}

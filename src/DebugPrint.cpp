@@ -23,7 +23,6 @@ namespace chess {
 	Buffer buff;
 
 	void debugPrint(const std::string& s) {
-		std::println("{}", s);
 		buff.add(s);
 	}
 }
