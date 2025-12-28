@@ -1,7 +1,7 @@
 # Agent Smith
 
 ## Overview
-Agent Smith is a chess engine whose ELO is about 1400. It uses the UCI protocol, meaning that it can analyze moves from any given position and can be installed in almost any modern Chess GUI. (Chess Arena is so far the only tested GUI, however). Chess "states" (i.e. piece locations, attacked squares, etc) are all represented in unsigned 64 bit integers, or "bitboards." This allows for extremely fast move generation, as most algorithms consist entirely of integer operations. Agent Smith can calculate over two million moves per second.
+Agent Smith is a chess engine whose ELO rating is about 1400. It uses the UCI protocol, meaning that it can analyze moves from any given position and be installed in almost any modern Chess GUI. Chess "states" (i.e. piece locations, attacked squares, etc) are all represented in unsigned 64 bit integers, or "bitboards," with each set bit representing a square. For example, you may have a bitboard whose set bits represent piece locations, attack rays, etc. Bitboard representation allows for extremely fast move generation, as most algorithms consist entirely of bitwise operations. Agent Smith can calculate over two million moves per second.
 
 
 ## 30 Second Installation 

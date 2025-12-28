@@ -60,7 +60,7 @@ namespace chess {
 				std::printf(ENGINE_INFO);
 				std::fflush(stdout);
 			} else if (token == "go") {
-				auto move = gameState.calcBestMove();
+				auto move = gameState.calcBestMove(); //prepends "bestmove" 
 				debugPrint(move);
 				
 				std::printf("%s\n", move.c_str());
