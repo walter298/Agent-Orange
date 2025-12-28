@@ -15,7 +15,7 @@ Agent Smith is a chess engine whose ELO rating is about 1400. It uses the UCI pr
 
 1. Go to releases and download the latest version of Agent Smith. 
 2. Extract the zip folder to any location. The directory should contain agent_smith.exe and agent_smith_profiling.exe. Note that to use the profiler app, you must have python installed. 
-3. (Optional). Set the CHESS_ASSET_DIR environment variable to the "assets" subdirectory in order to specify the directory in which profiling sessions and bitboard images will be stored. 
+3. Set the CHESS_ASSET_DIR environment variable to the "assets" subdirectory in order to specify the directory in which profiling sessions and bitboard images will be stored. 
 ## Usage 
 
 ### Installing Agent Smith in a Chess GUI
