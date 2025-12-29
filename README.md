@@ -35,11 +35,11 @@ Agent Orange comes with a custom profiling app built off of Python's Tkinter lib
 3. Profiling sessions can be visualized inside the custom profiler app. To run this app, first create a custom Python environment in the profiler_visualizer directory. 
 4. Run /.venv/Scripts/Activate. Finally, run "python main.py" from the profiler_visualizer directory.
 
-## Move Search Strategy
-Agent Smith uses alpha-beta pruning and the principal variation (PV) algorithm. Upon calculating each legal move in a position, Agent Smith will order them in a way that allows maximum pruning. PV moves are ordered first, followed by captures and evasion moves sorted by the material gained/saved. 
+## Move Search Strategies
 
-## Position Evaluation
-Agent Smith uses a variety of heuristics to analyze a given position:
+Agent Smith uses alpha-beta pruning and the principal variation (PV) algorithm. Upon calculating each legal move in a position, Agent Smith will order them in a way that allows maximum pruning. PV moves are ordered first, followed by captures and evasion moves sorted by the material gained/saved. A transposition table is also used. 
+
+## Evaluation Heuristics
 1. Material
 2. Pawn advancement
 3. Pawn island count
