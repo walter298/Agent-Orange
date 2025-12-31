@@ -75,10 +75,10 @@ namespace chess {
 	void parseCastlingPrivileges(std::string_view castlingPrivileges, PieceState& white, PieceState& black) {
         auto verify = [&](PieceState& pieces, char king, char queen) {
             if (!castlingPrivileges.contains(king)) {
-                pieces.disallowKingsideCastling();
+                pieces.castling.disallowKingsideCastling();
             }
             if (!castlingPrivileges.contains(queen)) {
-                pieces.disallowQueensideCastling();
+                pieces.castling.disallowQueensideCastling();
             }
         };
         verify(white, 'K', 'Q');

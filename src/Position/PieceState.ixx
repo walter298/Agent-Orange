@@ -4,16 +4,14 @@ import std;
 
 export import Chess.Bitboard;
 export import Chess.PieceMap;
+export import Chess.Position.Castling;
 export import Chess.Square;
 
 namespace chess {
 	export struct PieceState : public PieceMap<Bitboard> {
 	private:
-		bool m_canCastleKingside = true;
-		bool m_hasCastledKingside = false;
-		bool m_canCastleQueenside = true;
-		bool m_hasCastledQueenside = false;
 	public:
+		CastlingPrivileges castling;
 		Square doubleJumpedPawn = Square::None;
 
 		constexpr Bitboard calcAllLocations() const {
@@ -21,36 +19,11 @@ namespace chess {
 		}
 		Piece findPiece(Square square) const;
 
-		constexpr bool canCastleKingside() const {
-			return m_canCastleKingside;
-		}
-		constexpr bool hasCastledKingside() const {
-			return m_hasCastledKingside;
-		}
-		constexpr void disallowKingsideCastling() {
-			m_canCastleKingside = false;
-		}
-		constexpr bool canCastleQueenside() const {
-			return m_canCastleQueenside;
-		}
-		constexpr bool hasCastledQueenside() const {
-			return m_hasCastledQueenside;
-		}
-		constexpr void disallowQueensideCastling() {
-			m_canCastleQueenside = false;
-		}
-		void castleKingside() {
-			m_hasCastledKingside = true;
-		}
-		void castleQueenside() {
-			m_hasCastledQueenside = true;
-		}
 		void clear() {
 			std::ranges::transform(m_data, m_data.begin(), [](auto&) {
 				return 0;
 			});
-			m_canCastleKingside = true;
-			m_canCastleQueenside = true;
+			castling.reset();
 			doubleJumpedPawn = Square::None;
 		}
 	};

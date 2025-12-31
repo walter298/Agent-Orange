@@ -1,9 +1,14 @@
+module;
+
+#include <boost/functional/hash.hpp>
+
 module Chess.Position:PositionObject;
 
 import Chess.Position.RepetitionMap;
 
 import Chess.Assert;
 import :Parse;
+import :Zobrist;
 
 namespace chess {
     void Position::setPos(const PositionCommand& positionCommand) {
@@ -15,29 +20,38 @@ namespace chess {
         parseCastlingPrivileges(positionCommand.castlingPrivileges, m_whitePieces, m_blackPieces);
         parseEnPessantSquare(positionCommand.enPessantSquare, m_isWhiteMoving, m_isWhiteMoving ? m_blackPieces : m_whitePieces);
 
+        m_zobristHash = getStartingZobristHash(*this);
+
         for (const auto& moveStr : positionCommand.moves) {
             move(moveStr);
         }
     }
 
-    bool tryCastle(Position::MutableTurnData& turnData, const Move& move) {
+    bool Position::tryCastle(Position::MutableTurnData& turnData, const Move& move) {
         //if we can't castle eitherway or we're just not moving the king, don't try to castle
-        if ((!turnData.allies.canCastleKingside() && !turnData.allies.canCastleQueenside()) || move.movedPiece != King) {
+        if ((!turnData.allies.castling.canCastleKingside() && !turnData.allies.castling.canCastleQueenside()) || move.movedPiece != King) {
             return false;
         }
 
         //as soon as we move the king, we can't castle anymore
-        turnData.allies.disallowQueensideCastling();
-        turnData.allies.disallowKingsideCastling();
+        turnData.allies.castling.disallowQueensideCastling();
+        turnData.allies.castling.disallowKingsideCastling();
 
+        auto updateZobrist = [&move, this](Square rookFrom, Square rookTo) {
+            m_zobristHash ^= getZobristPieceCode(move.from, King, m_isWhiteMoving);
+            m_zobristHash ^= getZobristPieceCode(move.to, King, m_isWhiteMoving);
+            m_zobristHash ^= getZobristPieceCode(rookFrom, Rook, m_isWhiteMoving);
+            m_zobristHash ^= getZobristPieceCode(rookTo, Rook, m_isWhiteMoving);
+        };
         if (turnData.allyKingside.kingTo == move.to) {
             moveSquare(turnData.allies[King], move.from, turnData.allyKingside.kingTo);
             moveSquare(turnData.allies[Rook], turnData.allyKingside.rookFrom, turnData.allyKingside.rookTo);
+            updateZobrist(turnData.allyKingside.rookFrom, turnData.allyKingside.rookTo);
             return true;
-        }
-        else if (turnData.allyQueenside.kingTo == move.to) {
+        } else if (turnData.allyQueenside.kingTo == move.to) {
             moveSquare(turnData.allies[King], move.from, turnData.allyQueenside.kingTo);
             moveSquare(turnData.allies[Rook], turnData.allyQueenside.rookFrom, turnData.allyQueenside.rookTo);
+            updateZobrist(turnData.allyQueenside.rookFrom, turnData.allyQueenside.rookTo);
             return true;
         }
         return false;
@@ -47,69 +61,89 @@ namespace chess {
         return (makeBitboard(move.from) & turnData.allyPawnRank) && (makeBitboard(move.to) & turnData.jumpedAllyPawnRank);
     }
 
-    void movePawn(const Position::MutableTurnData& turnData, const Move& move, Bitboard& pawns) {
+    void Position::movePawn(const MutableTurnData& turnData, const Move& move, Bitboard& pawns) {
         if (isPawnDoubleJump(turnData, move)) {
             turnData.allies.doubleJumpedPawn = move.to;
+            m_zobristHash ^= getZobristDoubleJumpSquareCode(move.to);
         }
         if (move.promotionPiece != Piece::None) {
             addSquare(turnData.allies[move.promotionPiece], move.to);
-        }
-        else {
+            m_zobristHash ^= getZobristPieceCode(move.to, move.promotionPiece, turnData.isWhite);
+        } else {
             addSquare(pawns, move.to);
+            m_zobristHash ^= getZobristPieceCode(move.to, move.movedPiece, turnData.isWhite);
         }
     }
 
-    void capturePiece(const Position::MutableTurnData& turnData, const Move& move) {
+    void Position::capturePiece(const MutableTurnData& turnData, const Move& move) {
         if (move.capturedPiece == Rook) {
             if (move.to == turnData.enemyKingside.rookFrom) {
-                turnData.enemies.disallowKingsideCastling();
-            }
-            else if (move.to == turnData.enemyQueenside.rookFrom) {
-                turnData.enemies.disallowQueensideCastling();
+                turnData.enemies.castling.disallowKingsideCastling();
+            } else if (move.to == turnData.enemyQueenside.rookFrom) {
+                turnData.enemies.castling.disallowQueensideCastling();
             }
         }
         if (move.capturedPawnSquareEnPassant == Square::None) {
             removeSquare(turnData.enemies[move.capturedPiece], move.to);
-        }
-        else {
+            m_zobristHash ^= getZobristPieceCode(move.to, move.capturedPiece, !turnData.isWhite);
+        } else {
             removeSquare(turnData.enemies[move.capturedPiece], move.capturedPawnSquareEnPassant);
+            m_zobristHash ^= getZobristPieceCode(move.capturedPawnSquareEnPassant, Pawn, !turnData.isWhite);
         }
     }
 
-    void normalMove(const Position::MutableTurnData& turnData, const Move& move) {
+    void Position::normalMove(MutableTurnData& turnData, const Move& move) {
+        //disallow castling on one side if we are moving a rook from its starting square
+        if (move.movedPiece == Rook) {
+            if (move.from == turnData.allyKingside.rookFrom) {
+                turnData.allies.castling.disallowKingsideCastling();
+            } else if (move.from == turnData.allyQueenside.rookFrom) {
+                turnData.allies.castling.disallowQueensideCastling();
+            }
+        }
+
         //move the piece (destination square handled with pawn promotions)
         auto& movedPiecePos = turnData.allies[move.movedPiece];
         removeSquare(turnData.allies[move.movedPiece], move.from);
+        m_zobristHash ^= getZobristPieceCode(move.from, move.movedPiece, m_isWhiteMoving);
 
         //capture the piece!
         if (move.capturedPiece != Piece::None) {
             capturePiece(turnData, move);
         }
-
-        turnData.allies.doubleJumpedPawn = Square::None;
-        turnData.enemies.doubleJumpedPawn = Square::None;
-
+       
         if (move.movedPiece == Pawn) {
             movePawn(turnData, move, turnData.allies[Pawn]);
-        }
-        else {
+        } else {
             addSquare(movedPiecePos, move.to);
+            m_zobristHash ^= getZobristPieceCode(move.to, move.movedPiece, m_isWhiteMoving);
         }
     }
 
     void Position::move(const Move& move) {
+        auto [white, black] = getColorSides();
+        auto oldCastlingZobristCode = getZobristCastleCode(white.castling.get(), black.castling.get());
+        auto oldPlayerMover = m_isWhiteMoving;
+
         auto turnData = getTurnData();
-        if (move.movedPiece == Rook) {
-            if (move.from == turnData.allyKingside.rookFrom) {
-                turnData.allies.disallowKingsideCastling();
-            } else if (move.from == turnData.allyQueenside.rookFrom) {
-                turnData.allies.disallowQueensideCastling();
-            }
-        }
         if (!tryCastle(turnData, move)) {
             normalMove(turnData, move);
         }
-        m_isWhiteMoving = !m_isWhiteMoving; //alternate turns
+
+        //reset enemy jumped pawn
+        if (turnData.enemies.doubleJumpedPawn != Square::None) {
+            m_zobristHash ^= getZobristDoubleJumpSquareCode(turnData.enemies.doubleJumpedPawn); 
+            turnData.enemies.doubleJumpedPawn = Square::None;
+        }
+
+        //alternate turns
+        m_isWhiteMoving = !m_isWhiteMoving; 
+        m_zobristHash ^= getZobristTurnCode(oldPlayerMover);
+        m_zobristHash ^= getZobristTurnCode(m_isWhiteMoving);
+
+        //update castling hash
+        m_zobristHash ^= oldCastlingZobristCode;
+        m_zobristHash ^= getZobristCastleCode(white.castling.get(), black.castling.get());
     }
 
     bool isEnPessant(const Move& move) {
@@ -127,7 +161,7 @@ namespace chess {
         auto move = Move::null();
 
         auto from = parseSquare(moveStr.substr(0, 2));
-        auto to = parseSquare(moveStr.substr(2, 2));
+        auto to   = parseSquare(moveStr.substr(2, 2));
         zAssert(from && to);
         move.from = *from;
         move.to = *to;
@@ -149,27 +183,5 @@ namespace chess {
             move.promotionPiece = parsePiece(moveStr[4]);
         }
         this->move(move);
-    }
-
-    bool operator==(const Position& a, const Position& b) {
-        auto aTurnData = a.getTurnData();
-        auto bTurnData = b.getTurnData();
-        auto sidesEqual = std::ranges::equal(aTurnData.allies, bTurnData.allies) &&
-            std::ranges::equal(aTurnData.enemies, bTurnData.enemies);
-
-        auto checkCastlingPrivileges = [](const PieceState& allies, const PieceState& otherAllies) {
-           return allies.canCastleKingside() == otherAllies.canCastleKingside()
-                && allies.hasCastledQueenside() == otherAllies.hasCastledQueenside()
-                && allies.canCastleKingside() == otherAllies.canCastleKingside()
-                && allies.hasCastledQueenside() == otherAllies.hasCastledQueenside();
-        };
-        auto areCastlingPrivilegesEqual = checkCastlingPrivileges(aTurnData.allies, bTurnData.allies) &&
-            checkCastlingPrivileges(aTurnData.enemies, bTurnData.enemies);
-
-        auto jumpedPawnsEqual = 
-            (aTurnData.allies.doubleJumpedPawn == bTurnData.allies.doubleJumpedPawn) &&
-            (aTurnData.enemies.doubleJumpedPawn == bTurnData.enemies.doubleJumpedPawn);
-
-        return areCastlingPrivilegesEqual && sidesEqual && jumpedPawnsEqual;
     }
 }

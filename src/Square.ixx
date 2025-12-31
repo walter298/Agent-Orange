@@ -165,8 +165,8 @@ export namespace chess {
         decltype(auto) operator[](this auto&& self, Square square) {
             return std::forward_like<decltype(self)>(self.m_entries[static_cast<size_t>(square)]);
         }
-        const Buffer& get() const {
-            return m_entries;
+        auto& get(this auto&& self) {
+            return std::forward_like<decltype(self)>(self.m_entries);
         }
     };
 

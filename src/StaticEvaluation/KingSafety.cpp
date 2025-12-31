@@ -1,6 +1,8 @@
 module Chess.Evaluation:KingSafety;
 
 import std;
+
+import Chess.Position.PieceState;
 import Chess.SquareZone;
 import :Constants;
 

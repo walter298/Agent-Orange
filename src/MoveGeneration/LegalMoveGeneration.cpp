@@ -238,10 +238,10 @@ namespace chess {
 				return (!inCheck && squaresClear && squaresNotChecked);
 			};
 			if (!inCheck) {
-				if (turnData.allies.canCastleKingside() && isCastlingClear(turnData.allyKingside)) {
+				if (turnData.allies.castling.canCastleKingside() && isCastlingClear(turnData.allyKingside)) {
 					kingMoves.emptyDestSquares |= makeBitboard(turnData.allyKingside.kingTo);
 				}
-				if (turnData.allies.canCastleQueenside() && isCastlingClear(turnData.allyQueenside)) {
+				if (turnData.allies.castling.canCastleQueenside() && isCastlingClear(turnData.allyQueenside)) {
 					kingMoves.emptyDestSquares |= makeBitboard(turnData.allyQueenside.kingTo);
 				}
 			} else {

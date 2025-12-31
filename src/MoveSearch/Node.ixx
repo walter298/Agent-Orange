@@ -49,7 +49,7 @@ export namespace chess {
 		}
 		~Node() {
 			if (m_isChild) {
-				repetition::pop();
+				repetition::pop(m_pos);
 			}
 		}
 

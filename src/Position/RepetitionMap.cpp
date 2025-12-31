@@ -1,27 +1,34 @@
+module;
+
+#include <boost/unordered/unordered_flat_map.hpp>
+
 module Chess.Position.RepetitionMap;
 
 import Chess.Assert;
 
 namespace chess {
 	namespace repetition {
-		std::vector<Position> pastPositions;
+		boost::unordered_flat_map<std::uint64_t, int> pastPositions;
 
 		void push(const Position& pos) {
-			//std::println("Pushing onto {} positions", pastPositions.size());
-			pastPositions.push_back(pos);
+			pastPositions[pos.hash()]++;
 		}
-		void pop() {
-			zAssert(!pastPositions.empty());
-			pastPositions.pop_back();
+		void pop(const Position& pos) {
+			zAssert(pastPositions.contains(pos.hash()));
+			auto& posCount = pastPositions.at(pos.hash());
+			zAssert(posCount > 0);
+			posCount--;
 		}
 		int getPositionCount(const Position& pos) {
-			return static_cast<int>(std::ranges::count(pastPositions, pos));
+			return pastPositions.at(pos.hash());
 		}
 		void clear() {
 			pastPositions.clear();
 		}
 		int getTotalPositionCount() {
-			return static_cast<int>(pastPositions.size());
+			return std::ranges::fold_left(pastPositions, 0, [](auto acc, const auto& kv) {
+				return acc + kv.second;
+			});
 		}
 	}
 }

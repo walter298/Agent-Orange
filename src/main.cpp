@@ -55,11 +55,14 @@ namespace chess {
 		SafeUnsigned<std::uint8_t> depth{ 0 };
 		auto depthStr = argv[2];
 		auto depthStrEnd = depthStr + std::strlen(depthStr);
-		auto depthRes = std::from_chars(depthStr, depthStrEnd, depth.get(), 10);
+
+		auto temp = depth.get();
+		auto depthRes = std::from_chars(depthStr, depthStrEnd, temp, 10);
 		if (depthRes.ec != std::errc{}) {
 			std::println("Error: could not parse depth argument");
 			return;
 		}
+		depth = SafeUnsigned{ temp };
 
 		if (depth < 1_su8) {
 			std::println("Error: depth must be at least 1");
@@ -96,7 +99,7 @@ int main(int argc, const char** argv) {
 		chess::printCommandLineArgumentOptions();
 	} else if (std::strcmp(argv[1], "generate_bmi_table") == 0) {
 		chess::storeBMITable();
-	}else {
+	} else {
 		std::print("Invalid command line arguments. ");
 		chess::printCommandLineArgumentOptions();
 	}

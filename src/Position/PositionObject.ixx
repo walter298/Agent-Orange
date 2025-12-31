@@ -39,8 +39,8 @@ export namespace chess {
 	private:
 		PieceState m_whitePieces;
 		PieceState m_blackPieces;
-
 		bool m_isWhiteMoving = true;
+		std::uint64_t m_zobristHash = 0;
 
 		template<typename MaybeConstPieceState>
 		TurnData<MaybeConstPieceState> getTurnDataImpl(this auto&& self) {
@@ -52,8 +52,7 @@ export namespace chess {
 						self.m_isWhiteMoving,
 						calcRank<2>(), calcRank<4>()
 				};
-			}
-			else {
+			} else {
 				return TurnData<MaybeConstPieceState>{
 					self.m_blackPieces, self.m_whitePieces,
 						BLACK_KINGSIDE, BLACK_QUEENSIDE,
@@ -63,6 +62,10 @@ export namespace chess {
 				};
 			}
 		}
+		bool tryCastle(Position::MutableTurnData& turnData, const Move& move);
+		void movePawn(const Position::MutableTurnData& turnData, const Move& move, Bitboard& pawns);
+		void capturePiece(const MutableTurnData& turnData, const Move& move);
+		void normalMove(MutableTurnData& turnData, const Move& move);
 	public:
 		Position() = default;
 		Position(Position&&) noexcept = default;
@@ -78,6 +81,10 @@ export namespace chess {
 
 		void move(const Move& move);
 		void move(std::string_view moveStr);
+
+		size_t hash() const {
+			return m_zobristHash;
+		}
 
 		TurnData<const PieceState> getTurnData() const {
 			return getTurnDataImpl<const PieceState>();
@@ -101,5 +108,14 @@ export namespace chess {
 		}
 	};
 
-	bool operator==(const Position& a, const Position& b);
+	struct PositionHasher {
+		size_t operator()(const Position& pos) const {
+			return pos.hash();
+		}
+	};
+	struct PositionComp {
+		bool operator()(const Position& p1, const Position& p2) const {
+			return p1.hash() == p2.hash(); //possibility of a hash duplicate is insanely unlikely 
+		}
+	};
 }

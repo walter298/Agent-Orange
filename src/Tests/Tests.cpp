@@ -67,10 +67,10 @@ namespace chess {
 			assert_equality(nextSquare(turnData.enemies[King]), E8);
 
 			//test castling privileges
-			assert_equality(turnData.allies.canCastleKingside(), true);
-			assert_equality(turnData.allies.canCastleQueenside(), true);
-			assert_equality(turnData.enemies.canCastleKingside(), true);
-			assert_equality(turnData.enemies.canCastleQueenside(), true);
+			assert_equality(turnData.allies.castling.canCastleKingside(), true);
+			assert_equality(turnData.allies.castling.canCastleQueenside(), true);
+			assert_equality(turnData.enemies.castling.canCastleKingside(), true);
+			assert_equality(turnData.enemies.castling.canCastleQueenside(), true);
 
 			//test en pessant square
 			assert_equality(turnData.enemies.doubleJumpedPawn, Square::None);
@@ -294,7 +294,7 @@ namespace chess {
 			temp.move(*enPassantMoveIt);
 			verifyStateAfterEnPassant(temp);
 
-			if (temp != pos) {
+			if (temp.hash() != pos.hash()) {
 				std::println("testEnPassant2 failed: positions after en passant do not match");
 			}
 		}
@@ -427,7 +427,7 @@ namespace chess {
 			repetition::push(p4);
 			assert_equality(repetition::getPositionCount(p4), 2);
 
-			if (p4 != startPos) {
+			if (p4.hash() != startPos.hash()) {
 				std::println("testRepetitionFailed: p4 is not equal to startPos");
 			}
 
@@ -438,9 +438,10 @@ namespace chess {
 			Position pos;
 			pos.setPos(parsePositionCommand("startpos"));
 			repetition::push(pos);
+			assert_equality(repetition::getTotalPositionCount(), 1);
 
-			auto bestMove = findBestMove(pos, 6_su8);
-			std::println("Best Move: {}", bestMove->getUCIString());
+			//has side effect of storing positions in the repetition table, but positions should be popped
+			findBestMove(pos, 6_su8); 
 			assert_equality(repetition::getTotalPositionCount(), 1);
 
 			repetition::clear();
@@ -457,6 +458,8 @@ namespace chess {
 			auto bestMove = findBestMove(pos, 6_su8);
 			assert_equality(bestMove->from, F3);
 			assert_equality(bestMove->to, G2);
+
+			repetition::clear();
 		}
 
 		void runAllTests() {
@@ -489,6 +492,7 @@ namespace chess {
 			testRepetition();
 			testRepetition2();
 			testCheckmate();
+			std::println("Finished tests");
 			//testUCIInput(); //long!
 		}
 	}

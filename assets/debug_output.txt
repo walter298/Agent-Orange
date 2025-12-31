@@ -1,4 +1,4 @@
-Thread [45908]: 
+Thread [9148]: 
 uci
 id name Agent Smith
 id author Walter Stein-Smith
@@ -7,406 +7,42 @@ uciok
 isready
 readyok
 ucinewgame
-position startpos
-position startpos moves e2e4
 isready
 readyok
-go wtime 1440000 btime 1440000 movestogo 40
+position startpos moves e2e4
+go wtime 4800000 btime 4800000 winc 0 binc 0
 bestmove d7d5
 position startpos moves e2e4 d7d5 e4d5
-isready
-readyok
-go wtime 1438591 btime 1439363 movestogo 39
+go wtime 4798844 btime 4798896 winc 0 binc 0
 bestmove d8d5
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3
-isready
-readyok
-go wtime 1436775 btime 1439102 movestogo 38
+go wtime 4796907 btime 4798480 winc 0 binc 0
 bestmove d5e5
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2
-isready
-readyok
-go wtime 1434848 btime 1438639 movestogo 37
+go wtime 4796267 btime 4797704 winc 0 binc 0
 At the root, we are returning (bestmove e5e2)
 At the root, we are returning (bestmove e5e2)
 At the root, we are returning (bestmove e5e2)
 At the root, we are returning (bestmove e5e2)
 bestmove e5e2
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2
-isready
-readyok
-go wtime 1433317 btime 1438183 movestogo 36
+go wtime 4796048 btime 4796975 winc 0 binc 0
 At the root, we are returning (bestmove c8f5)
 At the root, we are returning (bestmove c8f5)
 At the root, we are returning (bestmove c8f5)
 At the root, we are returning (bestmove c8f5)
 bestmove c7c6
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3
-isready
-readyok
-go wtime 1431703 btime 1436871 movestogo 35
+go wtime 4795235 btime 4794730 winc 0 binc 0
 bestmove g7g6
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1
-isready
-readyok
-go wtime 1420501 btime 1434989 movestogo 34
+go wtime 4794079 btime 4791282 winc 0 binc 0
 bestmove f8g7
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4
-isready
-readyok
-go wtime 1417986 btime 1433394 movestogo 33
+go wtime 4789251 btime 4788599 winc 0 binc 0
 bestmove c8f5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3
-isready
-readyok
-go wtime 1413827 btime 1432494 movestogo 32
-bestmove f5d3
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3
-isready
-readyok
-go wtime 1412916 btime 1432267 movestogo 31
-At the root, we are returning (bestmove g7h6)
-At the root, we are returning (bestmove g7h6)
-At the root, we are returning (bestmove g7h6)
-At the root, we are returning (bestmove g7h6)
-bestmove h7h5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4
-isready
-readyok
-go wtime 1410386 btime 1430380 movestogo 30
-At the root, we are returning (bestmove b8a6)
-At the root, we are returning (bestmove b8a6)
-At the root, we are returning (bestmove b8a6)
-At the root, we are returning (bestmove b8a6)
-bestmove b8a6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3
-isready
-readyok
-go wtime 1406007 btime 1428957 movestogo 29
-bestmove a8d8
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5
-isready
-readyok
-go wtime 1403203 btime 1427936 movestogo 28
-bestmove f7f6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4
-isready
-readyok
-go wtime 1400786 btime 1427758 movestogo 27
-bestmove g6g5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3
-isready
-readyok
-go wtime 1399056 btime 1427623 movestogo 26
-bestmove h5h4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4
-isready
-readyok
-go wtime 1395545 btime 1427447 movestogo 25
-At the root, we are returning (bestmove g5h4)
-At the root, we are returning (bestmove g5h4)
-At the root, we are returning (bestmove g5h4)
-At the root, we are returning (bestmove g5h4)
-bestmove g5h4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1
-isready
-readyok
-go wtime 1390818 btime 1427043 movestogo 24
-At the root, we are returning (bestmove h8h5)
-At the root, we are returning (bestmove h8h5)
-At the root, we are returning (bestmove h8h5)
-At the root, we are returning (bestmove h8h5)
-bestmove f6f5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3
-isready
-readyok
-go wtime 1388796 btime 1426085 movestogo 23
-bestmove g7d4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4
-isready
-readyok
-go wtime 1386911 btime 1423298 movestogo 22
-At the root, we are returning (bestmove d8d4)
-At the root, we are returning (bestmove d8d4)
-At the root, we are returning (bestmove d8d4)
-At the root, we are returning (bestmove d8d4)
-bestmove d8d4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1
-isready
-readyok
-go wtime 1385451 btime 1422997 movestogo 21
-bestmove b7b6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5
-isready
-readyok
-go wtime 1382765 btime 1421813 movestogo 20
-bestmove h4h3
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5
-isready
-readyok
-go wtime 1379611 btime 1421407 movestogo 19
-At the root, we are returning (bestmove d4g4)
-At the root, we are returning (bestmove d4g4)
-At the root, we are returning (bestmove d4g4)
-At the root, we are returning (bestmove d4g4)
-bestmove d4g4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3
-isready
-readyok
-go wtime 1377505 btime 1421123 movestogo 18
-bestmove h8h6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5
-isready
-readyok
-go wtime 1370730 btime 1420261 movestogo 17
-bestmove a6c5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3
-isready
-readyok
-go wtime 1362530 btime 1418953 movestogo 16
-bestmove a7a5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4
-isready
-readyok
-go wtime 1360653 btime 1418149 movestogo 15
-bestmove a5b4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4
-isready
-readyok
-go wtime 1359631 btime 1418049 movestogo 14
-At the root, we are returning (bestmove g4b4)
-At the root, we are returning (bestmove g4b4)
-At the root, we are returning (bestmove g4b4)
-At the root, we are returning (bestmove g4b4)
-bestmove g4b4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4
-isready
-readyok
-go wtime 1356633 btime 1417738 movestogo 13
-bestmove h6e6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5
-isready
-readyok
-go wtime 1354943 btime 1417246 movestogo 12
-At the root, we are returning (bestmove e6e3)
-At the root, we are returning (bestmove e6e3)
-At the root, we are returning (bestmove e6e3)
-At the root, we are returning (bestmove e6e3)
-bestmove e6e3
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3
-isready
-readyok
-go wtime 1350516 btime 1417212 movestogo 11
-At the root, we are returning (bestmove b6c5)
-At the root, we are returning (bestmove b6c5)
-At the root, we are returning (bestmove b6c5)
-At the root, we are returning (bestmove b6c5)
-bestmove b6c5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2
-isready
-readyok
-go wtime 1346415 btime 1417169 movestogo 10
-bestmove b4b2
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2
-isready
-readyok
-go wtime 1344949 btime 1417077 movestogo 9
-At the root, we are returning (bestmove b2e2)
-At the root, we are returning (bestmove b2e2)
-At the root, we are returning (bestmove b2e2)
-At the root, we are returning (bestmove b2e2)
-bestmove b2e2
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2
-isready
-readyok
-go wtime 1343942 btime 1417016 movestogo 8
-At the root, we are returning (bestmove e7e5)
-At the root, we are returning (bestmove e7e5)
-At the root, we are returning (bestmove e7e5)
-At the root, we are returning (bestmove e7e5)
-bestmove g8f6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3
-isready
-readyok
-go wtime 1341591 btime 1417005 movestogo 7
-bestmove e7e6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4
-isready
-readyok
-go wtime 1340310 btime 1416968 movestogo 6
-At the root, we are returning (bestmove f6h7)
-At the root, we are returning (bestmove f6h7)
-At the root, we are returning (bestmove f6h7)
-At the root, we are returning (bestmove f6h7)
-bestmove f6d5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5
-isready
-readyok
-go wtime 1338342 btime 1416942 movestogo 5
-At the root, we are returning (bestmove d5b4)
-At the root, we are returning (bestmove d5b4)
-At the root, we are returning (bestmove d5b4)
-At the root, we are returning (bestmove d5b4)
-bestmove e6e5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6
-isready
-readyok
-go wtime 1337107 btime 1416913 movestogo 4
-At the root, we are returning (bestmove d5e7)
-At the root, we are returning (bestmove d5e7)
-At the root, we are returning (bestmove d5e7)
-At the root, we are returning (bestmove d5e7)
-bestmove d5e7
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4
-isready
-readyok
-go wtime 1333209 btime 1416900 movestogo 3
-bestmove e7g6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3
-isready
-readyok
-go wtime 1332204 btime 1416888 movestogo 2
-At the root, we are returning (bestmove e8f8)
-At the root, we are returning (bestmove e8f8)
-At the root, we are returning (bestmove e8f8)
-At the root, we are returning (bestmove e8f8)
-bestmove g6e7
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4
-isready
-readyok
-go wtime 2770843 btime 1416873 movestogo 1
-At the root, we are returning (bestmove e7d5)
-At the root, we are returning (bestmove e7d5)
-At the root, we are returning (bestmove e7d5)
-At the root, we are returning (bestmove e7d5)
-bestmove e7d5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4
-isready
-readyok
-go wtime 2769112 btime 2856858 movestogo 40
-bestmove d5f4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4
-isready
-readyok
-go wtime 2767422 btime 2856846 movestogo 39
-At the root, we are returning (bestmove f4d3)
-At the root, we are returning (bestmove f4d3)
-At the root, we are returning (bestmove f4d3)
-At the root, we are returning (bestmove f4d3)
-bestmove f4d3
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5
-isready
-readyok
-go wtime 2766339 btime 2856829 movestogo 38
-At the root, we are returning (bestmove c5c4)
-At the root, we are returning (bestmove c5c4)
-At the root, we are returning (bestmove c5c4)
-At the root, we are returning (bestmove c5c4)
-bestmove c5c4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6
-isready
-readyok
-go wtime 2765082 btime 2856811 movestogo 37
-At the root, we are returning (bestmove d3f2)
-At the root, we are returning (bestmove d3f2)
-At the root, we are returning (bestmove d3f2)
-At the root, we are returning (bestmove d3f2)
-bestmove e8f8
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5
-isready
-readyok
-go wtime 2763541 btime 2856784 movestogo 36
-bestmove c4c3
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6
-isready
-readyok
-go wtime 2760746 btime 2856767 movestogo 35
-bestmove f8g8
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7
-isready
-readyok
-go wtime 2759221 btime 2856750 movestogo 34
-At the root, we are returning (bestmove g8h8)
-At the root, we are returning (bestmove g8h8)
-At the root, we are returning (bestmove g8h8)
-At the root, we are returning (bestmove g8h8)
-bestmove g8h8
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6
-isready
-readyok
-go wtime 2756962 btime 2856747 movestogo 33
-bestmove c3c2
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6
-isready
-readyok
-go wtime 2756111 btime 2856671 movestogo 32
-At the root, we are returning (bestmove c2c1q)
-At the root, we are returning (bestmove c2c1q)
-At the root, we are returning (bestmove c2c1q)
-At the root, we are returning (bestmove c2c1q)
-bestmove c2c1q
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6
-isready
-readyok
-go wtime 2754349 btime 2856661 movestogo 31
-bestmove c1h1
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6
-isready
-readyok
-go wtime 2752907 btime 2856606 movestogo 30
-bestmove h1h7
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6
-isready
-readyok
-go wtime 2751800 btime 2856559 movestogo 29
-bestmove c6c5
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6 c6c5 d6d5
-isready
-readyok
-go wtime 2749697 btime 2856500 movestogo 28
-bestmove h7g6
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6 c6c5 d6d5 h7g6 d5c4
-isready
-readyok
-go wtime 2747914 btime 2856453 movestogo 27
-At the root, we are returning (bestmove g6e4)
-At the root, we are returning (bestmove g6e4)
-At the root, we are returning (bestmove g6e4)
-At the root, we are returning (bestmove g6e4)
-bestmove g6e4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6 c6c5 d6d5 h7g6 d5c4 g6e4 c4c3
-isready
-readyok
-go wtime 2745194 btime 2856412 movestogo 26
-At the root, we are returning (bestmove c5c4)
-At the root, we are returning (bestmove c5c4)
-At the root, we are returning (bestmove c5c4)
-At the root, we are returning (bestmove c5c4)
-bestmove c5c4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6 c6c5 d6d5 h7g6 d5c4 g6e4 c4c3 c5c4 c3c2
-isready
-readyok
-go wtime 2743232 btime 2856353 movestogo 25
-At the root, we are returning (bestmove e4g2)
-At the root, we are returning (bestmove e4g2)
-At the root, we are returning (bestmove e4g2)
-At the root, we are returning (bestmove e4g2)
-bestmove h8h7
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6 c6c5 d6d5 h7g6 d5c4 g6e4 c4c3 c5c4 c3c2 h8h7 c2c3
-isready
-readyok
-go wtime 2742211 btime 2856288 movestogo 24
-bestmove e4f4
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 e2d3 f5d3 c2d3 h7h5 c1f4 b8a6 a2a3 a8d8 f4e5 f7f6 e5f4 g6g5 f4g3 h5h4 g3h4 g5h4 a1e1 f6f5 e1e3 g7d4 f3d4 d8d4 f1e1 b7b6 e3e5 h4h3 e5f5 d4g4 g2g3 h8h6 f5e5 a6c5 e5e3 a7a5 b2b4 a5b4 a3b4 g4b4 c3e4 h6e6 e4c5 e6e3 f2e3 b6c5 g1f2 b4b2 e1e2 b2e2 f2e2 g8f6 e2f3 e7e6 g3g4 f6d5 g4g5 e6e5 g5g6 d5e7 f3g4 e7g6 g4h3 g6e7 h3g4 e7d5 e3e4 d5f4 h2h4 f4d3 h4h5 c5c4 h5h6 e8f8 g4g5 c4c3 g5g6 f8g8 h6h7 g8h8 g6h6 c3c2 h6g6 c2c1q g6f6 c1h1 f6e6 h1h7 e6d6 c6c5 d6d5 h7g6 d5c4 g6e4 c4c3 c5c4 c3c2 h8h7 c2c3 e4f4 c3c2
-isready
-readyok
-go wtime 2741257 btime 2856222 movestogo 23
-At the root, we are returning (bestmove f4c1)
-At the root, we are returning (bestmove f4c1)
-At the root, we are returning (bestmove f4c1)
-At the root, we are returning (bestmove f4c1)
-bestmove f4c1
-isready
-readyok
+position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2 c7c6 g1f3 g7g6 e1g1 f8g7 d2d4 c8f5 c1e3
+go wtime 4787719 btime 4787119 winc 0 binc 0
+bestmove f5c2
 quit
 

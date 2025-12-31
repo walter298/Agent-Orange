@@ -1,7 +1,8 @@
 module;
 
-#include <boost/unordered/unordered_flat_map.hpp>
-#include <boost/unordered/unordered_node_map.hpp>
+//#include <boost/unordered/unordered_flat_map.hpp>
+//#include <boost/unordered/unordered_node_map.hpp>
+#include <boost/unordered/concurrent_flat_map.hpp>
 
 module Chess.MoveSearch:PositionTable;
 
@@ -9,32 +10,30 @@ import Chess.Profiler;
 import :MoveHasher;
 
 namespace chess {
-	using PositionMap  = boost::unordered_node_map<Position, PositionEntry, PositionHasher>;
+	using PositionMap = boost::concurrent_flat_map<std::uint64_t, PositionEntry>;
 
 	PositionMap positionMap;
 
-	std::optional<PositionEntryRef> getPositionEntry(const Position& pos) {
+	std::optional<PositionEntry> getPositionEntry(const Position& pos) {
 		ProfilerLock l{ getGetPositionEntryProfiler() };
 
-		auto entry = positionMap.find(pos);
-		if (entry == positionMap.end()) {
+		PositionEntry ret;
+		auto found = positionMap.visit(pos.hash(), [&](const auto& kv) {
+			ret = kv.second;
+		});
+		if (!found) {
 			return std::nullopt;
 		}
-
-		return std::cref(entry->second);
+		return ret;
 	}
 
 	void storePositionEntry(const Position& pos, const PositionEntry& entry) {
 		ProfilerLock l{ getStorePositionEntryProfiler() };
 
-		auto posIt = positionMap.find(pos);
-		if (posIt == positionMap.end()) {
-			positionMap.emplace(pos, entry);
-		} else {
-			auto& storedEntry = posIt->second;
-			if (entry.depth >= storedEntry.depth) {
-				storedEntry = entry;
+		positionMap.emplace_or_visit(pos.hash(), entry, [&](auto& storedKV) {
+			if (entry.depth >= storedKV.second.depth) {
+				storedKV.second = entry;
 			} //sometimes we get shallower depths when we start a new game, ignore these
-		}
+		});
 	}
 }

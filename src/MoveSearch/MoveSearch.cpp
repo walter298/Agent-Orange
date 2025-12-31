@@ -4,6 +4,7 @@ import std;
 
 import Chess.Assert;
 import Chess.DebugPrint;
+import Chess.EasyRandom;
 import Chess.Evaluation;
 import Chess.MoveGeneration;
 import Chess.Position.RepetitionMap;
@@ -94,7 +95,7 @@ namespace chess {
 		};
 		auto entryRes = getPositionEntry(node.getPos());
 		if (entryRes) {
-			const auto& entry = entryRes->get();
+			const auto& entry = *entryRes;
 
 			if (!wouldMakeRepetition(node.getPos(), entry.bestMove) && entry.depth >= node.getRemainingDepth()) {
 				switch (entry.bound) {
@@ -198,19 +199,68 @@ namespace chess {
 		return minimax<std::optional<Move>, Maximizing>(root, alphaBeta);
 	}
 
+	class SearchThread {
+	private:
+		struct State {
+			std::jthread thread;
+			std::optional<Move> move;
+
+			State(const Position& pos, SafeUnsigned<std::uint8_t> depth, std::latch& latch)
+				: thread{ &State::run, std::ref(*this), std::cref(pos), depth, std::ref(latch) }
+			{
+			}
+			void run(const Position& pos, SafeUnsigned<std::uint8_t> depth, std::latch& latch) {
+				auto iterativeDeepening = [&]<bool Maximizing>() -> std::optional<Move> {
+					for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
+						bestMoveImpl<Maximizing>(pos, iterDepth);
+					}
+					return bestMoveImpl<Maximizing>(pos, depth);
+				};
+				if (pos.getTurnData().isWhite) {
+					move = iterativeDeepening.operator()<true>();
+				} else {
+					move = iterativeDeepening.operator()<false>();
+				}
+				latch.count_down();
+			}
+		};
+		std::unique_ptr<State> m_state;
+	public:
+		SearchThread(const Position& pos, SafeUnsigned<std::uint8_t> depth, std::latch& latch)
+			: m_state{ std::make_unique<State>(pos, depth, latch) }
+		{
+		}
+
+		std::optional<Move> get() const {
+			return m_state->move;
+		}
+	};
+
 	std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth) {
 		ProfilerLock l{ getBestMoveProfiler() };
 
-		auto iterativeDeepening = [&]<bool Maximizing>() {
+		auto iterativeDeepening = [&]<bool Maximizing>() -> std::optional<Move> {
 			for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
 				bestMoveImpl<Maximizing>(pos, iterDepth);
 			}
 			return bestMoveImpl<Maximizing>(pos, depth);
 		};
 		if (pos.getTurnData().isWhite) {
-			return iterativeDeepening.operator()<true>();
+			return iterativeDeepening.operator() < true > ();
 		} else {
-			return iterativeDeepening.operator()<false>();
+			return iterativeDeepening.operator() < false > ();
 		}
+
+		//constexpr auto THREAD_COUNT = 3;
+		//std::latch latch{ THREAD_COUNT };
+
+		//std::vector<SearchThread> searchThreads;
+		//for (int i = 0; i < THREAD_COUNT; i++) {
+		//	searchThreads.emplace_back(pos, depth, latch);
+		//}
+		//latch.wait(); //wait til all children are done searching
+
+		//auto moveIndex = makeRandomNum(0uz, searchThreads.size() - 1);
+		//return searchThreads[moveIndex].get();
 	}
 }

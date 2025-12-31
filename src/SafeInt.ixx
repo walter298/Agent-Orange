@@ -13,14 +13,11 @@ namespace chess {
 	public:
 		explicit constexpr SafeUnsigned(T t) : m_value{ t } {}
 
-		constexpr auto& get(this auto&& self) {
-			return self.m_value;
+		constexpr T get() const {
+			return m_value;
 		}
 
-		constexpr SafeUnsigned& operator=(SafeUnsigned t) {
-			m_value = t.m_value;
-			return *this;
-		}
+		constexpr SafeUnsigned& operator=(const SafeUnsigned&) = default;
 		constexpr SafeUnsigned& operator++() {
 			zAssert(MAX_VALUE - m_value > 0);
 			++m_value;
@@ -31,21 +28,64 @@ namespace chess {
 			--m_value;
 			return *this;
 		}
-		constexpr SafeUnsigned& operator+=(SafeUnsigned t) {
+		constexpr SafeUnsigned& operator+=(const SafeUnsigned& t) {
 			zAssert(MAX_VALUE - m_value >= t.m_value);
 			m_value += t.m_value;
 			return *this;
 		}
-		constexpr SafeUnsigned& operator*=(SafeUnsigned t) {
-			zAssert(MAX_VALUE / m_value >= t.m_value);
+		constexpr SafeUnsigned& operator-=(const SafeUnsigned& t) {
+			zAssert(m_value >= t.m_value);
+			m_value -= t.m_value;
+			return *this;
+		}
+		constexpr SafeUnsigned& operator*=(const SafeUnsigned& t) {
+			if (m_value != 0) {
+				zAssert(MAX_VALUE / m_value >= t.m_value);
+			}
 			m_value *= t.m_value;
 			return *this;
 		}
-		constexpr SafeUnsigned& operator/=(SafeUnsigned t) {
-			m_value / t.m_value;
+		constexpr SafeUnsigned& operator/=(const SafeUnsigned& t) {
+			zAssert(t.m_value != 0);
+			m_value /= t.m_value;
 			return *this;
 		}
+		constexpr SafeUnsigned& operator|=(const SafeUnsigned& t) {
+			m_value |= t.m_value;
+			return *this;
+		}
+		constexpr SafeUnsigned& operator&=(const SafeUnsigned& t) {
+			m_value &= t.m_value;
+			return *this;
+		}
+		template<std::integral U>
+		constexpr SafeUnsigned& operator>>=(U s) {
+			*this = *this >> s;
+			return *this;
+		}
+		template<std::integral U>
+		constexpr SafeUnsigned& operator<<=(U s) {
+			*this = *this << s;
+			return *this;
+		}
+
 		constexpr auto operator<=>(const SafeUnsigned& t) const = default;
+
+		template<std::integral U>
+		constexpr SafeUnsigned operator<<(U s) const {
+			zAssert(std::cmp_less(s, sizeof(T) * 8));
+			return SafeUnsigned{ static_cast<T>(m_value << s) };
+		}
+		template<std::integral U>
+		constexpr SafeUnsigned operator>>(U s) const {
+			zAssert(std::cmp_less(s, sizeof(T) * 8));
+			return SafeUnsigned{ static_cast<T>(m_value >> s) };
+		}
+
+
+		constexpr SafeUnsigned operator~() const {
+			return SafeUnsigned{ static_cast<T>(~m_value) };
+		}
 
 		constexpr friend SafeUnsigned operator+(SafeUnsigned a, SafeUnsigned b) {
 			zAssert(MAX_VALUE - a.m_value >= b.m_value);
@@ -56,11 +96,20 @@ namespace chess {
 			return SafeUnsigned{ static_cast<T>(a.m_value - b.m_value) }; 
 		}
 		constexpr friend SafeUnsigned operator*(SafeUnsigned a, SafeUnsigned b) {
-			zAssert(MAX_VALUE / a.m_value >= b.m_value);
+			if (a.m_value != 0) {
+				zAssert(MAX_VALUE / a.m_value >= b.m_value);
+			}
 			return SafeUnsigned{ static_cast<T>(a.m_value * b.m_value) }; 
 		}
 		constexpr friend SafeUnsigned operator/(SafeUnsigned a, SafeUnsigned b) {
+			zAssert(b.m_value != 0);
 			return SafeUnsigned{ static_cast<T>(a.m_value / b.m_value) };
+		}
+		constexpr friend SafeUnsigned operator&(SafeUnsigned a, SafeUnsigned b) {
+			return SafeUnsigned{ static_cast<T>(a.m_value & b.m_value) };
+		}
+		constexpr friend SafeUnsigned operator|(SafeUnsigned a, SafeUnsigned b) {
+			return SafeUnsigned{ static_cast<T>(a.m_value | b.m_value) };
 		}
 	};
 

@@ -22,6 +22,6 @@ export namespace chess {
 	};
 	using PositionEntryRef = std::reference_wrapper<const PositionEntry>;
 
-	std::optional<PositionEntryRef> getPositionEntry(const Position& pos);
+	std::optional<PositionEntry> getPositionEntry(const Position& pos);
 	void storePositionEntry(const Position& pos, const PositionEntry& entry);
 }

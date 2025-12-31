@@ -26,7 +26,7 @@ namespace chess {
 		auto [white, black] = pos.getColorSides();
 
 		auto getCastleRating = [](const auto& pieceState) {
-			return pieceState.hasCastledKingside() || pieceState.hasCastledQueenside() ? CASTLE_RATING : 0_rt;
+			return pieceState.castling.hasCastledKingside() || pieceState.castling.hasCastledQueenside() ? CASTLE_RATING : 0_rt;
 		};
 		return getCastleRating(white) - getCastleRating(black);
 	}
