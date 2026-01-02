@@ -323,11 +323,6 @@ namespace chess {
 				addEnPassantMoves(moves, movablePawns, enemies.doubleJumpedPawn);
 			}
 
-			if constexpr (PROFILING) {
-				auto& profiler = getLegalMoveGenerationProfiler().get();
-				profiler.legalMovesGenerated += moves.size();
-			}
-
 			bool inCheck = (enemyDestSquares & pieceLocations.allyKing);
 			bool checkmate = inCheck && moves.empty();
 

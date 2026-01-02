@@ -224,11 +224,12 @@ namespace chess {
 		void testThatLegalMovesExist4() {
 			Position pos;
 			pos.setPos(parsePositionCommand("startpos"));
+			RepetitionMap rMap;
 
 			std::string moves;
 
 			for (int i = 0; i < 20; i++) {
-				auto bestMove = findBestMove(pos, 6_su8 );
+				auto bestMove = findBestMove(pos, 6_su8, rMap);
 				if (!bestMove) {
 					std::println("POTENTIAL Error: no best move found in testThatLegalMovesExist4 at ply {}!", i + 1);
 					std::println("Moves: {}", moves);
@@ -399,11 +400,12 @@ namespace chess {
 		}
 
 		void testRepetition() {
+			RepetitionMap rMap;
 			Position startPos;
 			startPos.setPos(parsePositionCommand("startpos"));
-			repetition::push(startPos);
+			rMap.push(startPos);
 
-			assert_equality(repetition::getPositionCount(startPos), 1);
+			assert_equality(rMap.getPositionCount(startPos), 1);
 
 			Move whiteTo{ B1, C3, Knight, Piece::None };
 			Move whiteBack{ C3, B1, Knight, Piece::None };
@@ -412,54 +414,50 @@ namespace chess {
 			Move blackBack{ C6, B8, Knight, Piece::None };
 
 			Position p1{ startPos, whiteTo };
-			repetition::push(p1);
-			assert_equality(repetition::getPositionCount(p1), 1);
+			rMap.push(p1);
+			assert_equality(rMap.getPositionCount(p1), 1);
 
 			Position p2{ p1, blackTo };
-			repetition::push(p2);
-			assert_equality(repetition::getPositionCount(p2), 1);
+			rMap.push(p2);
+			assert_equality(rMap.getPositionCount(p2), 1);
 			
 			Position p3{ p2, whiteBack };
-			repetition::push(p3);
-			assert_equality(repetition::getPositionCount(p3), 1);
+			rMap.push(p3);
+			assert_equality(rMap.getPositionCount(p3), 1);
 
 			Position p4{ p3, blackBack };
-			repetition::push(p4);
-			assert_equality(repetition::getPositionCount(p4), 2);
+			rMap.push(p4);
+			assert_equality(rMap.getPositionCount(p4), 2);
 
 			if (p4.hash() != startPos.hash()) {
 				std::println("testRepetitionFailed: p4 is not equal to startPos");
 			}
-
-			repetition::clear();
 		}
 
 		void testRepetition2() {
+			RepetitionMap rMap;
 			Position pos;
 			pos.setPos(parsePositionCommand("startpos"));
-			repetition::push(pos);
-			assert_equality(repetition::getTotalPositionCount(), 1);
+			rMap.push(pos);
+			assert_equality(rMap.getTotalPositionCount(), 1);
 
 			//has side effect of storing positions in the repetition table, but positions should be popped
-			findBestMove(pos, 6_su8); 
-			assert_equality(repetition::getTotalPositionCount(), 1);
-
-			repetition::clear();
+			findBestMove(pos, 6_su8, rMap); 
+			assert_equality(rMap.getTotalPositionCount(), 1);
 		}
 
 		void testCheckmate() {
 			Position pos;
 			pos.setPos(parsePositionCommand("fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1"));
-			repetition::push(pos);
+			RepetitionMap rMap;
+			rMap.push(pos);
 
 			auto legalMoves = calcPositionData(pos);
 			testMovesImpl<false>("testCheckmate", "fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1", Queen, G2);
 
-			auto bestMove = findBestMove(pos, 6_su8);
+			auto bestMove = findBestMove(pos, 6_su8, rMap);
 			assert_equality(bestMove->from, F3);
 			assert_equality(bestMove->to, G2);
-
-			repetition::clear();
 		}
 
 		void runAllTests() {

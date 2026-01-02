@@ -7,28 +7,28 @@ module Chess.Position.RepetitionMap;
 import Chess.Assert;
 
 namespace chess {
-	namespace repetition {
-		boost::unordered_flat_map<std::uint64_t, int> pastPositions;
-
-		void push(const Position& pos) {
-			pastPositions[pos.hash()]++;
+	void RepetitionMap::push(const Position& pos) {
+		m_positionCounts[pos.hash()]++;
+	}
+	void RepetitionMap::pop(const Position& pos) {
+		zAssert(m_positionCounts.contains(pos.hash()));
+		auto& posCount = m_positionCounts.at(pos.hash());
+		zAssert(posCount > 0);
+		posCount--;
+	}
+	int RepetitionMap::getPositionCount(const Position& pos) const {
+		auto positionIt = m_positionCounts.find(pos.hash());
+		if (positionIt == m_positionCounts.end()) {
+			return 0;
 		}
-		void pop(const Position& pos) {
-			zAssert(pastPositions.contains(pos.hash()));
-			auto& posCount = pastPositions.at(pos.hash());
-			zAssert(posCount > 0);
-			posCount--;
-		}
-		int getPositionCount(const Position& pos) {
-			return pastPositions.at(pos.hash());
-		}
-		void clear() {
-			pastPositions.clear();
-		}
-		int getTotalPositionCount() {
-			return std::ranges::fold_left(pastPositions, 0, [](auto acc, const auto& kv) {
-				return acc + kv.second;
-			});
-		}
+		return positionIt->second;
+	}
+	void RepetitionMap::clear() {
+		m_positionCounts.clear();
+	}
+	int RepetitionMap::getTotalPositionCount() const {
+		return std::ranges::fold_left(m_positionCounts, 0, [](auto acc, const auto& kv) {
+			return acc + kv.second;
+		});
 	}
 }

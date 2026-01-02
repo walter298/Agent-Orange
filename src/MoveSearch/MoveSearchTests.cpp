@@ -16,7 +16,9 @@ namespace chess {
 		void testMoveOrdering() {
 			Position pos;
 			pos.setPos(parsePositionCommand("fen rnbq1k1r/3p1ppp/1p1b1n1Q/pBp1p3/4P2P/N2P3R/PPP2PP1/R1B1K1N1 b Q - 2 8"));
-			auto node = Node::makeRoot(pos, 1_su8, false);
+			RepetitionMap rMap;
+
+			auto node = Node::makeRoot(pos, 1_su8, rMap);
 			auto priorities = getMovePriorities(node, Move::null());
 
 			if (priorities[0].getMove().to != H6) {

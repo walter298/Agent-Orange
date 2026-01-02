@@ -13,7 +13,7 @@ export namespace chess {
 	private:
 		Position m_pos;
 		PositionData m_positionData;
-
+		std::reference_wrapper<RepetitionMap> m_repetitionMap;
 		SafeUnsigned<std::uint8_t> m_level{ 0 };
 		SafeUnsigned<std::uint8_t> m_levelsToSearch{ 0 };
 		bool m_inAttackSequence = false;
@@ -21,35 +21,34 @@ export namespace chess {
 		Rating m_materialSignSwap = 1_rt;
 		bool m_isChild = true;
 
-		Node() = default;
+		explicit Node(RepetitionMap& repetitionMap) : m_repetitionMap{ repetitionMap } {};
 		Node(const Node&) = default;
 	public:
-		static Node makeRoot(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, bool isWhite) {
-			Node ret;
+		static Node makeRoot(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, RepetitionMap& repetitionMap) {
+			Node ret{ repetitionMap };
 			ret.m_pos = root;
 			ret.m_positionData = calcPositionData(ret.m_pos);
 			ret.m_levelsToSearch = maxDepth;
 			ret.m_isChild = false;
-			if (!isWhite) {
+			if (!root.isWhite()) {
 				ret.m_materialSignSwap *= -1_rt;
 			}
 			return ret;
 		}
 		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
-			Node ret;
+			Node ret{ parent.m_repetitionMap };
 			ret.m_pos = { parent.m_pos, movePriority.getMove() };
+			ret.m_repetitionMap.get().push(ret.m_pos);
 			ret.m_positionData = calcPositionData(ret.m_pos);
 			ret.m_level = parent.m_level + 1_su8;
 			ret.m_materialSignSwap *= -1_rt;
 			ret.m_levelsToSearch = movePriority.getDepth();
-
-			repetition::push(ret.m_pos);
-
 			return ret;
 		}
+
 		~Node() {
 			if (m_isChild) {
-				repetition::pop(m_pos);
+				m_repetitionMap.get().pop(m_pos);
 			}
 		}
 
@@ -63,6 +62,10 @@ export namespace chess {
 
 		bool inLosingAttackSequence() const {
 			return m_materialSignSwap > 0_rt ? m_materialExchanged < 0_rt : m_materialExchanged > 0_rt;
+		}
+
+		const RepetitionMap& getRepetitionMap() const {
+			return m_repetitionMap.get();
 		}
 
 		const Position& getPos() const {

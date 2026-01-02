@@ -3,6 +3,7 @@ export module Chess.Square;
 import std;
 import nlohmann.json;
 
+import Chess.Assert;
 import Chess.Bitboard;
 import Chess.RankCalculator;
 
@@ -29,28 +30,46 @@ export namespace chess {
         A7, B7, C7, D7, E7, F7, G7, H7,
         A8, B8, C8, D8, E8, F8, G8, H8
 	};
-  
+    constexpr int rankOf(Square square) {
+        return static_cast<int>(square) / 8;
+    }
+    constexpr int fileOf(Square square) {
+        return static_cast<int>(square) % 8;
+    }
+    struct FileRank {
+        int file = 0;
+        int rank = 0;
+    };
+    constexpr FileRank fileRankOf(Square square) {
+        return { fileOf(square), rankOf(square) };
+    }
+    constexpr Bitboard leftFile(Square square) {
+        auto fileIndex = fileOf(square);
+        return fileIndex == 0 ? 0 : calcFile(fileIndex - 1);
+    }
+    constexpr Bitboard rightFile(Square square) {
+        auto fileIndex = fileOf(square);
+        return fileIndex == 7 ? 0 : calcFile(fileIndex + 1);
+    }
     constexpr Square westSquare(Square square) {
-        if (std::popcount(static_cast<std::underlying_type_t<Square>>(square)) == 1 || square == A1) {
+        if (fileOf(square) == 0) {
             return None;
         }
         return static_cast<Square>(square - 1);
     }
     constexpr Square eastSquare(Square square) {
-        auto right = static_cast<std::underlying_type_t<Square>>(square + 1);
-        if (std::popcount(right) == 1) { //disallow wraparound
+        if (fileOf(square) == 7) {
             return None;
         }
-        return static_cast<Square>(right);
+        return static_cast<Square>(square + 1);
     }
     constexpr Square southSquare(Square square) {
         auto num = static_cast<std::underlying_type_t<Square>>(square);
-        if (num < 8) {
+        if (num < 8) { //if square is in [A1, H1], there are no more south squares
             return None;
         }
         return static_cast<Square>(num - 8);
     }
-
     constexpr Square northSquare(Square square) {
         auto num = static_cast<std::underlying_type_t<Square>>(square);
         if (num > 55) {
@@ -67,10 +86,6 @@ export namespace chess {
 
     constexpr Square nextSquare(Bitboard board) {
         return static_cast<Square>(std::countr_zero(board));
-    }
-
-    auto setSquares(Bitboard bitboard) {
-	    
     }
 
     template<std::same_as<Square>... Squares>
@@ -115,38 +130,6 @@ export namespace chess {
     constexpr void moveSquare(Bitboard& bitboard, Square from, Square to) {
         removeSquare(bitboard, from);
         addSquare(bitboard, to);
-    }
-
-    constexpr int rankOf(Square square) {
-        return static_cast<int>(square) / 8;
-    }
-    constexpr int fileOf(Square square) {
-        return static_cast<int>(square) % 8;
-    }
-    struct FileRank {
-        int file = 0;
-        int rank = 0;
-    };
-    constexpr FileRank fileRankOf(Square square) {
-        return { fileOf(square), rankOf(square) };
-    }
-
-    constexpr Bitboard leftFile(Square square) {
-        auto file = fileOf(square);
-        return file == 0 ? 0 : calcFile(file - 1);
-    }
-    constexpr Bitboard rightFile(Square square) {
-        auto file = fileOf(square);
-        return file == 7 ? 0 : calcFile(file + 1);
-    }
-
-    constexpr Bitboard northSquares(Square square) {
-        auto file = fileOf(square);
-        return calcFile(file) & ~((Bitboard{ 1 } << (square + 1)) - 1);
-    }
-    constexpr Bitboard southSquares(Square square) {
-        auto file = fileOf(square);
-		return calcFile(file) & ((Bitboard{ 1 } << square) - 1);
     }
 
     std::optional<Square> parseSquare(std::string_view square);

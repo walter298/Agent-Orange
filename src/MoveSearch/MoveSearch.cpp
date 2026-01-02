@@ -1,3 +1,10 @@
+module;
+
+#include <unifex/when_all_range.hpp>
+#include <unifex/static_thread_pool.hpp>
+#include <unifex/sync_wait.hpp>
+#include <unifex/task.hpp>
+
 module Chess.MoveSearch;
 
 import std;
@@ -21,7 +28,7 @@ namespace chess {
 	private:
 		//add or subtract 1 so that checkmate ratings are always worse than these bounds
 		Rating m_alpha = worstPossibleRating<true>();
-		Rating m_beta  = worstPossibleRating<false>();
+		Rating m_beta = worstPossibleRating<false>();
 	public:
 		void updateAlpha(Rating childRating) {
 			m_alpha = std::max(childRating, m_alpha);
@@ -34,7 +41,8 @@ namespace chess {
 		void update(Rating childRating) {
 			if constexpr (Maximizing) {
 				updateAlpha(childRating);
-			} else {
+			}
+			else {
 				updateBeta(childRating);
 			}
 		}
@@ -56,9 +64,9 @@ namespace chess {
 		bool isRepetition = false;
 	};
 
-	bool wouldMakeRepetition(const Position& pos, Move pvMove) {
+	bool wouldMakeRepetition(const Position& pos, Move pvMove, const RepetitionMap& repetitionMap) {
 		Position child{ pos, pvMove };
-		auto repetitionCount = repetition::getPositionCount(child) + 1; //add 1 since we haven't actually pushed this position yet
+		auto repetitionCount = repetitionMap.getPositionCount(child) + 1; //add 1 since we haven't actually pushed this position yet
 		return repetitionCount >= 2; //return 2 (not 3) because the opposing player could then make a threefold repetition after this
 	}
 
@@ -76,11 +84,10 @@ namespace chess {
 			}
 		}
 
-		if (repetition::getPositionCount(node.getPos()) >= 3) {
+		if (node.getRepetitionMap().getPositionCount(node.getPos()) >= 3) {
 			if constexpr (std::same_as<Ret, PositionRating>) {
-				debugPrint("Returning draw");
 				return { 0_rt, true };
-			} 
+			}
 		}
 
 		auto pvMove = Move::null();
@@ -88,7 +95,8 @@ namespace chess {
 		auto returnImpl = [&](const PositionEntry& entry) {
 			if constexpr (std::same_as<Ret, PositionRating>) {
 				return PositionRating{ entry.rating, false };
-			} else {
+			}
+			else {
 				debugPrint(std::format("At the root, we are returning ({})", entry.bestMove.getUCIString()));
 				return entry.bestMove;
 			}
@@ -97,7 +105,7 @@ namespace chess {
 		if (entryRes) {
 			const auto& entry = *entryRes;
 
-			if (!wouldMakeRepetition(node.getPos(), entry.bestMove) && entry.depth >= node.getRemainingDepth()) {
+			if (!wouldMakeRepetition(node.getPos(), entry.bestMove, node.getRepetitionMap()) && entry.depth >= node.getRemainingDepth()) {
 				switch (entry.bound) {
 				case InWindow:
 					return returnImpl(entry);
@@ -125,7 +133,7 @@ namespace chess {
 				return { node.getRating(), false }; //already checked whether position is a repetition
 			}
 		}
-		
+
 		return bestChildPosition<Ret, Maximizing>(node, pvMove, alphaBeta);
 	}
 
@@ -170,7 +178,8 @@ namespace chess {
 				if (bestRating.rating <= originalAlphaBeta.getAlpha()) {
 					bound = UpperBound;
 				}
-			} else {
+			}
+			else {
 				if (bestRating.rating >= originalAlphaBeta.getBeta()) {
 					bound = LowerBound;
 				}
@@ -183,7 +192,7 @@ namespace chess {
 		}
 
 		bestRating.isRepetition = false; //don't propagate repetition flag up the tree
-		
+
 		if constexpr (std::same_as<Ret, std::optional<Move>>) {
 			return bestMove;
 		} else {
@@ -191,76 +200,34 @@ namespace chess {
 		}
 	}
 
+	using MoveTask  = unifex::task<std::optional<Move>>;
+	using Scheduler = unifex::static_thread_pool::scheduler;
+
 	template<bool Maximizing>
-	std::optional<Move> bestMoveImpl(const Position& rootPos, SafeUnsigned<std::uint8_t> depth) {
+	std::optional<Move> startAlphaBetaSearch(const Position& pos, SafeUnsigned<std::uint8_t> depth, RepetitionMap repetitionMap) {
 		AlphaBeta alphaBeta;
-		zAssert(repetition::getPositionCount(rootPos) > 0);
-		auto root = Node::makeRoot(rootPos, depth, rootPos.isWhite());
+		auto root = Node::makeRoot(pos, depth, repetitionMap);
 		return minimax<std::optional<Move>, Maximizing>(root, alphaBeta);
 	}
 
-	class SearchThread {
-	private:
-		struct State {
-			std::jthread thread;
-			std::optional<Move> move;
+	constexpr auto THREAD_COUNT = 4;
 
-			State(const Position& pos, SafeUnsigned<std::uint8_t> depth, std::latch& latch)
-				: thread{ &State::run, std::ref(*this), std::cref(pos), depth, std::ref(latch) }
-			{
-			}
-			void run(const Position& pos, SafeUnsigned<std::uint8_t> depth, std::latch& latch) {
-				auto iterativeDeepening = [&]<bool Maximizing>() -> std::optional<Move> {
-					for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
-						bestMoveImpl<Maximizing>(pos, iterDepth);
-					}
-					return bestMoveImpl<Maximizing>(pos, depth);
-				};
-				if (pos.getTurnData().isWhite) {
-					move = iterativeDeepening.operator()<true>();
-				} else {
-					move = iterativeDeepening.operator()<false>();
-				}
-				latch.count_down();
-			}
-		};
-		std::unique_ptr<State> m_state;
-	public:
-		SearchThread(const Position& pos, SafeUnsigned<std::uint8_t> depth, std::latch& latch)
-			: m_state{ std::make_unique<State>(pos, depth, latch) }
-		{
+	template<bool Maximizing>
+	MoveTask findBestMoveImpl(Scheduler scheduler, const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
+		co_await unifex::schedule(scheduler); //run asynchronously
+		for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
+			startAlphaBetaSearch<Maximizing>(pos, iterDepth, repetitionMap);
 		}
+		co_return startAlphaBetaSearch<Maximizing>(pos, depth, repetitionMap);
+	}
 
-		std::optional<Move> get() const {
-			return m_state->move;
-		}
-	};
+	std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
+		unifex::static_thread_pool pool{ THREAD_COUNT };
 
-	std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth) {
-		ProfilerLock l{ getBestMoveProfiler() };
-
-		auto iterativeDeepening = [&]<bool Maximizing>() -> std::optional<Move> {
-			for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
-				bestMoveImpl<Maximizing>(pos, iterDepth);
-			}
-			return bestMoveImpl<Maximizing>(pos, depth);
-		};
-		if (pos.getTurnData().isWhite) {
-			return iterativeDeepening.operator() < true > ();
+		if (pos.isWhite()) {
+			return unifex::sync_wait(findBestMoveImpl<true>(pool.get_scheduler(), pos, depth, repetitionMap)).value();
 		} else {
-			return iterativeDeepening.operator() < false > ();
+			return unifex::sync_wait(findBestMoveImpl<false>(pool.get_scheduler(), pos, depth, repetitionMap)).value();
 		}
-
-		//constexpr auto THREAD_COUNT = 3;
-		//std::latch latch{ THREAD_COUNT };
-
-		//std::vector<SearchThread> searchThreads;
-		//for (int i = 0; i < THREAD_COUNT; i++) {
-		//	searchThreads.emplace_back(pos, depth, latch);
-		//}
-		//latch.wait(); //wait til all children are done searching
-
-		//auto moveIndex = makeRandomNum(0uz, searchThreads.size() - 1);
-		//return searchThreads[moveIndex].get();
 	}
 }
