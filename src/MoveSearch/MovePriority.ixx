@@ -36,6 +36,10 @@ namespace chess {
 			m_exchangeRating{ calcExchangeRating(move, enemySquares) }
 		{
 		}
+		MovePriority(const Move& move, SafeUnsigned<std::uint8_t> depth)
+			: m_move{ move }, m_recommendedDepth { depth }
+		{
+		}
 
 		const Move& getMove() const {
 			return m_move;

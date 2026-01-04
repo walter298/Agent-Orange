@@ -111,6 +111,10 @@ namespace chess {
 		constexpr friend SafeUnsigned operator|(SafeUnsigned a, SafeUnsigned b) {
 			return SafeUnsigned{ static_cast<T>(a.m_value | b.m_value) };
 		}
+		constexpr friend SafeUnsigned operator%(SafeUnsigned a, SafeUnsigned b) {
+			zAssert(b.m_value != 0);
+			return SafeUnsigned{ static_cast<T>(a.m_value % b.m_value) };
+		}
 	};
 
 	template<std::unsigned_integral U, std::integral C>
@@ -119,7 +123,7 @@ namespace chess {
 		return SafeUnsigned{ static_cast<U>(v) };
 	};
 
-	export SafeUnsigned<std::uint8_t> operator""_su8(unsigned long long v) {
+	export constexpr SafeUnsigned<std::uint8_t> operator""_su8(unsigned long long v) {
 		return convertImpl<std::uint8_t>(v);
 	}
 }
