@@ -1,13 +1,7 @@
-module;
-
-#include <unifex/when_all_range.hpp>
-#include <unifex/static_thread_pool.hpp>
-#include <unifex/sync_wait.hpp>
-#include <unifex/task.hpp>
-
 module Chess.MoveSearch;
 
 import std;
+import BS.thread_pool;
 
 import Chess.Assert;
 import Chess.DebugPrint;
@@ -61,21 +55,18 @@ namespace chess {
 
 	struct PositionRating {
 		Rating rating = 0_rt;
-		bool isRepetition = false;
+		bool invalidTTEntry = false;
 	};
-
-	using MoveTask  = unifex::task<std::optional<Move>>;
-	using Scheduler = unifex::static_thread_pool::scheduler;
 
 	class Searcher {
 	private:
 		static constexpr SafeUnsigned<std::uint8_t> RANDOMIZATION_CUTOFF{ 2 };
 		std::mt19937 m_urbg;
 		bool m_helper = false;
-		Scheduler m_scheduler;
+		const std::atomic_bool* m_stopRequested;
 	public:
-		Searcher(bool helper, Scheduler scheduler)
-			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_scheduler{ scheduler }
+		Searcher(bool helper, std::atomic_bool* stopRequested)
+			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_stopRequested{ stopRequested }
 		{
 		}
 	private:
@@ -96,10 +87,10 @@ namespace chess {
 				}
 			}
 
-			if (node.getRepetitionMap().getPositionCount(node.getPos()) >= 3) {
-				if constexpr (std::same_as<Ret, PositionRating>) {
+			if constexpr (std::same_as<Ret, PositionRating>) {
+				if (node.getRepetitionMap().getPositionCount(node.getPos()) >= 3) {
 					return { 0_rt, true };
-				}
+				} 
 			}
 
 			auto pvMove = Move::null();
@@ -111,42 +102,52 @@ namespace chess {
 					return std::optional{ entry.bestMove };
 				} 
 			};
+
+			if constexpr (std::same_as<Ret, PositionRating>) { //node will not be done if we are at the root, so it is safe to have this check only for ratings
+				if (m_stopRequested->load()) {
+					return { node.getRating(), false };
+				}
+			}
 			
-			if (auto entryRes = getPositionEntry(node.getPos())) {
-				const auto& entry = *entryRes;
-				pvMove = entry.bestMove;
-				bool canUseEntry = !(m_helper && node.getLevel() == 0_su8);
-				if (!wouldMakeRepetition(node.getPos(), entry.bestMove, node.getRepetitionMap()) && entry.depth >= node.getRemainingDepth()) {
-					switch (entry.bound) {
-					case InWindow:
-						if (canUseEntry) {
-							return returnImpl(entry);
-						}
-						break;
-					case LowerBound:
-						if (entry.rating >= alphaBeta.getBeta()) {
+			if (!m_stopRequested->load()) {
+				if (auto entryRes = getPositionEntry(node.getPos())) {
+					const auto& entry = *entryRes;
+					pvMove = entry.bestMove;
+					bool canUseEntry = !(m_helper && node.getLevel() == 0_su8);
+					if (!wouldMakeRepetition(node.getPos(), entry.bestMove, node.getRepetitionMap()) && entry.depth >= node.getRemainingDepth()) {
+						switch (entry.bound) {
+						case InWindow:
 							if (canUseEntry) {
 								return returnImpl(entry);
 							}
-						} else {
-							alphaBeta.updateAlpha(entry.rating);
-						}
-						break;
-					case UpperBound:
-						if (entry.rating <= alphaBeta.getAlpha()) {
-							if (canUseEntry) {
-								return returnImpl(entry);
+							break;
+						case LowerBound:
+							if (entry.rating >= alphaBeta.getBeta()) {
+								if (canUseEntry) {
+									return returnImpl(entry);
+								}
+							} else {
+								alphaBeta.updateAlpha(entry.rating);
 							}
-						} else {
-							alphaBeta.updateBeta(entry.rating);
+							break;
+						case UpperBound:
+							if (entry.rating <= alphaBeta.getAlpha()) {
+								if (canUseEntry) {
+									return returnImpl(entry);
+								}
+							} else {
+								alphaBeta.updateBeta(entry.rating);
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}
 			if constexpr (std::same_as<Ret, PositionRating>) { //node will not be done if we are at the root, so it is safe to have this check only for ratings
 				if (node.isDone()) {
 					return { node.getRating(), false }; //already checked whether position is a repetition
+				} else if (m_stopRequested->load()) {
+					return { node.getRating(), true };
 				}
 			}
 			return bestChildPosition<Ret, Maximizing>(node, pvMove, alphaBeta);
@@ -211,12 +212,12 @@ namespace chess {
 				}
 			}
 
-			if (!bestRating.isRepetition) {
+			if (!bestRating.invalidTTEntry) {
 				PositionEntry newEntry{ bestMove, bestRating.rating, node.getRemainingDepth(), bound };
 				storePositionEntry(node.getPos(), newEntry);
 			}
 
-			bestRating.isRepetition = false; //don't propagate repetition flag up the tree
+			bestRating.invalidTTEntry = false; //don't propagate repetition flag up the tree
 
 			if constexpr (std::same_as<Ret, std::optional<Move>>) {
 				return bestMove;
@@ -240,88 +241,85 @@ namespace chess {
 			return startAlphaBetaSearch<Maximizing>(pos, depth, repetitionMap);
 		}
 	public:
-		MoveTask operator()(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
-			co_await unifex::schedule(m_scheduler);
-
+		std::optional<Move> operator()(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
 			if (pos.isWhite()) {
-				co_return iterativeDeepening<true>(pos, depth, repetitionMap);
+				debugPrint("Searching for white");
+				return iterativeDeepening<true>(pos, depth, repetitionMap);
 			} else {
-				co_return iterativeDeepening<false>(pos, depth, repetitionMap);
+				debugPrint("Searching for black");
+				return iterativeDeepening<false>(pos, depth, repetitionMap);
 			}
 		}
 	};
 
-	constexpr auto THREAD_COUNT = 4;
+	const auto THREAD_COUNT = std::thread::hardware_concurrency();
 	constexpr auto MAIN_THREAD_INDEX = 0uz;
 
-	std::vector<Searcher> makeSearchers(unifex::static_thread_pool& pool) {
+	struct AsyncSearchState {
+		BS::thread_pool<> pool{ THREAD_COUNT };
+		std::atomic_bool stopRequested = false;
 		std::vector<Searcher> searchers;
-		searchers.reserve(THREAD_COUNT); 
 
-		searchers.emplace_back(false, pool.get_scheduler()); //insert main thread
-		for (int i = 0; i < THREAD_COUNT - 1; i++) {
-			searchers.emplace_back(true, pool.get_scheduler());
+		AsyncSearchState() {
+			searchers.reserve(THREAD_COUNT);
+			searchers.emplace_back(false, &stopRequested); //insert main thread
+			if (THREAD_COUNT > 1) {
+				for (auto i = 0uz; i < THREAD_COUNT - 1; i++) { //insert helper threads
+					searchers.emplace_back(true, &stopRequested);
+				}
+			}
 		}
-		return searchers;
+	};
+
+	AsyncSearch::AsyncSearch() 
+		: m_state{ std::make_shared<AsyncSearchState>() }
+	{
 	}
 
-	struct VoteResult {
-		Move bestMove = Move::null();
-		int occ = 0;
-	};
-	VoteResult voteForBestMove(const std::vector<std::optional<Move>>& candidates) {
-		int maxOcurrenceCount = 0;
+	Move voteForBestMove(const std::vector<std::optional<Move>>& moves) {
+		std::unordered_map<Move, int, MoveHasher> moveOccurrences;
 		auto bestMove = Move::null();
-		std::unordered_map<Move, int, MoveHasher> map;
-		for (const auto& move : candidates) {
-			zAssert(move.has_value());
-			auto& moveCount = map[*move];
-			moveCount++;
-			if (moveCount > maxOcurrenceCount) {
-				maxOcurrenceCount = moveCount;
+		auto bestMoveCount = 0;
+
+		for (const auto& move : moves) {
+			auto& occ = moveOccurrences[*move];
+			occ++;
+			if (occ > bestMoveCount) {
+				bestMoveCount = occ;
 				bestMove = *move;
 			}
 		}
-		zAssert(bestMove != Move::null());
-		return { bestMove, maxOcurrenceCount };
-	}
+		return bestMove;
+	} 
 
-	MoveTask findBestMoveImpl(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
-		unifex::static_thread_pool pool{ THREAD_COUNT };
-		auto searchers = makeSearchers(pool);
+	std::optional<Move> findBestMoveImpl(std::shared_ptr<AsyncSearchState> state, Position pos, SafeUnsigned<std::uint8_t> depth, RepetitionMap repetitionMap) {
+		debugPrint(std::format("Searching depth {}", depth.get()));
 
-		std::vector<MoveTask> searcherTasks;
-		searcherTasks.reserve(THREAD_COUNT);
-		for (auto&& [idx, searcher] : std::views::enumerate(searchers)) {
-			SafeUnsigned sIdx{ static_cast<std::uint8_t>(idx) };
-			auto d = ((sIdx % 2_su8 == 0_su8) ? 1_su8 : 0_su8);
-			searcherTasks.push_back(searcher(pos, std::max(depth - d, 1_su8), repetitionMap));
-		}
-		auto moveCandidates = co_await unifex::when_all_range(std::move(searcherTasks));
+		ProfilerLock l{ getBestMoveProfiler() };
+
+		state->stopRequested.store(false);
+
+		auto moveCandidateFutures = state->pool.submit_sequence(0uz, state->searchers.size(), [&](size_t i) {
+			SafeUnsigned sIdx{ static_cast<std::uint8_t>(i) };
+			auto d = ((sIdx % 2_su8 == 0_su8) ? 0_su8 : 1_su8);
+			return state->searchers[i](pos, std::max(depth - d, 1_su8), repetitionMap);
+		});
+		
+		auto moveCandidates = moveCandidateFutures.get();
+		zAssert(!moveCandidates.empty());
 
 		if (!moveCandidates.front()) { //if one move is empty, all moves are empty
-			co_return std::nullopt;
+			return std::nullopt;
 		}
 
-		//threads vote for the most popular move
-		auto [bestMove, occ] = voteForBestMove(moveCandidates);
-
-		//tiebreak to main thread
-		if (occ == 1) {
-			co_return *moveCandidates[MAIN_THREAD_INDEX];
-		}
-		if (bestMove != *moveCandidates[MAIN_THREAD_INDEX]) {
-			std::println("Main thread was overruled by vote of {}", occ);
-		}
-		for (const auto& move : moveCandidates | std::views::drop(1)) {
-			if (move != *moveCandidates[MAIN_THREAD_INDEX]) {
-				std::println("Another thread picked a different move from the main thread: {}", move->getUCIString());
-			}
-		}
-		co_return bestMove;
+		return voteForBestMove(moveCandidates);
 	}
 
-	std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
-		return unifex::sync_wait(findBestMoveImpl(pos, depth, repetitionMap)).value();
+	std::optional<Move> AsyncSearch::findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
+		return findBestMoveImpl(m_state, pos, depth, repetitionMap);
+	}
+
+	void AsyncSearch::cancel() {
+		m_state->stopRequested.store(true);
 	}
 }

@@ -62,8 +62,8 @@ export namespace chess {
 				};
 			}
 		}
-		bool tryCastle(Position::MutableTurnData& turnData, const Move& move);
-		void movePawn(const Position::MutableTurnData& turnData, const Move& move, Bitboard& pawns);
+		bool tryCastle(MutableTurnData& turnData, const Move& move);
+		void movePawn(const MutableTurnData& turnData, const Move& move, Bitboard& pawns);
 		void capturePiece(const MutableTurnData& turnData, const Move& move);
 		void normalMove(MutableTurnData& turnData, const Move& move);
 	public:

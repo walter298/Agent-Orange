@@ -21,10 +21,6 @@ namespace chess {
         parseEnPessantSquare(positionCommand.enPessantSquare, m_isWhiteMoving, m_isWhiteMoving ? m_blackPieces : m_whitePieces);
 
         m_zobristHash = getStartingZobristHash(*this);
-
-        for (const auto& moveStr : positionCommand.moves) {
-            move(moveStr);
-        }
     }
 
     bool Position::tryCastle(Position::MutableTurnData& turnData, const Move& move) {

@@ -227,9 +227,9 @@ namespace chess {
 			RepetitionMap rMap;
 
 			std::string moves;
-
+			AsyncSearch search;
 			for (int i = 0; i < 20; i++) {
-				auto bestMove = findBestMove(pos, 6_su8, rMap);
+				auto bestMove = search.findBestMove(pos, 6_su8, rMap);
 				if (!bestMove) {
 					std::println("POTENTIAL Error: no best move found in testThatLegalMovesExist4 at ply {}!", i + 1);
 					std::println("Moves: {}", moves);
@@ -442,7 +442,8 @@ namespace chess {
 			assert_equality(rMap.getTotalPositionCount(), 1);
 
 			//has side effect of storing positions in the repetition table, but positions should be popped
-			findBestMove(pos, 6_su8, rMap); 
+			AsyncSearch search;
+			search.findBestMove(pos, 6_su8, rMap); 
 			assert_equality(rMap.getTotalPositionCount(), 1);
 		}
 
@@ -455,7 +456,8 @@ namespace chess {
 			auto legalMoves = calcPositionData(pos);
 			testMovesImpl<false>("testCheckmate", "fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1", Queen, G2);
 
-			auto bestMove = findBestMove(pos, 6_su8, rMap);
+			AsyncSearch search;
+			auto bestMove = search.findBestMove(pos, 6_su8, rMap);
 			assert_equality(bestMove->from, F3);
 			assert_equality(bestMove->to, G2);
 		}

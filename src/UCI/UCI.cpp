@@ -13,7 +13,7 @@ import Chess.Position.RepetitionMap;
 import :GameState;
 
 namespace chess {
-	GameState gameState;
+	Engine engine;
 
 	std::string getRemainingTokens(std::istringstream& iss) {
 		auto buff = iss.str();
@@ -25,8 +25,6 @@ namespace chess {
 		std::istringstream iss;
 		std::string line;
 		std::string token;
-
-		gameState.depth = depth;
 
 		while (true) {
 			if (!std::getline(std::cin, line)) {
@@ -45,9 +43,9 @@ namespace chess {
 			if (token == "quit") {
 				break;
 			} else if (token == "position") {
-				gameState.setPos(getRemainingTokens(iss));
+				engine.setPos(getRemainingTokens(iss));
 			} else if (token == "ucinewgame") {
-				gameState.reset();
+				engine.stopCalculating();
 			} else if (token == "isready") {
 				debugPrint("readyok");
 				std::printf("readyok\n");
@@ -60,11 +58,9 @@ namespace chess {
 				std::printf(ENGINE_INFO);
 				std::fflush(stdout);
 			} else if (token == "go") {
-				auto move = gameState.calcBestMove(); //prepends "bestmove" 
-				debugPrint(move);
-				
-				std::printf("%s\n", move.c_str());
-				std::fflush(stdout);
+				engine.printBestMoveAsync(); 
+			} else if (token == "stop") {
+				engine.stopCalculating();
 			}
 		}
 	}
