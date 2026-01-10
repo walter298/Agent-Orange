@@ -21,11 +21,14 @@ export namespace chess {
 		Rating m_materialSignSwap = 1_rt;
 		bool m_isChild = true;
 
-		explicit Node(RepetitionMap& repetitionMap) : m_repetitionMap{ repetitionMap } {};
+		explicit Node(bool isWhite, RepetitionMap& repetitionMap)
+			: m_repetitionMap{ repetitionMap }, m_positionData{ isWhite }
+		{
+		};
 		Node(const Node&) = default;
 	public:
 		static Node makeRoot(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, RepetitionMap& repetitionMap) {
-			Node ret{ repetitionMap };
+			Node ret{ root.isWhite(), repetitionMap };
 			ret.m_pos = root;
 			ret.m_positionData = calcPositionData(ret.m_pos);
 			ret.m_levelsToSearch = maxDepth;
@@ -36,7 +39,7 @@ export namespace chess {
 			return ret;
 		}
 		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
-			Node ret{ parent.m_repetitionMap };
+			Node ret{ !parent.m_pos.isWhite(), parent.m_repetitionMap };
 			ret.m_pos = { parent.m_pos, movePriority.getMove() };
 			ret.m_repetitionMap.get().push(ret.m_pos);
 			ret.m_positionData = calcPositionData(ret.m_pos);
@@ -89,10 +92,6 @@ export namespace chess {
 
 		Rating getRating() const {
 			return staticEvaluation(m_pos, m_positionData);
-		}
-
-		Bitboard getEnemySquares() const {
-			return m_pos.isWhite() ? m_positionData.blackSquares : m_positionData.whiteSquares;
 		}
 
 		const PieceState& getAllies() const {

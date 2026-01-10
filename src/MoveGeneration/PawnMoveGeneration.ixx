@@ -2,7 +2,7 @@ export module Chess.MoveGeneration:PawnMoveGeneration;
 
 export import std;
 export import Chess.Square;
-export import :MoveGen;
+export import Chess.MoveGen;
 
 namespace chess {
 	export struct EnPessantData {

@@ -43,11 +43,11 @@ namespace chess {
 		}
 	}
 
-	void deprioritizeNonEvasionMoves(const Node& node, std::vector<MovePriority>& movePriorities) {
+	void deprioritizeNonEvasionMoves(const Node& node, Bitboard allEnemySquares, std::vector<MovePriority>& movePriorities) {
 		auto turnData = node.getPos().getTurnData();
 		
 		auto empty = ~(turnData.enemies.calcAllLocations() | turnData.allies.calcAllLocations());
-		for (auto attackedPiece : getTargets(turnData.allies, node.getEnemySquares())) {
+		for (auto attackedPiece : getTargets(turnData.allies, allEnemySquares)) {
 			deprioritizeNonEvasionMoves(attackedPiece, turnData, empty, movePriorities);
 		}
 	}
@@ -56,24 +56,24 @@ namespace chess {
 		zAssert(node.getRemainingDepth() != 0_su8);
 
 		const auto& posData = node.getPositionData();
-		auto enemySquares = node.getEnemySquares();
+		auto allEnemySquares = node.getPositionData().allEnemySquares();
 
 		std::vector priorities{ std::from_range, posData.legalMoves | std::views::transform([&](const Move& move) {
-			return MovePriority{ move, enemySquares, node.getRemainingDepth() - 1_su8 };
+			return MovePriority{ move, allEnemySquares, node.getRemainingDepth() - 1_su8 };
 		}) };
 
 		std::ranges::sort(priorities, [](const MovePriority& a, const MovePriority& b) {
 			return a.getExchangeRating() > b.getExchangeRating();
 		});
 
-		deprioritizeNonEvasionMoves(node, priorities);
+		deprioritizeNonEvasionMoves(node, allEnemySquares, priorities);
 
 		if (pvMove != Move::null() && std::ranges::contains(posData.legalMoves, pvMove)) {
 			auto pvMoveIt = std::ranges::find_if(priorities, [&](const MovePriority& p) {
 				return p.getMove() == pvMove;
 			});
 			if (pvMoveIt == priorities.end()) {
-				priorities.insert(priorities.begin(), MovePriority{ pvMove, enemySquares, node.getRemainingDepth() - 1_su8 });
+				priorities.insert(priorities.begin(), MovePriority{ pvMove, allEnemySquares, node.getRemainingDepth() - 1_su8 });
 			} else {
 				std::iter_swap(priorities.begin(), pvMoveIt);
 			}

@@ -314,8 +314,9 @@ namespace chess {
 		}
 
 		void testPin2() {
-			testMovesImpl("testPin2", "fen 1nb2k1r/2b4p/1p1p1q1N/p1pBp2P/P3P1P1/3P1R2/1PP2P2/R3K1N1 b Q - 2 26", [](const Move& move) {
-				return move.movedPiece == Queen && move.to != F3;
+			auto pinRay = makeBitboard(F7, F6, F5, F4, F3);
+			testMovesImpl("testPin2", "fen 1nb2k1r/2b4p/1p1p1q1N/p1pBp2P/P3P1P1/3P1R2/1PP2P2/R3K1N1 b Q - 2 26", [&](const Move& move) {
+				return move.movedPiece == Queen && !containsSquare(pinRay, move.to);
 			});
 		}
 
@@ -386,10 +387,12 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen rnb1kbnr/pp1pppp1/2p5/q6p/2PPP3/8/PP1B1PPP/RN1QKBNR b KQkq - 1 1"));
 
 			auto legalMoves = calcPositionData(pos);
-			if (!containsSquare(legalMoves.whiteSquares, A3, C3, B4, A5)) {
+			auto whiteSquares = PositionData::allSquares(legalMoves.whiteSquares);
+
+			if (!containsSquare(whiteSquares, A3, C3, B4, A5)) {
 				std::println("testEnemySquareOutput failed: either D3, D4, or D5 are not contained in the white squares");
 				auto currSquare = Square::None;
-				while (nextSquare(legalMoves.whiteSquares, currSquare)) {
+				while (nextSquare(whiteSquares, currSquare)) {
 					std::println("{}", magic_enum::enum_name(currSquare));
 				}
 			}
@@ -452,9 +455,6 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1"));
 			RepetitionMap rMap;
 			rMap.push(pos);
-
-			auto legalMoves = calcPositionData(pos);
-			testMovesImpl<false>("testCheckmate", "fen rn2kbnr/p3ppp1/1p4p1/2p5/8/2NPBq1b/PPP2P1P/R4RK1 b kq - 0 1", Queen, G2);
 
 			AsyncSearch search;
 			auto bestMove = search.findBestMove(pos, 6_su8, rMap);

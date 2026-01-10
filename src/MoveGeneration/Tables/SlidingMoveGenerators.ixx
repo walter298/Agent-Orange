@@ -1,7 +1,7 @@
 export module Chess.MoveGeneration:SlidingMoveGenerators;
 
 import :ChainedMoveGenerator;
-import :MoveGen;
+import Chess.MoveGen;
 import :TableLoader;
 
 namespace chess {

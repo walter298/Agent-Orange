@@ -15,6 +15,10 @@ namespace chess {
 	constexpr auto PIECE_PROXIMITY_FACTOR = -0.0006_rt;
 	constexpr auto DESTINATION_SQUARE_PROXIMITY_FACTOR = -0.0002_rt;
 	constexpr auto CASTLE_RATING = 0.2_rt;
+	constexpr auto OPTIMAL_KNIGHT_SQUARES = 4;
+	constexpr auto OPTIMAL_BISHOP_SQUARES = 6;
+	constexpr auto OPTIMAL_QUEEN_SQUARES = 10;
+	constexpr auto OPTIMAL_ROOK_SQUARES = 6;
 
 	const PieceMap<Rating> pieceRatings{
 		{

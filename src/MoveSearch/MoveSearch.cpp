@@ -35,8 +35,7 @@ namespace chess {
 		void update(Rating childRating) {
 			if constexpr (Maximizing) {
 				updateAlpha(childRating);
-			}
-			else {
+			} else {
 				updateBeta(childRating);
 			}
 		}
@@ -80,7 +79,7 @@ namespace chess {
 		Ret minimax(const Node& node, AlphaBeta alphaBeta) {
 			if (node.getPositionData().legalMoves.empty()) {
 				if constexpr (std::same_as<Ret, PositionRating>) {
-					auto rating = node.getPositionData().isCheckmate ? checkmatedRating<Maximizing>() : 0_rt;
+					auto rating = node.getPositionData().isCheckmate() ? checkmatedRating<Maximizing>() : 0_rt;
 					return PositionRating{ rating, false };
 				} else {
 					return std::nullopt;
@@ -293,8 +292,6 @@ namespace chess {
 	} 
 
 	std::optional<Move> findBestMoveImpl(std::shared_ptr<AsyncSearchState> state, Position pos, SafeUnsigned<std::uint8_t> depth, RepetitionMap repetitionMap) {
-		debugPrint(std::format("Searching depth {}", depth.get()));
-
 		ProfilerLock l{ getBestMoveProfiler() };
 
 		state->stopRequested.store(false);

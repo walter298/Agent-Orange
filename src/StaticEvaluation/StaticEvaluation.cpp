@@ -19,7 +19,9 @@ namespace chess {
 			auto attackedPieceCount = std::popcount(attackedPieces);
 			return static_cast<Rating>(attackedPieceCount) * ATTACKED_PIECE_RATING;
 		};
-		return getAttackedPiecesRating(white, posData.blackSquares) - getAttackedPiecesRating(black, posData.whiteSquares);
+		auto allWhiteSquares = PositionData::allSquares(posData.whiteSquares);
+		auto allBlackSquares = PositionData::allSquares(posData.blackSquares);
+		return getAttackedPiecesRating(white, allBlackSquares) - getAttackedPiecesRating(black, allWhiteSquares);
 	}
 
 	Rating calcCastleRating(const Position& pos) {

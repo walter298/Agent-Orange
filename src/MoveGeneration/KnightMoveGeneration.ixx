@@ -1,6 +1,6 @@
 export module Chess.MoveGeneration:KnightMoveGeneration;
 
-export import :MoveGen;
+export import Chess.MoveGen;
 
 namespace chess {
 	struct KnightMoveGenerator {

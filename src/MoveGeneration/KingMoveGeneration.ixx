@@ -1,7 +1,7 @@
 export module Chess.MoveGeneration:KingMoveGeneration;
 
 import Chess.Bitboard;
-export import :MoveGen;
+export import Chess.MoveGen;
 
 namespace chess {
 	struct KingMoveGenerator {

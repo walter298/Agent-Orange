@@ -3,7 +3,7 @@ export module Chess.MoveGeneration:BruteForceDirectionalMoveGeneration;
 import Chess.Direction;
 
 import :ChainedMoveGenerator;
-import :MoveGen;
+import Chess.MoveGen;
 
 namespace chess {
 	template<dir::Direction Direction>

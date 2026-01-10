@@ -3,7 +3,7 @@ export module Chess.MoveGeneration:ChainedMoveGenerator;
 import std;
 
 export import Chess.Bitboard;
-export import :MoveGen;
+export import Chess.MoveGen;
 import :PawnMoveGeneration;
 
 export namespace chess {

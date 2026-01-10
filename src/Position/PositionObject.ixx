@@ -15,11 +15,12 @@ export namespace chess {
 			Square rookFrom = Square::None;
 			Square rookTo = Square::None;
 			Bitboard squaresBetweenRookAndKing = 0_bb;
+			Bitboard mandatoryUncheckedSquares = 0_bb;
 		};
-		static constexpr CastleMove WHITE_KINGSIDE = { G1, H1, F1, makeBitboard(F1, G1) };
-		static constexpr CastleMove WHITE_QUEENSIDE = { C1, A1, D1, makeBitboard(B1, C1, D1) };
-		static constexpr CastleMove BLACK_KINGSIDE = { G8, H8, F8, makeBitboard(F8, G8) };
-		static constexpr CastleMove BLACK_QUEENSIDE = { C8, A8, D8, makeBitboard(B8, C8, D8) };
+		static constexpr CastleMove WHITE_KINGSIDE = { G1, H1, F1, makeBitboard(F1, G1), makeBitboard(F1, G1) };
+		static constexpr CastleMove WHITE_QUEENSIDE = { C1, A1, D1, makeBitboard(B1, C1, D1), makeBitboard(C1, D1) };
+		static constexpr CastleMove BLACK_KINGSIDE = { G8, H8, F8, makeBitboard(F8, G8), makeBitboard(F8, G8) };
+		static constexpr CastleMove BLACK_QUEENSIDE = { C8, A8, D8, makeBitboard(B8, C8, D8), makeBitboard(C8, D8) };
 
 		template<typename MaybeConstPieceState>
 		struct TurnData {
