@@ -15,10 +15,21 @@ namespace chess {
 	constexpr auto PIECE_PROXIMITY_FACTOR = -0.0006_rt;
 	constexpr auto DESTINATION_SQUARE_PROXIMITY_FACTOR = -0.0002_rt;
 	constexpr auto CASTLE_RATING = 0.2_rt;
-	constexpr auto OPTIMAL_KNIGHT_SQUARES = 4;
+	constexpr auto OPTIMAL_KNIGHT_SQUARES = 5;
 	constexpr auto OPTIMAL_BISHOP_SQUARES = 6;
-	constexpr auto OPTIMAL_QUEEN_SQUARES = 10;
-	constexpr auto OPTIMAL_ROOK_SQUARES = 6;
+	constexpr auto OPTIMAL_QUEEN_SQUARES = 5;
+	constexpr auto OPTIMAL_ROOK_SQUARES = 1;
+	constexpr auto UNDEVELOPED_PIECE_PENALTY = -0.09_rt;
+
+	const PieceMap<int> optimalDestinationSquareCounts{
+		{
+		{ Queen, OPTIMAL_QUEEN_SQUARES },
+		{ Rook, OPTIMAL_ROOK_SQUARES },
+		{ Bishop, OPTIMAL_BISHOP_SQUARES },
+		{ Knight, OPTIMAL_KNIGHT_SQUARES },
+		{ Pawn, OPTIMAL_ROOK_SQUARES }
+		}
+	};
 
 	const PieceMap<Rating> pieceRatings{
 		{

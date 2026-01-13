@@ -21,10 +21,10 @@ namespace chess {
 		GameState m_state;
 		bool m_calculationRequested = false;
 		std::jthread m_thread; //thread is destroyed before all other members
-
+		
 		void run(std::stop_token stopToken);
 	public:
-		SearchThread();
+		SearchThread(SafeUnsigned<std::uint8_t> depth);
 		~SearchThread();
 		void stop();
 		void go(GameState gameState);
@@ -35,6 +35,8 @@ namespace chess {
 		SearchThread m_searchThread;
 		GameState m_state;
 	public:
+		Engine(SafeUnsigned<std::uint8_t> depth);
+
 		void setPos(const std::string& command);
 
 		void printBestMoveAsync(SafeUnsigned<std::uint8_t> depth = 6_su8);

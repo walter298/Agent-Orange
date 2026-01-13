@@ -37,7 +37,9 @@ namespace chess {
 		}
 	}
 
-	SearchThread::SearchThread() {
+	SearchThread::SearchThread(SafeUnsigned<std::uint8_t> depth)
+		: m_searcher{ depth }
+	{
 		m_thread = std::jthread{ [this](std::stop_token stopToken){ run(stopToken); } };
 	}
 	SearchThread::~SearchThread() {
@@ -58,6 +60,11 @@ namespace chess {
 		m_searcher.cancel(); //internally synchronized
 	}
 
+	Engine::Engine(SafeUnsigned<std::uint8_t> depth)
+		: m_searchThread{ depth }
+	{
+	}
+
 	void Engine::setPos(const std::string& commandStr) {
 		m_state.repetitionMap.clear();
 
@@ -71,8 +78,7 @@ namespace chess {
 		}
 	}
 
-	void Engine::printBestMoveAsync(SafeUnsigned<std::uint8_t> depth) {
-		m_state.depth = depth;
+	void Engine::printBestMoveAsync(SafeUnsigned<std::uint8_t> depth) { //todo: handle depth per go commands
 		m_searchThread.go(m_state);
 	}
 

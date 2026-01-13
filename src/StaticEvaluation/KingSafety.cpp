@@ -18,12 +18,12 @@ namespace chess {
 				auto [bFile, bRank] = fileRankOf(b);
 				auto dx = std::abs(aFile - bFile);
 				auto dy = std::abs(aRank - bRank);
-				m_table[a][b] = static_cast<std::uint8_t>(std::max(dx, dy));
+				m_table[static_cast<std::uint8_t>(a)][static_cast<std::uint8_t>(b)] = static_cast<std::uint8_t>(std::max(dx, dy));
 			}
 		}
 
 		constexpr std::uint8_t operator()(Square a, Square b) const {
-			return m_table[a][b];
+			return m_table[static_cast<std::uint8_t>(a)][static_cast<std::uint8_t>(b)];
 		}
 	};
 

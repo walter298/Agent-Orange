@@ -8,7 +8,7 @@ namespace chess {
 		EnPessantData ret;
 
 		auto addAdjacentSquare = [&](Square square) {
-			if (square != None) {
+			if (square != Square::None) {
 				auto board = makeBitboard(square);
 				if (board & pawns) {
 					ret.pawns |= board;

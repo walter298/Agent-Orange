@@ -21,7 +21,7 @@ namespace chess {
 			auto node = Node::makeRoot(pos, 1_su8, rMap);
 			auto priorities = getMovePriorities(node, Move::null());
 
-			if (priorities[0].getMove().to != H6) {
+			if (priorities[0].getMove().to != Square::H6) {
 				std::println("testMoveOrdering failed: queen capture is not the best move");
 				printPriorities(priorities);
 			}

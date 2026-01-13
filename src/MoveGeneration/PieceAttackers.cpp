@@ -1,3 +1,7 @@
+module;
+
+#include <magic_enum/magic_enum.hpp>
+
 module Chess.MoveGeneration:PieceAttackers;
 
 import Chess.Square;
@@ -8,6 +12,24 @@ import :RayTable;
 import :SlidingMoveGenerators;
 
 namespace chess {
+	struct RayData {
+		Bitboard directRay = 0;
+		Bitboard xRay = 0;
+	};
+
+	template<typename EnemyMoveGenerator>
+	RayData calcRayData(Square currAttacker, Square attackedPiece, Bitboard normalEmpty, Bitboard boardWithoutAttackedPiece, 
+		EnemyMoveGenerator enemyMoveGenerator)
+	{
+		auto attackerBoard = makeBitboard(currAttacker);
+		auto directAttackRay = getRay(attackedPiece, currAttacker);
+
+		auto directlyAttackedSquares = enemyMoveGenerator(attackerBoard, normalEmpty).all();
+		auto indirectlyAttackedSquares = enemyMoveGenerator(attackerBoard, boardWithoutAttackedPiece).all() & ~directlyAttackedSquares;
+		
+		return { directAttackRay, indirectlyAttackedSquares };
+	}
+
 	template<SlidingMoveGenerator EnemyMoveGenerator>
 	void calcSlidingAttackersImpl(AttackerData& attackerData, Bitboard attackedPiece, Piece attackerType, Bitboard possibleAttackers, 
 		Bitboard empty, EnemyMoveGenerator enemyMoveGenerator)
@@ -18,13 +40,12 @@ namespace chess {
 		auto attackers = reverseAttacks.nonEmptyDestSquares & possibleAttackers;
 		attackerData.attackers[attackerType] |= attackers;
 
+		auto attackedPieceSquare = nextSquare(attackedPiece);
 		auto boardWithoutAttackedPiece = empty | attackedPiece; //ensure indirectly attacked rays are calculated as well
 		while (nextSquare(attackers, currAttacker)) {
-			auto attackerBoard = makeBitboard(currAttacker);
-			auto directAttackRay = getRay(nextSquare(attackedPiece), currAttacker);
-			auto indirectAttackRay = enemyMoveGenerator(attackerBoard, boardWithoutAttackedPiece).all() & ~directAttackRay;
-			attackerData.rays |= directAttackRay;
-			attackerData.indirectRays |= indirectAttackRay;
+			auto [directRay, xRay] = calcRayData(currAttacker, attackedPieceSquare, empty, boardWithoutAttackedPiece, enemyMoveGenerator);
+			attackerData.rays |= directRay;
+			attackerData.indirectRays |= xRay;
 		}
 	}
 
@@ -54,6 +75,14 @@ namespace chess {
 		attackerData.attackers[Pawn] |= pawnAttackers;
 	}
 
+	void printSquares(const std::string& s, Bitboard b) {
+		std::println("{} contains: ", s);
+		auto currSquare = Square::None;
+		while (nextSquare(b, currSquare)) {
+			std::println("{}", magic_enum::enum_name(currSquare));
+		}
+	}
+
 	AttackerData calcAttackers(bool isWhite, const PieceState& enemies, Bitboard empty, Bitboard attackedPiece) {
 		AttackerData ret;
 
@@ -75,6 +104,9 @@ namespace chess {
 		} else {
 			calcPawnAttackers(ret, attackedPiece, enemies[Pawn], blackPawnAttackGenerator);
 		}
+
+//		printSquares("Indirect rays", ret.indirectRays);
+//		printSquares("Direct rays", ret.rays);
 
 		return ret;
 	}

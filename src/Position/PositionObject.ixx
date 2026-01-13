@@ -17,10 +17,10 @@ export namespace chess {
 			Bitboard squaresBetweenRookAndKing = 0_bb;
 			Bitboard mandatoryUncheckedSquares = 0_bb;
 		};
-		static constexpr CastleMove WHITE_KINGSIDE = { G1, H1, F1, makeBitboard(F1, G1), makeBitboard(F1, G1) };
-		static constexpr CastleMove WHITE_QUEENSIDE = { C1, A1, D1, makeBitboard(B1, C1, D1), makeBitboard(C1, D1) };
-		static constexpr CastleMove BLACK_KINGSIDE = { G8, H8, F8, makeBitboard(F8, G8), makeBitboard(F8, G8) };
-		static constexpr CastleMove BLACK_QUEENSIDE = { C8, A8, D8, makeBitboard(B8, C8, D8), makeBitboard(C8, D8) };
+		static constexpr CastleMove WHITE_KINGSIDE = {Square::G1, Square::H1, Square::F1, makeBitboard(Square::F1, Square::G1), makeBitboard(Square::F1, Square::G1) };
+		static constexpr CastleMove WHITE_QUEENSIDE = {Square::C1, Square::A1, Square::D1, makeBitboard(Square::B1, Square::C1, Square::D1), makeBitboard(Square::C1, Square::D1) };
+		static constexpr CastleMove BLACK_KINGSIDE = {Square::G8, Square::H8, Square::F8, makeBitboard(Square::F8, Square::G8), makeBitboard(Square::F8, Square::G8) };
+		static constexpr CastleMove BLACK_QUEENSIDE = {Square::C8, Square::A8, Square::D8, makeBitboard(Square::B8, Square::C8, Square::D8), makeBitboard(Square::C8, Square::D8) };
 
 		template<typename MaybeConstPieceState>
 		struct TurnData {

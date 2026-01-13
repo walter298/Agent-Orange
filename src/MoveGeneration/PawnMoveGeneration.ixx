@@ -7,7 +7,7 @@ export import Chess.MoveGen;
 namespace chess {
 	export struct EnPessantData {
 		Bitboard pawns = 0;
-		Square squareInFrontOfEnemyPawn = None;
+		Square squareInFrontOfEnemyPawn = Square::None;
 	};
 
 	struct WhitePawnAttackGenerator {

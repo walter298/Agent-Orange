@@ -52,9 +52,11 @@ namespace chess {
 		}
 	};
 
-	struct PositionRating {
+	struct MoveRating {
+		Move move = Move::null();
 		Rating rating = 0_rt;
 		bool invalidTTEntry = false;
+		std::optional<SafeUnsigned<std::uint8_t>> checkmateLevel = std::nullopt;
 	};
 
 	class Searcher {
@@ -62,11 +64,30 @@ namespace chess {
 		static constexpr SafeUnsigned<std::uint8_t> RANDOMIZATION_CUTOFF{ 2 };
 		std::mt19937 m_urbg;
 		bool m_helper = false;
+		SafeUnsigned<std::uint8_t> m_depth;
 		const std::atomic_bool* m_stopRequested;
 	public:
-		Searcher(bool helper, std::atomic_bool* stopRequested)
-			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_stopRequested{ stopRequested }
+		Searcher(bool helper, SafeUnsigned<std::uint8_t> depth, const std::atomic_bool* stopRequested)
+			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_depth{ depth }, m_stopRequested{ stopRequested }
 		{
+		}
+
+		Rating getVotingWeight(const MoveRating& moveRating, Rating& worstScore, Rating maxScoreDiff) const {
+			zAssert(maxScoreDiff >= 0_rt);
+
+			auto ret = 1_rt;
+			ret += std::pow(2_rt, static_cast<Rating>(m_depth.get()));
+			
+			//give up to 20% boost depending on how good the score is
+			if (maxScoreDiff != 0_rt) {
+				ret *= (1.2_rt * (moveRating.rating - worstScore) / maxScoreDiff);
+			}
+
+			if (moveRating.checkmateLevel) {
+				ret += ret / static_cast<Rating>(moveRating.checkmateLevel->get());
+			}
+
+			return ret;
 		}
 	private:
 		static bool wouldMakeRepetition(const Position& pos, Move pvMove, const RepetitionMap& repetitionMap) {
@@ -75,37 +96,26 @@ namespace chess {
 			return repetitionCount >= 2; //return 2 (not 3) because the opposing player could then make a threefold repetition after this
 		}
 
-		template<typename Ret, bool Maximizing>
-		Ret minimax(const Node& node, AlphaBeta alphaBeta) {
+		template<bool Maximizing>
+		MoveRating minimax(const Node& node, AlphaBeta alphaBeta) {
 			if (node.getPositionData().legalMoves.empty()) {
-				if constexpr (std::same_as<Ret, PositionRating>) {
-					auto rating = node.getPositionData().isCheckmate() ? checkmatedRating<Maximizing>() : 0_rt;
-					return PositionRating{ rating, false };
-				} else {
-					return std::nullopt;
+				MoveRating ret;
+
+				if (node.getPositionData().isCheckmate()) {
+					ret.rating = checkmatedRating<Maximizing>();
+					ret.checkmateLevel = node.getLevel();
 				}
+				return ret;
 			}
 
-			if constexpr (std::same_as<Ret, PositionRating>) {
-				if (node.getRepetitionMap().getPositionCount(node.getPos()) >= 3) {
-					return { 0_rt, true };
-				} 
+			if (node.getRepetitionMap().getPositionCount(node.getPos()) >= 3) {
+				return { Move::null(), 0_rt, true };
 			}
 
 			auto pvMove = Move::null();
 
-			auto returnImpl = [&](const PositionEntry& entry) {
-				if constexpr (std::same_as<Ret, PositionRating>) {
-					return PositionRating{ entry.rating, false };
-				} else { //don't prune at the root if we are a helper
-					return std::optional{ entry.bestMove };
-				} 
-			};
-
-			if constexpr (std::same_as<Ret, PositionRating>) { //node will not be done if we are at the root, so it is safe to have this check only for ratings
-				if (m_stopRequested->load()) {
-					return { node.getRating(), false };
-				}
+			if (m_stopRequested->load()) {
+				return { Move::null(), node.getRating(), false };
 			}
 			
 			if (!m_stopRequested->load()) {
@@ -117,13 +127,13 @@ namespace chess {
 						switch (entry.bound) {
 						case InWindow:
 							if (canUseEntry) {
-								return returnImpl(entry);
+								return { entry.bestMove, entry.rating, false };
 							}
 							break;
 						case LowerBound:
 							if (entry.rating >= alphaBeta.getBeta()) {
 								if (canUseEntry) {
-									return returnImpl(entry);
+									return { entry.bestMove, entry.rating, false };
 								}
 							} else {
 								alphaBeta.updateAlpha(entry.rating);
@@ -132,7 +142,7 @@ namespace chess {
 						case UpperBound:
 							if (entry.rating <= alphaBeta.getAlpha()) {
 								if (canUseEntry) {
-									return returnImpl(entry);
+									return { entry.bestMove, entry.rating, false };
 								}
 							} else {
 								alphaBeta.updateBeta(entry.rating);
@@ -142,18 +152,14 @@ namespace chess {
 					}
 				}
 			}
-			if constexpr (std::same_as<Ret, PositionRating>) { //node will not be done if we are at the root, so it is safe to have this check only for ratings
-				if (node.isDone()) {
-					return { node.getRating(), false }; //already checked whether position is a repetition
-				} else if (m_stopRequested->load()) {
-					return { node.getRating(), true };
-				}
+			if (node.isDone()) {
+				return { Move::null(), node.getRating(), false }; //safe to return Move::null(), as node is never done at the root
 			}
-			return bestChildPosition<Ret, Maximizing>(node, pvMove, alphaBeta);
+			return bestChildPosition<Maximizing>(node, pvMove, alphaBeta);
 		}
 
-		template<typename Ret, bool Maximizing>
-		Ret bestChildPosition(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
+		template<bool Maximizing>
+		MoveRating bestChildPosition(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
 			auto originalAlphaBeta = alphaBeta;
 			auto movePriorities = [&] {
 				constexpr SafeUnsigned<std::uint8_t> RANDOMIZATION_CUTOFF{ 3 };
@@ -167,25 +173,24 @@ namespace chess {
 					return getMovePriorities(node, pvMove);
 				}
 			}();
-			auto bestMove = Move::null();
-			PositionRating bestRating{ worstPossibleRating<Maximizing>(), false };
-
+			MoveRating bestRating{ Move::null(), worstPossibleRating<Maximizing>(), false };
+			
 			auto bound = InWindow;
 			bool didNotPrune = true;
 
 			for (const auto& movePriority : movePriorities) {
 				auto child = Node::makeChild(node, movePriority);
-				auto childRating = minimax<PositionRating, !Maximizing>(child, alphaBeta);
-
+				auto childRating = minimax<!Maximizing>(child, alphaBeta);
+				
 				if constexpr (Maximizing) {
 					if (childRating.rating > bestRating.rating) {
 						bestRating = childRating;
-						bestMove = movePriority.getMove();
+						bestRating.move = movePriority.getMove();
 					}
 				} else {
 					if (childRating.rating < bestRating.rating) {
 						bestRating = childRating;
-						bestMove = movePriority.getMove();
+						bestRating.move = movePriority.getMove();
 					}
 				}
 
@@ -196,9 +201,12 @@ namespace chess {
 					didNotPrune = false;
 					break;
 				}
+
+				if (childRating.rating == checkmatedRating<!Maximizing>()) {
+					break;
+				}
 			}
 
-			zAssert(bestMove != Move::null());
 			if (didNotPrune) {
 				if constexpr (Maximizing) {
 					if (bestRating.rating <= originalAlphaBeta.getAlpha()) {
@@ -212,41 +220,34 @@ namespace chess {
 			}
 
 			if (!bestRating.invalidTTEntry) {
-				PositionEntry newEntry{ bestMove, bestRating.rating, node.getRemainingDepth(), bound };
+				PositionEntry newEntry{ bestRating.move, bestRating.rating, node.getRemainingDepth(), bound };
 				storePositionEntry(node.getPos(), newEntry);
 			}
 
-			bestRating.invalidTTEntry = false; //don't propagate repetition flag up the tree
-
-			if constexpr (std::same_as<Ret, std::optional<Move>>) {
-				return bestMove;
-			} else {
-				return bestRating;
-			}
+			bestRating.invalidTTEntry = false; //don't propagate repetition flag up the tree (stop requests will be rechecked)
+			return bestRating;
 		}
 
 		template<bool Maximizing>
-		std::optional<Move> startAlphaBetaSearch(const Position& pos, SafeUnsigned<std::uint8_t> depth, RepetitionMap repetitionMap) {
+		MoveRating startAlphaBetaSearch(const Position& pos, SafeUnsigned<std::uint8_t> depth, RepetitionMap repetitionMap) {
 			AlphaBeta alphaBeta;
 			auto root = Node::makeRoot(pos, depth, repetitionMap);
-			return minimax<std::optional<Move>, Maximizing>(root, alphaBeta);
+			return minimax<Maximizing>(root, alphaBeta);
 		}
 
 		template<bool Maximizing>
-		std::optional<Move> iterativeDeepening(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
-			for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
+		MoveRating iterativeDeepening(const Position& pos, const RepetitionMap& repetitionMap) {
+			for (auto iterDepth = 1_su8; iterDepth < m_depth; ++iterDepth) {
 				startAlphaBetaSearch<Maximizing>(pos, iterDepth, repetitionMap);
 			}
-			return startAlphaBetaSearch<Maximizing>(pos, depth, repetitionMap);
+			return startAlphaBetaSearch<Maximizing>(pos, m_depth, repetitionMap);
 		}
 	public:
-		std::optional<Move> operator()(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
+		MoveRating operator()(const Position& pos, const RepetitionMap& repetitionMap) {
 			if (pos.isWhite()) {
-				debugPrint("Searching for white");
-				return iterativeDeepening<true>(pos, depth, repetitionMap);
+				return iterativeDeepening<true>(pos, repetitionMap);
 			} else {
-				debugPrint("Searching for black");
-				return iterativeDeepening<false>(pos, depth, repetitionMap);
+				return iterativeDeepening<false>(pos, repetitionMap);
 			}
 		}
 	};
@@ -259,35 +260,64 @@ namespace chess {
 		std::atomic_bool stopRequested = false;
 		std::vector<Searcher> searchers;
 
-		AsyncSearchState() {
+		AsyncSearchState(SafeUnsigned<std::uint8_t> maxDepth) {
+			zAssert(maxDepth >= 1_su8);
+
 			searchers.reserve(THREAD_COUNT);
-			searchers.emplace_back(false, &stopRequested); //insert main thread
+			searchers.emplace_back(false, maxDepth, &stopRequested); //insert main thread
 			if (THREAD_COUNT > 1) {
 				for (auto i = 0uz; i < THREAD_COUNT - 1; i++) { //insert helper threads
-					searchers.emplace_back(true, &stopRequested);
+					auto d = (SafeUnsigned{ static_cast<std::uint8_t>(i) } % 2_su8) == 0_su8 ? 1_su8 : 0_su8;
+					auto depth = maxDepth == 1_su8 ? maxDepth : maxDepth - d;
+					searchers.emplace_back(true, depth, &stopRequested);
 				}
 			}
 		}
 	};
 
-	AsyncSearch::AsyncSearch() 
-		: m_state{ std::make_shared<AsyncSearchState>() }
+	AsyncSearch::AsyncSearch(SafeUnsigned<std::uint8_t> maxDepth)
+		: m_state{ std::make_shared<AsyncSearchState>(maxDepth) }
 	{
 	}
 
-	Move voteForBestMove(const std::vector<std::optional<Move>>& moves) {
-		std::unordered_map<Move, int, MoveHasher> moveOccurrences;
-		auto bestMove = Move::null();
-		auto bestMoveCount = 0;
+	//rn2kb1r/4pppp/2p5/p4n2/P2q1PbP/1Pp2N2/3N2P1/R1BKQB1R w kq - 0 15
 
-		for (const auto& move : moves) {
-			auto& occ = moveOccurrences[*move];
-			occ++;
-			if (occ > bestMoveCount) {
-				bestMoveCount = occ;
-				bestMove = *move;
+	Move voteForBestMove(const std::vector<Searcher>& searchers, const std::vector<MoveRating>& moves) {
+		auto anyPathsLeadToCheckmate = std::ranges::any_of(moves, [](const MoveRating& m) {
+			return m.checkmateLevel.has_value();
+		});
+		if (anyPathsLeadToCheckmate) {
+			auto quickestCheckmate = std::ranges::min_element(moves, std::less{}, [](const MoveRating& mr) {
+				if (!mr.checkmateLevel) {
+					return 255_su8;
+				}
+				return *mr.checkmateLevel;
+			});
+			return quickestCheckmate->move;
+		}
+
+		auto [worstIt, bestIt] = std::ranges::minmax_element(moves, std::less{}, [](const MoveRating& mr) {
+			return mr.rating;
+		});
+		auto worstScore = worstIt->rating;
+		auto maxScoreDiff = bestIt->rating - worstScore;
+
+		std::unordered_map<Move, Rating, MoveHasher> moveRatings;
+		auto bestMove = Move::null();
+		auto bestVoteRating = 0_rt;
+
+		for (const auto& [moveRating, searcher] : std::views::zip(moves, searchers)) {
+			if (moveRating.checkmateLevel) {
+				debugPrint(std::format("Thread found checkmate in {} moves", static_cast<std::uint32_t>(moveRating.checkmateLevel->get())));
+			}
+			auto& voteRating = moveRatings[moveRating.move];
+			voteRating += searcher.getVotingWeight(moveRating, worstScore, maxScoreDiff);
+			if (voteRating > bestVoteRating) {
+				bestVoteRating = voteRating;
+				bestMove = moveRating.move;
 			}
 		}
+
 		return bestMove;
 	} 
 
@@ -297,19 +327,21 @@ namespace chess {
 		state->stopRequested.store(false);
 
 		auto moveCandidateFutures = state->pool.submit_sequence(0uz, state->searchers.size(), [&](size_t i) {
-			SafeUnsigned sIdx{ static_cast<std::uint8_t>(i) };
-			auto d = ((sIdx % 2_su8 == 0_su8) ? 0_su8 : 1_su8);
-			return state->searchers[i](pos, std::max(depth - d, 1_su8), repetitionMap);
+			return state->searchers[i](pos, repetitionMap);
 		});
 		
 		auto moveCandidates = moveCandidateFutures.get();
 		zAssert(!moveCandidates.empty());
 
-		if (!moveCandidates.front()) { //if one move is empty, all moves are empty
+		//move candidates could contain null moves if a stop was requested, or if there is checkmate
+		auto hasNullMove = std::ranges::any_of(moveCandidates, [](const MoveRating& mr) {
+			return mr.move == Move::null();
+		});
+		if (hasNullMove) {
 			return std::nullopt;
 		}
 
-		return voteForBestMove(moveCandidates);
+		return voteForBestMove(state->searchers, moveCandidates);
 	}
 
 	std::optional<Move> AsyncSearch::findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {

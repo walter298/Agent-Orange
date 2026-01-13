@@ -22,9 +22,9 @@ namespace chess {
 
 	static Bitboard ithSubBoard(Bitboard src, Bitboard i) {
 		Bitboard subBoard = 0;
-		auto s = None;
+		auto s = Square::None;
 		while (nextSquare(i, s)) {
-			subBoard |= makeBitboard(getNthSetSquare(src, s));
+			subBoard |= makeBitboard(getNthSetSquare(src, static_cast<int>(s)));
 		}
 		return subBoard;
 	}

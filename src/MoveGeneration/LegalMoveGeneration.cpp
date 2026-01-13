@@ -1,3 +1,7 @@
+module;
+
+#include <magic_enum/magic_enum.hpp>
+
 module Chess.MoveGeneration:LegalMoveGeneration;
 
 import nlohmann.json;
@@ -81,6 +85,12 @@ namespace chess {
 		};
 		using PinMap = SquareMap<PinData>;
 
+		static void printSquares(Bitboard b) {
+			auto currSquare = Square::None;
+			while (nextSquare(b, currSquare)) {
+				std::println("{}", magic_enum::enum_name(currSquare));
+			}
+		}
 		static PinData calcPinData(Square allySquare, const PieceState& enemies, const AttackerData& kingAttackerData, 
 			const PieceLocationData& pieceLocations)
 		{
@@ -94,7 +104,7 @@ namespace chess {
 				return ret;
 			}
 			auto newRay = newSlidingAttackers.allRays() & ~kingAttackerData.allRays();
-
+			
 			ret.mustMoveInPinRay = true;
 			ret.pinRay = newRay; 
 			ret.pinnerSquare = nextSquare(newAttacker);
@@ -147,11 +157,9 @@ namespace chess {
 		}
 
 		template<typename MoveGenerator>
-		static Bitboard addMoves(PositionData& posData, const PinMap& pinMap, Bitboard pieces, Piece pieceType, 
+		static void addMoves(PositionData& posData, const PinMap& pinMap, Bitboard pieces, Piece pieceType, 
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveGenerator moveGen, AttackerData kingAttackerData)
 		{
-			Bitboard allSquares = 0;
-
 			auto currPiecePos = Square::None;
 			while (nextSquare(pieces, currPiecePos)) {
 				auto destSquares = [&] {
@@ -161,23 +169,23 @@ namespace chess {
 						return moveGen(makeBitboard(currPiecePos), pieceLocations.empty);
 					}
 				}();
+
 				if (pinMap[currPiecePos].mustMoveInPinRay) {
 					destSquares.emptyDestSquares    &= pinMap[currPiecePos].pinRay;
 					destSquares.nonEmptyDestSquares &= makeBitboard(pinMap[currPiecePos].pinnerSquare);
 				}
-				allSquares |= destSquares.all();
-
+				
 				auto attackers = kingAttackerData.attackers.calcAllLocations();
 				if (attackers) {
 					destSquares &= (kingAttackerData.rays | attackers);
 				}
+
 				if constexpr (PawnMoveGenerator<MoveGenerator>) {
 					addMoves(posData, currPiecePos, destSquares, pieceType, pieceLocations, enemies, PAWN_ADDER);
 				} else {
 					addMoves(posData, currPiecePos, destSquares, pieceType, pieceLocations, enemies, DEFAULT_MOVE_ADDER);
 				}
 			}
-			return allSquares;
 		}
 
 		static void addKingMoves(PositionData& posData, Bitboard allEnemySquares, const Position::ImmutableTurnData& turnData, 
@@ -226,7 +234,7 @@ namespace chess {
 				}
 				PieceLocationData newPieceLocations{
 					pieceLocations.allyKing,
-					pieceLocations.allies & ~makeBitboard(from) | makeBitboard(enPassantData.squareInFrontOfEnemyPawn),
+					pieceLocations.allies & ~makeBitboard(from),
 					pieceLocations.enemies & ~makeBitboard(jumpedEnemyPawn)
 				};
 				auto newSlidingAttackers = calcSlidingAttackers(enemies, newPieceLocations.empty, newPieceLocations.allyKing);
@@ -298,7 +306,7 @@ namespace chess {
 			return MoveGenerator::calcAllLegalMoves(turnData);
 		}
 	}
-
+	//8/k7/8/4p2p/8/6p1/8/r3K3 w - - 2 57
 	PositionData calcPositionData(const Position& pos) {
 		return calcAllLegalMovesImpl<false>(pos);
 	}

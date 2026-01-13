@@ -3,6 +3,7 @@ export module Chess.MoveGeneration:SlidingMoveGenerators;
 import :ChainedMoveGenerator;
 import Chess.MoveGen;
 import :TableLoader;
+import Chess.BitboardImage;
 
 namespace chess {
 	_forceinline const MagicMaps<StaticBMI>& getMaps() {
@@ -13,9 +14,9 @@ namespace chess {
 	_forceinline MoveGen getSlidingMovesImpl(const SquareMap<StaticBMI>& map, Bitboard movingPieces, Bitboard empty) {
 		Bitboard ret = 0;
 
-		auto currSquare = None;
+		auto currSquare = Square::None;
 		while (nextSquare(movingPieces, currSquare)) {
-			auto blockers = ~empty & ~currSquare;
+			auto blockers = ~empty & ~makeBitboard(currSquare);
 			auto allSquares = map[currSquare][blockers];
 			ret |= allSquares;
 		}

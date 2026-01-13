@@ -13,8 +13,6 @@ import Chess.Position.RepetitionMap;
 import :GameState;
 
 namespace chess {
-	Engine engine;
-
 	std::string getRemainingTokens(std::istringstream& iss) {
 		auto buff = iss.str();
 		auto currentPos = static_cast<size_t>(iss.tellg());
@@ -22,6 +20,8 @@ namespace chess {
 	}
 
 	void playUCI(SafeUnsigned<std::uint8_t> depth) {
+		Engine engine{ depth };
+
 		std::istringstream iss;
 		std::string line;
 		std::string token;

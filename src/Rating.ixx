@@ -22,16 +22,9 @@ export namespace chess {
 		}
 	}
 
-	auto nextAfter(Rating r) {
-		if constexpr (std::same_as<Rating, float>) {
-			return std::nextafterf(r, 0_rt);
-		} else {
-			return std::nextafter(r, 0_rt);
-		}
-	}
-
 	template<bool Maximizing>
-	constexpr Rating checkmatedRating() {
-		return nextAfter(worstPossibleRating<Maximizing>());
+	consteval Rating checkmatedRating() {
+		constexpr auto RET = -1000000_rt;
+		return Maximizing ? RET : -RET;
 	}
 }

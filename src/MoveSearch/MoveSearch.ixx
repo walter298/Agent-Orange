@@ -15,7 +15,7 @@ namespace chess {
 	private:
 		std::shared_ptr<AsyncSearchState> m_state;
 	public:
-		AsyncSearch();
+		AsyncSearch(SafeUnsigned<std::uint8_t> maxDepth);
 
 		std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap);
 		void cancel();
