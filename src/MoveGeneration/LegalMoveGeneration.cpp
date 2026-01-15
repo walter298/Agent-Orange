@@ -94,6 +94,7 @@ namespace chess {
 		static PinData calcPinData(Square allySquare, const PieceState& enemies, const AttackerData& kingAttackerData, 
 			const PieceLocationData& pieceLocations)
 		{
+			ProfilerLock l{ getCalcPinnedAlliesProfiler() };
 			PinData ret;
 
 			auto newEmpty = pieceLocations.empty | makeBitboard(allySquare);

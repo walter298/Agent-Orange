@@ -16,7 +16,7 @@ namespace chess {
 	};
 
 	void deprioritizeNonEvasionMoves(const PieceData& attackedPiece, const Position::ImmutableTurnData& turnData,
-		Bitboard empty, std::vector<MovePriority>& priorities)
+		Bitboard empty, arena::Vector<MovePriority>& priorities)
 	{
 		auto attackerData = calcAttackers(turnData.isWhite, turnData.enemies, empty, makeBitboard(attackedPiece.square));
 		auto attackers = attackerData.attackers.calcAllLocations();
@@ -43,7 +43,7 @@ namespace chess {
 		}
 	}
 
-	void deprioritizeNonEvasionMoves(const Node& node, Bitboard allEnemySquares, std::vector<MovePriority>& movePriorities) {
+	void deprioritizeNonEvasionMoves(const Node& node, Bitboard allEnemySquares, arena::Vector<MovePriority>& movePriorities) {
 		auto turnData = node.getPos().getTurnData();
 		
 		auto empty = ~(turnData.enemies.calcAllLocations() | turnData.allies.calcAllLocations());
@@ -52,13 +52,13 @@ namespace chess {
 		}
 	}
 
-	FixedVector<MovePriority> getMovePrioritiesImpl(const Node& node, const Move& pvMove) {
+	arena::Vector<MovePriority> getMovePrioritiesImpl(const Node& node, const Move& pvMove) {
 		zAssert(node.getRemainingDepth() != 0_su8);
 
 		const auto& posData = node.getPositionData();
 		auto allEnemySquares = node.getPositionData().allEnemySquares();
 
-		std::vector priorities{ std::from_range, posData.legalMoves | std::views::transform([&](const Move& move) {
+		arena::Vector<MovePriority> priorities{ std::from_range, posData.legalMoves | std::views::transform([&](const Move& move) {
 			return MovePriority{ move, allEnemySquares, node.getRemainingDepth() - 1_su8 };
 		}) };
 
@@ -81,10 +81,10 @@ namespace chess {
 
 		zAssert(!priorities.empty());
 
-		return FixedVector{ std::move(priorities) };
+		return priorities;
 	}
 
-	FixedVector<MovePriority> getMovePriorities(const Node& node, const Move& pvMove) {
+	arena::Vector<MovePriority> getMovePriorities(const Node& node, const Move& pvMove) {
 		ProfilerLock l{ getMovePrioritiesProfiler() };
 		return getMovePrioritiesImpl(node, pvMove);
 	}

@@ -16,12 +16,12 @@ namespace chess {
 
 	auto getChildrenPercentages(const ProfilerNode& parent) {
 		return parent.childNames | std::views::transform([&](const auto& name) {
-			if (parent.getTimeSpent() == 0ns) {
+			if (parent.getAverageTimeSpent() == 0ns) {
 				return std::pair{ name, 0.0 };
 			}
 			const auto& child = getProfilerNode(name);
-			auto percentage = static_cast<double>(child.getTimeSpent().count()) /
-							  static_cast<double>(parent.getTimeSpent().count());
+			auto percentage = static_cast<double>(child.getAverageTotalTimeSpentAcrossThreads().count()) /
+							  static_cast<double>(parent.getAverageTotalTimeSpentAcrossThreads().count());
 			percentage *= 100.0;
 			return std::pair{ name, percentage };
 		});
@@ -40,16 +40,12 @@ namespace chess {
 		auto json = nlohmann::json::array();
 		forEachProfilerNode([&](const std::string& name, const ProfilerNode& node) {
 			auto timesRun = node.getTimesRun();
-			auto timeSpent = node.getTimeSpent();
-			auto average = 0ns;
-			if (timesRun != 0) {
-				average = timeSpent / timesRun;
-			}
+			auto averageTimeSpent = node.getAverageTimeSpent();
+			
 			json.push_back({
 				{ "name", name },
 				{ "times_run", timesRun },
-				{ "time_spent_ns", timeSpent.count() },
-				{ "average_ns", average.count() },
+				{ "average_ns", averageTimeSpent.count() },
 				{ "child_percentages", getChildPercentagesJson(node) }
 			});
 		});

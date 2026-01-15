@@ -1,5 +1,6 @@
 import std;
 
+import Chess.Arena;
 import Chess.BitboardImage;
 import Chess.MoveGeneration;
 import Chess.UCI;
@@ -84,6 +85,8 @@ namespace chess {
 }
 
 int main(int argc, const char** argv) {
+	chess::arena::init();
+
 	chess::MaybeProfilerGuard guard;
 
 	if (argc == 1) {

@@ -1,5 +1,6 @@
 export module Chess.MoveSearch:Node;
 
+import Chess.Arena;
 export import Chess.Position;
 export import Chess.Position.RepetitionMap;
 export import Chess.Rating;
@@ -20,39 +21,42 @@ export namespace chess {
 		Rating m_materialExchanged = 0_rt;
 		Rating m_materialSignSwap = 1_rt;
 		bool m_isChild = true;
+		arena::MemoryRegion* m_memoryRegion = nullptr;
+		void* m_offset = nullptr;
 
-		explicit Node(bool isWhite, RepetitionMap& repetitionMap)
-			: m_repetitionMap{ repetitionMap }, m_positionData{ isWhite }
+		Node(const Position& pos, RepetitionMap& repetitionMap)
+			: m_pos{ pos }, m_positionData{ calcPositionData(pos) }, m_repetitionMap{ repetitionMap }
 		{
 		};
-		Node(const Node&) = default;
 	public:
-		static Node makeRoot(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, RepetitionMap& repetitionMap) {
-			Node ret{ root.isWhite(), repetitionMap };
-			ret.m_pos = root;
-			ret.m_positionData = calcPositionData(ret.m_pos);
-			ret.m_levelsToSearch = maxDepth;
-			ret.m_isChild = false;
+		Node(const Position& root, SafeUnsigned<std::uint8_t> maxDepth, RepetitionMap& repetitionMap)
+			: Node{ root, repetitionMap }
+		{
+			m_memoryRegion = arena::getMemoryRegion();
+			m_offset = m_memoryRegion->getOffset();
+			m_levelsToSearch = maxDepth;
+			m_isChild = false;
 			if (!root.isWhite()) {
-				ret.m_materialSignSwap *= -1_rt;
+				m_materialSignSwap *= -1_rt;
 			}
-			return ret;
 		}
-		static Node makeChild(const Node& parent, const MovePriority& movePriority) {
-			Node ret{ !parent.m_pos.isWhite(), parent.m_repetitionMap };
-			ret.m_pos = { parent.m_pos, movePriority.getMove() };
-			ret.m_repetitionMap.get().push(ret.m_pos);
-			ret.m_positionData = calcPositionData(ret.m_pos);
-			ret.m_level = parent.m_level + 1_su8;
-			ret.m_materialSignSwap *= -1_rt;
-			ret.m_levelsToSearch = movePriority.getDepth();
-			return ret;
+		Node(const Node& parent, const MovePriority& movePriority)
+			: Node{ Position{ parent.m_pos, movePriority.getMove() }, parent.m_repetitionMap }
+		{
+			m_memoryRegion = parent.m_memoryRegion;
+			m_offset = m_memoryRegion->getOffset();
+			m_repetitionMap.get().push(m_pos);
+			m_positionData = calcPositionData(m_pos);
+			m_level = parent.m_level + 1_su8;
+			m_materialSignSwap *= -1_rt;
+			m_levelsToSearch = movePriority.getDepth();
 		}
 
 		~Node() {
 			if (m_isChild) {
 				m_repetitionMap.get().pop(m_pos);
 			}
+			m_memoryRegion->resetToOffset(m_offset);
 		}
 
 		bool inAttackSequence() const {

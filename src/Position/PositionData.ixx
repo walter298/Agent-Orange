@@ -2,6 +2,7 @@ export module Chess.Position:PositionData;
 
 export import std;
 
+import Chess.Arena;
 export import Chess.Bitboard;
 export import Chess.Move;
 export import Chess.MoveGen;
@@ -10,7 +11,7 @@ export import Chess.Rating;
 export import Chess.Position.PieceState;
 
 export namespace chess {
-	using MoveVector = std::vector<Move>;
+	using MoveVector = arena::Vector<Move>;
 
 	struct PositionData {
 	private:

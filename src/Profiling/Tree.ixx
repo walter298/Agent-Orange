@@ -25,6 +25,7 @@ namespace chess {
 	MAKE_PROFILER(getLegalMoveGenerationProfiler, "calcAllLegalMoves", "findBestMove")
 	MAKE_PROFILER(getMoveAdderProfiler, "addMoves", "calcAllLegalMoves")
 	MAKE_PROFILER(getCalcPinnedAlliesProfiler, "calcPinnedAllies", "calcAllLegalMoves")
+	MAKE_PROFILER(getCalcPinDataProfiler, "calcPinData", "calcPinnedAllies")
 	MAKE_PROFILER(getEnemyMoveProfiler, "calcEnemyMoves", "calcAllLegalMoves")
 	MAKE_PROFILER(getEnPessantProfiler, "getEnPessantMoves", "calcAllLegalMoves")
 	MAKE_PROFILER(getMovePrioritiesProfiler, "getMovePriorities", "findBestMove")

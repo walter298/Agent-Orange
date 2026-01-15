@@ -8,7 +8,9 @@ namespace chess {
 		std::deque<BasicProfiler> profilers;
 		std::unordered_set<std::string> childNames;
 
-		std::chrono::nanoseconds getTimeSpent() const;
+		std::chrono::nanoseconds getTotalTimeSpent() const;
+		std::chrono::nanoseconds getAverageTotalTimeSpentAcrossThreads() const;
+		std::chrono::nanoseconds getAverageTimeSpent() const;
 		std::uint64_t getTimesRun() const;
 	};
 

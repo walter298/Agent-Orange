@@ -30,6 +30,7 @@ module Chess.Tests;
 
 import std;
 
+import Chess.Arena;
 import Chess.BitboardImage;
 import Chess.Evaluation;
 import Chess.Position;
@@ -44,6 +45,10 @@ import :Pipe;
 
 namespace chess {
 	namespace tests {
+		AsyncSearch& getSearchFunction() {
+			static AsyncSearch search{ 3_su8 };
+			return search;
+		}
 		//illegal move!
 		//2025-10-26 00:28:26.320-->1:position startpos moves e2e4 a7a5 d2d4 d7d5 e4d5 d8d5 c2c4
 
@@ -234,9 +239,8 @@ namespace chess {
 			RepetitionMap rMap;
 
 			std::string moves;
-			AsyncSearch search{ 6_su8 };
 			for (int i = 0; i < 20; i++) {
-				auto bestMove = search.findBestMove(pos, 6_su8, rMap);
+				auto bestMove = getSearchFunction().findBestMove(pos, 6_su8, rMap);
 				if (!bestMove) {
 					std::println("POTENTIAL Error: no best move found in testThatLegalMovesExist4 at ply {}!", i + 1);
 					std::println("Moves: {}", moves);
@@ -460,8 +464,7 @@ namespace chess {
 			assert_equality(rMap.getTotalPositionCount(), 1);
 
 			//has side effect of storing positions in the repetition table, but positions should be popped
-			AsyncSearch search{ 6_su8 };
-			search.findBestMove(pos, 6_su8, rMap); 
+			getSearchFunction().findBestMove(pos, 6_su8, rMap);
 			assert_equality(rMap.getTotalPositionCount(), 1);
 		}
 
@@ -471,15 +474,14 @@ namespace chess {
 			RepetitionMap rMap;
 			rMap.push(pos);
 
-			AsyncSearch search{ 6_su8 };
-			auto bestMove = search.findBestMove(pos, 6_su8, rMap);
+			auto bestMove = getSearchFunction().findBestMove(pos, 6_su8, rMap);
 			assert_equality(bestMove->from, Square::F3);
 			assert_equality(bestMove->to, Square::G2);
 		}
 
 		void runAllTests() {
 			std::println("Running tests...");
-
+			
 			testStartPos();
 			testPawnLocations();
 			testIllegalKingSquares();
