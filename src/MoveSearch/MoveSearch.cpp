@@ -118,8 +118,9 @@ namespace chess {
 			if (m_stopRequested->load()) {
 				return { Move::null(), node.getRating(), false };
 			}
-			
-			if (!m_stopRequested->load()) {
+
+			auto shouldNotUseTT = m_helper && node.getLevel() < RANDOMIZATION_CUTOFF;
+			if (!m_stopRequested->load() && !shouldNotUseTT) {
 				if (auto entryRes = getPositionEntry(node.getPos())) {
 					const auto& entry = *entryRes;
 					pvMove = entry.bestMove;

@@ -86,7 +86,7 @@ export namespace chess {
 			return m_level;
 		}
 
-		SafeUnsigned<std::uint8_t>getRemainingDepth() const {
+		SafeUnsigned<std::uint8_t> getRemainingDepth() const {
 			return m_levelsToSearch;
 		}
 

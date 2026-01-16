@@ -9,18 +9,36 @@ import std;
 import Chess.DebugPrint;
 import Chess.Evaluation;
 import Chess.Position.RepetitionMap;
+import Chess.PositionCommand;
 
-import :GameState;
+import :SearchThread;
 
 namespace chess {
-	std::string getRemainingTokens(std::istringstream& iss) {
+	std::string getTokensAfterPosition(std::istringstream& iss) {
 		auto buff = iss.str();
 		auto currentPos = static_cast<size_t>(iss.tellg());
 		return buff.substr(currentPos);
 	}
 
+	GameState makeGameState(const std::string& commandStr) {
+		GameState ret;
+		
+		auto command = parsePositionCommand(commandStr);
+		ret.pos.setPos(command);
+		ret.repetitionMap.push(ret.pos);
+
+		for (const auto& move : command.moves) {
+			ret.pos.move(move);
+			ret.repetitionMap.push(ret.pos);
+		}
+
+		ret.depth = 6_su8;
+
+		return ret;
+	}
+
 	void playUCI(SafeUnsigned<std::uint8_t> depth) {
-		Engine engine{ depth };
+		SearchThread searchThread{ depth };
 
 		std::istringstream iss;
 		std::string line;
@@ -43,9 +61,10 @@ namespace chess {
 			if (token == "quit") {
 				break;
 			} else if (token == "position") {
-				engine.setPos(getRemainingTokens(iss));
+				auto state = makeGameState(getTokensAfterPosition(iss));
+				searchThread.setPosition(std::move(state));
 			} else if (token == "ucinewgame") {
-				engine.stopCalculating();
+				searchThread.stop();
 			} else if (token == "isready") {
 				debugPrint("readyok");
 				std::printf("readyok\n");
@@ -58,9 +77,9 @@ namespace chess {
 				std::printf(ENGINE_INFO);
 				std::fflush(stdout);
 			} else if (token == "go") {
-				engine.printBestMoveAsync(); 
+				searchThread.go(); 
 			} else if (token == "stop") {
-				engine.stopCalculating();
+				searchThread.stop();
 			}
 		}
 	}

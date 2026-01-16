@@ -1,4 +1,4 @@
-export module Chess.UCI:GameState;
+export module Chess.UCI:SearchThread;
 
 export import std;
 
@@ -13,33 +13,25 @@ namespace chess {
 		SafeUnsigned<std::uint8_t> depth{ 6_su8 };
 		RepetitionMap repetitionMap;
 	};
+
 	class SearchThread {
 	private:
 		std::mutex m_mutex;
-		std::condition_variable_any m_cv;
 		AsyncSearch m_searcher;
 		GameState m_state;
+		bool m_shouldPonder = false;
 		bool m_calculationRequested = false;
+		std::condition_variable_any m_cv;
 		std::jthread m_thread; //thread is destroyed before all other members
-		
+
+		void think(std::stop_token stopToken);
 		void run(std::stop_token stopToken);
 	public:
 		SearchThread(SafeUnsigned<std::uint8_t> depth);
 		~SearchThread();
+
 		void stop();
-		void go(GameState gameState);
-	};
-
-	class Engine {
-	private:
-		SearchThread m_searchThread;
-		GameState m_state;
-	public:
-		Engine(SafeUnsigned<std::uint8_t> depth);
-
-		void setPos(const std::string& command);
-
-		void printBestMoveAsync(SafeUnsigned<std::uint8_t> depth = 6_su8);
-		void stopCalculating();
+		void setPosition(GameState gameState);
+		void go();
 	};
 }
