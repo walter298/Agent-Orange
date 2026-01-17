@@ -17,8 +17,8 @@ namespace chess {
 	}
 
 	template<bool IsWhite>
-	SquareMap<MoveGen> calcAllySquareMap(const PieceState& allies, const PieceState& enemies, Bitboard enemySquares) {
-		SquareMap<MoveGen> ret;
+	SquareMap<PieceDestinationSquareData> calcAllySquareMap(const PieceState& allies, const PieceState& enemies, Bitboard enemySquares) {
+		SquareMap<PieceDestinationSquareData> ret;
 
 		PieceLocationData pieceLocations{ allies[King], allies.calcAllLocations(), enemies.calcAllLocations() };
 		auto kingAttackerData = calcAttackers(IsWhite, enemies, pieceLocations.empty, pieceLocations.allyKing);
@@ -26,25 +26,19 @@ namespace chess {
 		auto attackedAllies = enemySquares & allies.calcAllLocations();
 		auto pinMap = calcPinnedAllies(allies, enemies, attackedAllies, kingAttackerData, pieceLocations);
 
-		calcDestSquaresImpl(ret, pinMap, kingAttackerData, allies[Queen], pieceLocations, queenMoveGenerator);
-		calcDestSquaresImpl(ret, pinMap, kingAttackerData, allies[Rook], pieceLocations, rookMoveGenerator);
-		calcDestSquaresImpl(ret, pinMap, kingAttackerData, allies[Bishop], pieceLocations, bishopMoveGenerator);
-		calcDestSquaresImpl(ret, pinMap, kingAttackerData, allies[Knight], pieceLocations, knightMoveGenerator);
-		if constexpr (IsWhite) {
-			calcDestSquaresImpl(ret, pinMap, kingAttackerData, allies[Pawn], pieceLocations, whitePawnMoveGenerator);
-		} else {
-			calcDestSquaresImpl(ret, pinMap, kingAttackerData, allies[Pawn], pieceLocations, blackPawnAttackGenerator);
-		}
+		forEachDestSquare<IsWhite>(allies, pinMap, kingAttackerData, pieceLocations, [&](Square square, Piece piece, const MoveGen& destSquares) {
+			ret[square] = { piece, destSquares };
+		});
 
 		return ret;
 	}
 
-	DestinationSquares getDestinationSquares(const Position& pos, const PositionData& posData) {
+	DestinationSquares calcDestinationSquareMap(const Position& pos, const PositionData& posData) {
 		DestinationSquares ret;
 
-		//auto [white, black] = pos.getColorSides();
-		//ret.whiteDestSquares = calcAllySquareMap<true>(white, black, posData.blackSquares.allDestSquares);
-		//ret.blackSquares     = calcAllySquareMap<false>(black, white, posData.whiteSquares.allDestSquares);
+		auto [white, black] = pos.getColorSides();
+		ret.whiteDestSquareMap = calcAllySquareMap<true>(white, black, posData.blackSquares.allDestSquares);
+		ret.blackDestSquareMap = calcAllySquareMap<false>(black, white, posData.whiteSquares.allDestSquares);
 
 		return ret;
 	}

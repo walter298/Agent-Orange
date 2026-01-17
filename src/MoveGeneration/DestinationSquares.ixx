@@ -66,14 +66,14 @@ namespace chess {
 		}
 	}
 
-	struct PieceDestinationSquareData {
+	export struct PieceDestinationSquareData {
 		Piece piece = Piece::None;
 		MoveGen destSquares;
 	};
 
 	export struct DestinationSquares {
-		SquareMap<PieceDestinationSquareData> whiteDestSquares;
-		SquareMap<PieceDestinationSquareData> blackSquares;
+		SquareMap<PieceDestinationSquareData> whiteDestSquareMap;
+		SquareMap<PieceDestinationSquareData> blackDestSquareMap;
 	};
-	export DestinationSquares getDestinationSquares(const Position& pos, const PositionData& posData);
+	export DestinationSquares calcDestinationSquareMap(const Position& pos, const PositionData& posData);
 }

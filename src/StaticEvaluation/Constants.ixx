@@ -19,7 +19,7 @@ namespace chess {
 	constexpr auto OPTIMAL_BISHOP_SQUARES = 6;
 	constexpr auto OPTIMAL_QUEEN_SQUARES = 5;
 	constexpr auto OPTIMAL_ROOK_SQUARES = 1;
-	constexpr auto UNDEVELOPED_PIECE_PENALTY = -0.09_rt;
+	constexpr auto MOBILITY_SQUARE_RATING = 0.004_rt;
 
 	const PieceMap<int> optimalDestinationSquareCounts{
 		{
