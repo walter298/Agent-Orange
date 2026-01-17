@@ -63,10 +63,10 @@ namespace chess {
 		auto [white, black] = pos.getColorSides();
 
 		auto whiteKingPos = nextSquare(white[King]);
-		ret -= calcEnemyProximityPenalty(whiteKingPos, black, PositionData::allSquares(posData.blackSquares));
+		ret -= calcEnemyProximityPenalty(whiteKingPos, black, posData.blackSquares.destSquaresPinConsidered);
 
 		auto blackKingPos = nextSquare(black[King]);
-		ret += calcEnemyProximityPenalty(blackKingPos, white, PositionData::allSquares(posData.whiteSquares));
+		ret += calcEnemyProximityPenalty(blackKingPos, white, posData.whiteSquares.destSquaresPinConsidered);
 
 		return ret;
 	}

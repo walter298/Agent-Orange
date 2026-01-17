@@ -13,14 +13,18 @@ export import Chess.Position.PieceState;
 export namespace chess {
 	using MoveVector = arena::Vector<Move>;
 
+	struct DestinationSquareData {
+		Bitboard destSquaresPinConsidered = 0;
+		Bitboard allDestSquares = 0;
+	};
 	struct PositionData {
 	private:
-		PieceMap<MoveGen>* m_allySquares = nullptr;
-		PieceMap<MoveGen>* m_enemySquares = nullptr;
+		DestinationSquareData* m_allySquares = nullptr;
+		DestinationSquareData* m_enemySquares = nullptr;
 	public:
 		MoveVector legalMoves;
-		PieceMap<MoveGen> whiteSquares;
-		PieceMap<MoveGen> blackSquares;
+		DestinationSquareData whiteSquares;
+		DestinationSquareData blackSquares;
 		
 		bool isCheck = false;
 		
@@ -39,18 +43,12 @@ export namespace chess {
 		auto& getEnemySquares(this auto&& self) {
 			return *self.m_enemySquares;
 		}
-	
-		static Bitboard allSquares(const PieceMap<MoveGen>& squares) {
-			return std::ranges::fold_left(squares, 0_bb, [](auto acc, const MoveGen& moveGen) {
-				return acc | moveGen.all();
-			});
+
+		DestinationSquareData allAllySquares() const {
+			return *m_allySquares;
 		}
-	
-		Bitboard allAllySquares() const {
-			return allSquares(*m_allySquares);
-		}
-		Bitboard allEnemySquares() const {
-			return allSquares(*m_enemySquares);
+		DestinationSquareData allEnemySquares() const {
+			return *m_enemySquares;
 		}
 		bool isCheckmate() const {
 			return legalMoves.empty() && isCheck;

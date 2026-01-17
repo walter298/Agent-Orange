@@ -1,44 +1,44 @@
-Thread [9080]: 
+Thread [34800]: 
 Registering 20 IDS
-Registering 21664
+Registering 19920
 registerThread called: 0
-Registering 11728
+Registering 16128
 registerThread called: 1
-Registering 35096
+Registering 43220
 registerThread called: 2
-Registering 32740
+Registering 20280
 registerThread called: 3
-Registering 36772
+Registering 31756
 registerThread called: 4
-Registering 7000
+Registering 11384
 registerThread called: 5
-Registering 8268
+Registering 33276
 registerThread called: 6
-Registering 8520
+Registering 1168
 registerThread called: 7
-Registering 9308
+Registering 16660
 registerThread called: 8
-Registering 35392
+Registering 35340
 registerThread called: 9
-Registering 17844
+Registering 41792
 registerThread called: 10
-Registering 9524
+Registering 35708
 registerThread called: 11
-Registering 36608
+Registering 39380
 registerThread called: 12
-Registering 29512
+Registering 35028
 registerThread called: 13
-Registering 37432
+Registering 43180
 registerThread called: 14
-Registering 29368
+Registering 34144
 registerThread called: 15
-Registering 34048
+Registering 21480
 registerThread called: 16
-Registering 11488
+Registering 41352
 registerThread called: 17
-Registering 32092
+Registering 44176
 registerThread called: 18
-Registering 31296
+Registering 32472
 registerThread called: 19
 Registering main thread
 registerThread called: 20
@@ -56,12 +56,14 @@ readyok
 position startpos moves e2e4
 go wtime 4800000 btime 4800000 winc 0 binc 0
 position startpos moves e2e4 d7d5 e4d5
-go wtime 4786547 btime 4796567 winc 0 binc 0
+go wtime 4798859 btime 4796786 winc 0 binc 0
 position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3
-go wtime 4771047 btime 4792009 winc 0 binc 0
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2
-go wtime 4768125 btime 4784264 winc 0 binc 0
-position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 e5e2 f1e2
-go wtime 4755406 btime 4778879 winc 0 binc 0
+go wtime 4797031 btime 4792744 winc 0 binc 0
+position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e6 d1e2
+go wtime 4786609 btime 4786264 winc 0 binc 0
+position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e6 d1e2 a7a5 e2e6
+go wtime 4753984 btime 4782316 winc 0 binc 0
+position startpos moves e2e4 d7d5 e4d5 d8d5 b1c3 d5e6 d1e2 a7a5 e2e6 c8e6 g1f3
+go wtime 4747968 btime 4778556 winc 0 binc 0
 quit
 

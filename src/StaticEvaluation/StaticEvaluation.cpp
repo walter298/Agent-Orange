@@ -20,8 +20,8 @@ namespace chess {
 			auto attackedPieceCount = std::popcount(attackedPieces);
 			return static_cast<Rating>(attackedPieceCount) * ATTACKED_PIECE_RATING;
 		};
-		auto allWhiteSquares = PositionData::allSquares(posData.whiteSquares);
-		auto allBlackSquares = PositionData::allSquares(posData.blackSquares);
+		auto allWhiteSquares = posData.whiteSquares.destSquaresPinConsidered;
+		auto allBlackSquares = posData.blackSquares.destSquaresPinConsidered;
 		return getAttackedPiecesRating(white, allBlackSquares) - getAttackedPiecesRating(black, allWhiteSquares);
 	}
 

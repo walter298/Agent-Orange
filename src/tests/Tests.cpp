@@ -406,7 +406,7 @@ namespace chess {
 			pos.setPos(parsePositionCommand("fen rnb1kbnr/pp1pppp1/2p5/q6p/2PPP3/8/PP1B1PPP/RN1QKBNR b KQkq - 1 1"));
 
 			auto legalMoves = calcPositionData(pos);
-			auto whiteSquares = PositionData::allSquares(legalMoves.whiteSquares);
+			auto whiteSquares = legalMoves.whiteSquares.destSquaresPinConsidered;
 
 			if (!containsSquare(whiteSquares, Square::A3, Square::C3, Square::B4, Square::A5)) {
 				std::println("testEnemySquareOutput failed: either D3, D4, or D5 are not contained in the white squares");
@@ -481,7 +481,9 @@ namespace chess {
 
 		void runAllTests() {
 			std::println("Running tests...");
-			
+
+			getSearchFunction(); //registers thread
+
 			testStartPos();
 			testPawnLocations();
 			testIllegalKingSquares();

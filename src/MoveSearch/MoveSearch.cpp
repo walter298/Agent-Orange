@@ -277,6 +277,7 @@ namespace chess {
 				arena::registerThread(threadID);
 			}
 			debugPrint("Registering main thread");
+			std::println("Registering {}", std::this_thread::get_id());
 			arena::registerThread(std::this_thread::get_id());
 			debugPrint("Finished registering threads");
 		}

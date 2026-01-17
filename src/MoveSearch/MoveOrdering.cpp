@@ -55,8 +55,8 @@ namespace chess {
 	arena::Vector<MovePriority> getMovePrioritiesImpl(const Node& node, const Move& pvMove) {
 		zAssert(node.getRemainingDepth() != 0_su8);
 
-		const auto& posData = node.getPositionData();
-		auto allEnemySquares = node.getPositionData().allEnemySquares();
+		const auto& posData  = node.getPositionData();
+		auto allEnemySquares = node.getPositionData().allEnemySquares().destSquaresPinConsidered;
 
 		arena::Vector<MovePriority> priorities{ std::from_range, posData.legalMoves | std::views::transform([&](const Move& move) {
 			return MovePriority{ move, allEnemySquares, node.getRemainingDepth() - 1_su8 };
