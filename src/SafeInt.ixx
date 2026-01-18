@@ -82,9 +82,19 @@ namespace chess {
 			return SafeUnsigned{ static_cast<T>(m_value >> s) };
 		}
 
-
 		constexpr SafeUnsigned operator~() const {
 			return SafeUnsigned{ static_cast<T>(~m_value) };
+		}
+
+		void subToMax(SafeUnsigned subbed, SafeUnsigned max) {
+			zAssert(max <= *this);
+
+			if (m_value < subbed.m_value) {
+				m_value = std::max(max.m_value, static_cast<std::uint8_t>(0));
+			} else {
+				auto diff = *this - subbed;
+				*this = diff < max ? max : diff;
+			}
 		}
 
 		constexpr friend SafeUnsigned operator+(SafeUnsigned a, SafeUnsigned b) {

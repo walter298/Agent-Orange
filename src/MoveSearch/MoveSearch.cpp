@@ -82,6 +82,10 @@ namespace chess {
 		Searcher(bool helper, const std::atomic_bool* stopRequested)
 			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_stopRequested{ stopRequested }
 		{
+			for (auto& killerMoves : m_killerMoves) {
+				std::ranges::fill(killerMoves.killerMoves, Move::null());
+				killerMoves.index = 0;
+			}
 		}
 
 		Rating getVotingWeight(const MoveRating& moveRating, Rating& worstScore, Rating maxScoreDiff) const {
@@ -205,8 +209,8 @@ namespace chess {
 				if (alphaBeta.canPrune()) {
 					//add killer move
 					if (movePriority.getMove().capturedPiece == Piece::None) {
-						killerMoves.index = killerMoves.index + 1 == MAX_KILLER_MOVES ? 0 : killerMoves.index + 1;
 						killerMoves.killerMoves[killerMoves.index] = movePriority.getMove();
+						killerMoves.index = killerMoves.index + 1 == MAX_KILLER_MOVES ? 0 : killerMoves.index + 1;
 					}
 					
 					bound = Maximizing ? LowerBound : UpperBound;

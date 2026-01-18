@@ -44,6 +44,15 @@ namespace chess {
 		}
 	}
 
+	template<typename LikelyBadMoves>
+	void applyLateMoveReduction(SafeUnsigned<std::uint8_t> maxDepth, SafeUnsigned<std::uint8_t> level, LikelyBadMoves& badMoves) {
+		SafeUnsigned depthReduced{ static_cast<std::uint8_t>(std::log2(static_cast<double>(level.get()))) };
+		maxDepth.subToMax(depthReduced, 0_su8);
+		for (auto& move : badMoves) {
+			move.recommendedDepth = maxDepth;
+		}
+	}
+
 	template<typename NonMaterialMoves>
 	auto orderKillerMovesFirst(std::span<const Move> killerMoves, NonMaterialMoves& nonMaterialMoves) {
 		return std::ranges::partition(nonMaterialMoves, [&](const MovePriority& priority) {
@@ -98,7 +107,8 @@ namespace chess {
 
 		auto nonPVMoves = movePVMoveToFront(priorities, pvMove);
 		auto nonMaterialMoves = orderCapturesAndEvasionsFirst(node, allEnemySquares, nonPVMoves);
-		orderKillerMovesFirst(killerMoves, nonMaterialMoves);
+		auto likelyBadMoves = orderKillerMovesFirst(killerMoves, nonMaterialMoves);
+		applyLateMoveReduction(node.getRemainingDepth(), node.getLevel(), likelyBadMoves);
 
 		zAssert(!priorities.empty());
 

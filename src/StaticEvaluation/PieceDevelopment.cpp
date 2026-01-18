@@ -6,7 +6,7 @@ import Chess.DebugPrint;
 import Chess.MoveGeneration;
 
 namespace chess {
-	Rating calcPieceDevelopmentRatingImpl(const PieceState& pieces, const SquareMap<PieceDestinationSquareData>& destSquareMap) {
+	Rating calcPieceDevelopmentRatingImpl(const SquareMap<PieceDestinationSquareData>& destSquareMap) {
 		auto ret = 0_rt;
 		auto developedPieceCount = 0;
 
@@ -28,10 +28,7 @@ namespace chess {
 	}
 
 	Rating calcPieceDevelopmentRating(const Position& pos, const PositionData& posData) {
-		auto [white, black] = pos.getColorSides();
 		auto [whiteDestSquareMap, blackDestSquareMap] = calcDestinationSquareMap(pos, posData);
-
-		return calcPieceDevelopmentRatingImpl(white, whiteDestSquareMap) -
-			   calcPieceDevelopmentRatingImpl(black, blackDestSquareMap);
+		return calcPieceDevelopmentRatingImpl(whiteDestSquareMap) - calcPieceDevelopmentRatingImpl(blackDestSquareMap);
 	}
 }

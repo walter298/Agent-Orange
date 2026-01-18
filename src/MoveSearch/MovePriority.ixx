@@ -26,18 +26,19 @@ namespace chess {
 	export class MovePriority {
 	private:
 		Move m_move;
-		SafeUnsigned<std::uint8_t> m_recommendedDepth{ 0 };
 		Rating m_exchangeRating = 0_rt;
 	public:
+		SafeUnsigned<std::uint8_t> recommendedDepth{ 0 };
+
 		MovePriority() = default;
 
 		MovePriority(const Move& move, Bitboard enemySquares, SafeUnsigned<std::uint8_t> recommendedDepth) :
-			m_move{ move }, m_recommendedDepth{ recommendedDepth },
+			m_move{ move }, recommendedDepth{ recommendedDepth },
 			m_exchangeRating{ calcExchangeRating(move, enemySquares) }
 		{
 		}
 		MovePriority(const Move& move, SafeUnsigned<std::uint8_t> depth)
-			: m_move{ move }, m_recommendedDepth { depth }
+			: m_move{ move }, recommendedDepth { depth }
 		{
 		}
 
@@ -45,13 +46,13 @@ namespace chess {
 			return m_move;
 		}
 		SafeUnsigned<std::uint8_t> getDepth() const {
-			return m_recommendedDepth;
+			return recommendedDepth;
 		}
 		Rating getExchangeRating() const {
 			return m_exchangeRating;
 		}
 		std::string getString() const {
-			return std::format("[{}, {}]", m_move.getUCIString(), static_cast<unsigned int>(m_recommendedDepth.get()));
+			return std::format("[{}, {}]", m_move.getUCIString(), static_cast<unsigned int>(recommendedDepth.get()));
 		}
 	};
 }
