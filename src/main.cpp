@@ -4,8 +4,8 @@ import Chess.Arena;
 import Chess.BitboardImage;
 import Chess.MoveGeneration;
 import Chess.UCI;
+import Chess.MeasureMoveTime;
 import Chess.Move;
-import Chess.Profiler;
 import Chess.SafeInt;
 import Chess.Tests;
 
@@ -81,13 +81,12 @@ namespace chess {
 		std::println("draw_bitboard [bitboard, base, filename]\t- Draw a bitboard image");
 		std::println("generate_bmi_table");
 		std::println("see_move_priorities [fen]");
+		std::println("measure_move_time");
 	}
 }
 
 int main(int argc, const char** argv) {
 	chess::arena::init();
-
-	chess::MaybeProfilerGuard guard;
 
 	if (argc == 1) {
 		constexpr chess::SafeUnsigned<std::uint8_t> DEFAULT_DEPTH{ 6 };
@@ -102,6 +101,8 @@ int main(int argc, const char** argv) {
 		chess::printCommandLineArgumentOptions();
 	} else if (std::strcmp(argv[1], "generate_bmi_table") == 0) {
 		chess::storeBMITable();
+	} else if (std::strcmp(argv[1], "measure_move_time") == 0) {
+		chess::measureMoveTime();
 	} else {
 		std::print("Invalid command line arguments. ");
 		chess::printCommandLineArgumentOptions();

@@ -17,9 +17,10 @@ namespace chess {
 	constexpr auto CASTLE_RATING = 0.2_rt;
 	constexpr auto OPTIMAL_KNIGHT_SQUARES = 5;
 	constexpr auto OPTIMAL_BISHOP_SQUARES = 6;
-	constexpr auto OPTIMAL_QUEEN_SQUARES = 5;
-	constexpr auto OPTIMAL_ROOK_SQUARES = 1;
-	constexpr auto MOBILITY_SQUARE_RATING = 0.004_rt;
+	constexpr auto OPTIMAL_QUEEN_SQUARES = 6;
+	constexpr auto OPTIMAL_ROOK_SQUARES = 6;
+	constexpr auto MOBILITY_SQUARE_RATING = 0.001_rt;
+	constexpr auto MOBILITY_DISTRIBUTION_RATING = 1.1_rt;
 
 	const PieceMap<int> optimalDestinationSquareCounts{
 		{

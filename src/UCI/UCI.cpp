@@ -20,7 +20,7 @@ namespace chess {
 		return buff.substr(currentPos);
 	}
 
-	GameState makeGameState(const std::string& commandStr) {
+	GameState makeGameState(const std::string& commandStr, SafeUnsigned<std::uint8_t> depth) {
 		GameState ret;
 		
 		auto command = parsePositionCommand(commandStr);
@@ -32,17 +32,19 @@ namespace chess {
 			ret.repetitionMap.push(ret.pos);
 		}
 
-		ret.depth = 6_su8;
+		ret.depth = depth;
 
 		return ret;
 	}
 
 	void playUCI(SafeUnsigned<std::uint8_t> depth) {
-		SearchThread searchThread{ depth };
+		SearchThread searchThread;
 
 		std::istringstream iss;
 		std::string line;
 		std::string token;
+
+		GameState lastGameState;
 
 		while (true) {
 			if (!std::getline(std::cin, line)) {
@@ -61,8 +63,8 @@ namespace chess {
 			if (token == "quit") {
 				break;
 			} else if (token == "position") {
-				auto state = makeGameState(getTokensAfterPosition(iss));
-				searchThread.setPosition(std::move(state));
+				lastGameState = makeGameState(getTokensAfterPosition(iss), depth);
+				searchThread.setPosition(lastGameState);
 			} else if (token == "ucinewgame") {
 				searchThread.stop();
 			} else if (token == "isready") {
@@ -77,7 +79,7 @@ namespace chess {
 				std::printf(ENGINE_INFO);
 				std::fflush(stdout);
 			} else if (token == "go") {
-				searchThread.go(); 
+				searchThread.go(depth); 
 			} else if (token == "stop") {
 				searchThread.stop();
 			}

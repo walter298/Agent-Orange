@@ -27,11 +27,11 @@ namespace chess {
 		void think(std::stop_token stopToken);
 		void run(std::stop_token stopToken);
 	public:
-		SearchThread(SafeUnsigned<std::uint8_t> depth);
+		SearchThread();
 		~SearchThread();
 
 		void stop();
 		void setPosition(GameState gameState);
-		void go();
+		void go(SafeUnsigned<std::uint8_t> depth);
 	};
 }

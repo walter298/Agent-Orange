@@ -7,7 +7,7 @@ export import Chess.SafeInt;
 
 export import :MovePriority;
 
-export namespace chess {
+namespace chess {
 	enum WindowBound : std::uint8_t {
 		InWindow,
 		LowerBound,
@@ -22,6 +22,8 @@ export namespace chess {
 	};
 	using PositionEntryRef = std::reference_wrapper<const PositionEntry>;
 
-	std::optional<PositionEntry> getPositionEntry(const Position& pos);
+	std::optional<PositionEntry> getPositionEntry(const Position& pos, SafeUnsigned<std::uint8_t> depth);
 	void storePositionEntry(const Position& pos, const PositionEntry& entry);
+
+	export void clearTranspositionTable();
 }

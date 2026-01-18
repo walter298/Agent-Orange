@@ -37,7 +37,6 @@ import Chess.Position;
 import Chess.PositionCommand;
 import Chess.MoveGeneration;
 import Chess.MoveSearch;
-import Chess.Profiler;
 import Chess.Position.RepetitionMap;
 import Chess.SafeInt;
 
@@ -46,7 +45,7 @@ import :Pipe;
 namespace chess {
 	namespace tests {
 		AsyncSearch& getSearchFunction() {
-			static AsyncSearch search{ 3_su8 };
+			static AsyncSearch search;
 			return search;
 		}
 		//illegal move!

@@ -107,6 +107,13 @@ export namespace chess {
 		bool isWhite() const {
 			return m_isWhiteMoving;
 		}
+
+		int pieceCount() const {
+			auto [white, black] = getColorSides();
+			auto whitePieces = white.calcAllLocations();
+			auto blackPieces = black.calcAllLocations();
+			return std::popcount(whitePieces) + std::popcount(blackPieces);
+		}
 	};
 
 	struct PositionHasher {

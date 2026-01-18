@@ -2,7 +2,6 @@ module Chess.Evaluation;
 
 import std;
 
-import Chess.Profiler;
 import Chess.Position.PieceState;
 
 import :Constants;
@@ -35,7 +34,6 @@ namespace chess {
 	}
 
 	Rating staticEvaluation(const Position& pos, const PositionData& posData) {
-		ProfilerLock l{ getStaticEvaluationProfiler() };
 		return calcCastleRating(pos) + calcMaterialRating(pos) + calcPawnStructureRating(pos) + calcAttackRating(pos, posData) + 
 			   calcKingSafetyRating(pos, posData) + calcPieceDevelopmentRating(pos, posData);
 	}

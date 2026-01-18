@@ -1,7 +1,5 @@
 module Chess.MoveGeneration:Pin;
 
-import Chess.Profiler;
-
 namespace chess {
 	PinData calcPinData(Square allySquare, const PieceState& enemies, const AttackerData& kingAttackerData,
 		const PieceLocationData& pieceLocations)
@@ -28,8 +26,6 @@ namespace chess {
 	PinMap calcPinnedAllies(const PieceState& allies, const PieceState& enemies, const Bitboard attackedAllies,
 		const AttackerData& kingAttackerData, const PieceLocationData& pieceLocations)
 	{
-		ProfilerLock l{ getBestMoveProfiler() };
-
 		PinMap ret;
 
 		auto calcPinnedAlliesImpl = [&](Bitboard pieces) {

@@ -7,6 +7,7 @@ import Chess.SafeInt;
 import Chess.Position.RepetitionMap;
 
 export import :MoveSearchTests;
+export import :PositionTable;
 
 namespace chess {
 	struct AsyncSearchState;
@@ -15,7 +16,7 @@ namespace chess {
 	private:
 		std::shared_ptr<AsyncSearchState> m_state;
 	public:
-		AsyncSearch(SafeUnsigned<std::uint8_t> maxDepth);
+		AsyncSearch();
 
 		std::optional<Move> findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap);
 		void cancel();

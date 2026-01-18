@@ -1,3 +1,7 @@
+module;
+
+#include <tracy/Tracy.hpp>
+
 module Chess.MoveSearch;
 
 import std;
@@ -10,10 +14,8 @@ import Chess.EasyRandom;
 import Chess.Evaluation;
 import Chess.MoveGeneration;
 import Chess.Position.RepetitionMap;
-import Chess.Profiler;
 import Chess.Rating;
 
-import :KillerMoveHistory;
 import :MoveOrdering;
 import :MoveHasher;
 import :Node;
@@ -65,11 +67,20 @@ namespace chess {
 		static constexpr SafeUnsigned<std::uint8_t> RANDOMIZATION_CUTOFF{ 3 };
 		std::mt19937 m_urbg;
 		bool m_helper = false;
-		SafeUnsigned<std::uint8_t> m_depth;
 		const std::atomic_bool* m_stopRequested;
+
+		static constexpr auto MAX_DEPTH = 30uz;
+		static constexpr auto MAX_KILLER_MOVES = 3uz;
+		struct KillerMoveEntries {
+			std::array<Move, MAX_KILLER_MOVES> killerMoves{};
+			size_t index = 0;
+		};
+		std::array<KillerMoveEntries, MAX_DEPTH> m_killerMoves{};
 	public:
-		Searcher(bool helper, SafeUnsigned<std::uint8_t> depth, const std::atomic_bool* stopRequested)
-			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_depth{ depth }, m_stopRequested{ stopRequested }
+		SafeUnsigned<std::uint8_t> depth = 0_su8;
+
+		Searcher(bool helper, const std::atomic_bool* stopRequested)
+			: m_urbg{ std::random_device{}() }, m_helper{ helper }, m_stopRequested{ stopRequested }
 		{
 		}
 
@@ -77,7 +88,7 @@ namespace chess {
 			zAssert(maxScoreDiff >= 0_rt);
 
 			auto ret = 1_rt;
-			ret += std::pow(2_rt, static_cast<Rating>(m_depth.get()));
+			ret += std::pow(2_rt, static_cast<Rating>(depth.get()));
 			
 			//give up to 20% boost depending on how good the score is
 			if (maxScoreDiff != 0_rt) {
@@ -89,6 +100,10 @@ namespace chess {
 			}
 
 			return ret;
+		}
+
+		bool isHelper() const {
+			return m_helper;
 		}
 	private:
 		static bool wouldMakeRepetition(const Position& pos, Move pvMove, const RepetitionMap& repetitionMap) {
@@ -119,33 +134,28 @@ namespace chess {
 				return { Move::null(), node.getRating(), false };
 			}
 
-			auto shouldNotUseTT = m_helper && node.getLevel() < RANDOMIZATION_CUTOFF;
-			if (!m_stopRequested->load() && !shouldNotUseTT) {
-				if (auto entryRes = getPositionEntry(node.getPos())) {
+			bool canUseEntry = !(m_helper && node.getLevel() == 0_su8);
+
+			if (!m_stopRequested->load() && canUseEntry) {
+				if (auto entryRes = getPositionEntry(node.getPos(), node.getRemainingDepth())) {
 					const auto& entry = *entryRes;
 					pvMove = entry.bestMove;
-					bool canUseEntry = !(m_helper && node.getLevel() == 0_su8);
+					
 					if (!wouldMakeRepetition(node.getPos(), entry.bestMove, node.getRepetitionMap()) && entry.depth >= node.getRemainingDepth()) {
 						switch (entry.bound) {
 						case InWindow:
-							if (canUseEntry) {
-								return { entry.bestMove, entry.rating, false };
-							}
+							return { entry.bestMove, entry.rating, false };
 							break;
 						case LowerBound:
 							if (entry.rating >= alphaBeta.getBeta()) {
-								if (canUseEntry) {
-									return { entry.bestMove, entry.rating, false };
-								}
+								return { entry.bestMove, entry.rating, false };
 							} else {
 								alphaBeta.updateAlpha(entry.rating);
 							}
 							break;
 						case UpperBound:
 							if (entry.rating <= alphaBeta.getAlpha()) {
-								if (canUseEntry) {
-									return { entry.bestMove, entry.rating, false };
-								}
+								return { entry.bestMove, entry.rating, false };
 							} else {
 								alphaBeta.updateBeta(entry.rating);
 							}
@@ -164,7 +174,8 @@ namespace chess {
 		MoveRating bestChildPosition(const Node& node, const Move& pvMove, AlphaBeta alphaBeta) {
 			auto originalAlphaBeta = alphaBeta;
 
-			auto movePriorities = getMovePriorities(node, pvMove);;
+			auto& killerMoves = m_killerMoves[node.getLevel().get()];
+			auto movePriorities = getMovePriorities(node, pvMove, std::span{ killerMoves.killerMoves.data(), MAX_KILLER_MOVES });;
 			if (m_helper && node.getLevel() < RANDOMIZATION_CUTOFF) {
 				std::ranges::shuffle(movePriorities, m_urbg);
 			}
@@ -192,7 +203,12 @@ namespace chess {
 
 				alphaBeta.update<Maximizing>(bestRating.rating);
 				if (alphaBeta.canPrune()) {
-					updateHistoryScore(movePriority.getMove(), node.getRemainingDepth());
+					//add killer move
+					if (movePriority.getMove().capturedPiece == Piece::None) {
+						killerMoves.index = killerMoves.index + 1 == MAX_KILLER_MOVES ? 0 : killerMoves.index + 1;
+						killerMoves.killerMoves[killerMoves.index] = movePriority.getMove();
+					}
+					
 					bound = Maximizing ? LowerBound : UpperBound;
 					didNotPrune = false;
 					break;
@@ -233,12 +249,12 @@ namespace chess {
 
 		template<bool Maximizing>
 		MoveRating iterativeDeepening(const Position& pos, const RepetitionMap& repetitionMap) {
-			for (auto iterDepth = 1_su8; iterDepth < m_depth; ++iterDepth) {
+			for (auto iterDepth = 1_su8; iterDepth < depth; ++iterDepth) {
 				arena::resetThread();
 				startAlphaBetaSearch<Maximizing>(pos, iterDepth, repetitionMap);
 			}
 			arena::resetThread();
-			return startAlphaBetaSearch<Maximizing>(pos, m_depth, repetitionMap);
+			return startAlphaBetaSearch<Maximizing>(pos, depth, repetitionMap);
 		}
 	public:
 		MoveRating operator()(const Position& pos, const RepetitionMap& repetitionMap) {
@@ -258,33 +274,40 @@ namespace chess {
 		std::atomic_bool stopRequested = false;
 		std::vector<Searcher> searchers;
 
-		AsyncSearchState(SafeUnsigned<std::uint8_t> maxDepth) {
-			zAssert(maxDepth >= 1_su8);
-
+		AsyncSearchState() {
 			searchers.reserve(THREAD_COUNT);
-			searchers.emplace_back(false, maxDepth, &stopRequested); //insert main thread
+			searchers.emplace_back(false, &stopRequested); //insert main thread
 			if (THREAD_COUNT > 1) {
 				for (auto i = 0uz; i < THREAD_COUNT - 1; i++) { //insert helper threads
-					auto d = (SafeUnsigned{ static_cast<std::uint8_t>(i) } % 2_su8) == 0_su8 ? 1_su8 : 0_su8;
-					auto depth = maxDepth == 1_su8 ? maxDepth : maxDepth - d;
-					searchers.emplace_back(true, depth, &stopRequested);
+					searchers.emplace_back(true, &stopRequested);
 				}
 			}
+
+			//register threads
 			auto threadIDs = pool.get_thread_ids();
-			debugPrint(std::format("Registering {} IDS", threadIDs.size()));
 			for (auto threadID : threadIDs) {
-				debugPrint(std::format("Registering {}", threadID));
 				arena::registerThread(threadID);
 			}
-			debugPrint("Registering main thread");
-			std::println("Registering {}", std::this_thread::get_id());
 			arena::registerThread(std::this_thread::get_id());
-			debugPrint("Finished registering threads");
+		}
+
+		void assignDepths(SafeUnsigned<std::uint8_t> maxDepth) {
+			zAssert(maxDepth >= 1_su8);
+			
+			for (auto&& [i, searcher] : std::views::enumerate(searchers)) {
+				if (!searcher.isHelper()) {
+					searcher.depth = maxDepth;
+				} else {
+					auto d = (SafeUnsigned{ static_cast<std::uint8_t>(i) } % 2_su8) == 0_su8 ? 1_su8 : 0_su8;
+					auto depth = maxDepth == 1_su8 ? maxDepth : maxDepth - d;
+					searcher.depth = depth;
+				}
+			}
 		}
 	};
 
-	AsyncSearch::AsyncSearch(SafeUnsigned<std::uint8_t> maxDepth)
-		: m_state{ std::make_shared<AsyncSearchState>(maxDepth) }
+	AsyncSearch::AsyncSearch()
+		: m_state{ std::make_shared<AsyncSearchState>() }
 	{
 	}
 
@@ -330,10 +353,9 @@ namespace chess {
 	} 
 
 	std::optional<Move> findBestMoveImpl(std::shared_ptr<AsyncSearchState> state, Position pos, SafeUnsigned<std::uint8_t> depth, RepetitionMap repetitionMap) {
-		ProfilerLock l{ getBestMoveProfiler() };
-
 		arena::resetAllThreads();
 
+		state->assignDepths(depth);
 		state->stopRequested.store(false);
 
 		auto moveCandidateFutures = state->pool.submit_sequence(0uz, state->searchers.size(), [&](size_t i) {
@@ -355,6 +377,7 @@ namespace chess {
 	}
 
 	std::optional<Move> AsyncSearch::findBestMove(const Position& pos, SafeUnsigned<std::uint8_t> depth, const RepetitionMap& repetitionMap) {
+		ZoneScoped;
 		return findBestMoveImpl(m_state, pos, depth, repetitionMap);
 	}
 

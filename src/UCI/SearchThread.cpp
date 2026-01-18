@@ -34,8 +34,6 @@ namespace chess {
 			auto stateCopy = m_state;
 			ul.unlock();
 
-			std::println("Thinking on your time Mr. Anderson...");
-
 			auto move = m_searcher.findBestMove(stateCopy.pos, 255_su8, stateCopy.repetitionMap);
 			if (!move) { //if the position has no legal moves, then reset to an invalid position state
 				std::scoped_lock l{ m_mutex };
@@ -74,8 +72,8 @@ namespace chess {
 		}
 	}
 
-	SearchThread::SearchThread(SafeUnsigned<std::uint8_t> depth)
-		: m_searcher{ depth }
+	SearchThread::SearchThread()
+		: m_searcher{}
 	{
 		m_thread = std::jthread{ [this](std::stop_token stopToken){ run(stopToken); } };
 	}
@@ -92,11 +90,12 @@ namespace chess {
 		m_cv.notify_one();
 	}
 
-	void SearchThread::go() {
+	void SearchThread::go(SafeUnsigned<std::uint8_t> depth) {
 		{
 			std::scoped_lock l{ m_mutex };
 			m_calculationRequested = true;
 			m_shouldPonder = false;
+			m_state.depth = depth;
 		}
 		m_searcher.cancel();
 		m_cv.notify_one();

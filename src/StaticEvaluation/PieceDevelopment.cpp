@@ -8,6 +8,7 @@ import Chess.MoveGeneration;
 namespace chess {
 	Rating calcPieceDevelopmentRatingImpl(const PieceState& pieces, const SquareMap<PieceDestinationSquareData>& destSquareMap) {
 		auto ret = 0_rt;
+		auto developedPieceCount = 0;
 
 		for (auto square : SQUARE_ARRAY) {
 			const auto& destSquareData = destSquareMap[square];
@@ -15,7 +16,12 @@ namespace chess {
 				continue;
 			}
 			auto squareCount = std::popcount(destSquareData.destSquares.all());
-			ret += (squareCount - optimalDestinationSquareCounts[destSquareData.piece]) * MOBILITY_SQUARE_RATING;
+			auto mobilityScore = (squareCount - optimalDestinationSquareCounts[destSquareData.piece]) * MOBILITY_SQUARE_RATING;
+			ret += mobilityScore;
+			if (mobilityScore > 0_rt) {
+				developedPieceCount++;
+				ret *= developedPieceCount * MOBILITY_DISTRIBUTION_RATING;
+			}
 		}
 
 		return ret;

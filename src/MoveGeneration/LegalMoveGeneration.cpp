@@ -11,7 +11,6 @@ import std;
 import Chess.Assert;
 import Chess.BitboardImage;
 import Chess.PieceMap;
-import Chess.Profiler;
 import Chess.RankCalculator;
 
 import :ChainedMoveGenerator;
@@ -61,8 +60,6 @@ namespace chess {
 		static void addMoves(PositionData& posData, Square piecePos, MoveGen destSquares, Piece pieceType,
 			const PieceLocationData& pieceLocations, const PieceState& enemies, MoveAdder moveAdder)
 		{
-			ProfilerLock l{ getMoveAdderProfiler() };
-
 			posData.getAllySquares().destSquaresPinConsidered |= destSquares.all();
 			posData.getAllySquares().allDestSquares        |= destSquares.all();
 
@@ -129,8 +126,6 @@ namespace chess {
 		static void addEnPassantMoves(PositionData& posData, const PinMap& pinMap, const AttackerData& kingAttackers, 
 			const PieceState& enemies, Bitboard pawns, Square jumpedEnemyPawn, const PieceLocationData& pieceLocations)
 		{
-			ProfilerLock l{ getEnPessantProfiler() };
-
 			auto enPassantData = allyPawnAttackGenerator(pawns, jumpedEnemyPawn);
 			if (!enPassantData.pawns) {
 				return;
@@ -218,8 +213,6 @@ namespace chess {
 
 	template<bool DrawingBitboards>
 	PositionData calcAllLegalMovesImpl(const Position& pos) {
-		ProfilerLock l{ getLegalMoveGenerationProfiler() };
-
 		auto turnData = pos.getTurnData();
 
 		if (turnData.isWhite) {
